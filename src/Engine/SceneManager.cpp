@@ -41,3 +41,8 @@ void SceneManager::ChangeScene(const char* name)
 
 	_currentScene->OnEnter();
 }
+
+void SceneManager::SetContext(Context& context)
+{
+	_context = &context;
+}

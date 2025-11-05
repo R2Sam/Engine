@@ -13,7 +13,19 @@ public:
 	Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle);
 	~Game();
 
-	void Run(const u32 targetFps);	// 0 for unlimited
+	template<typename T, typename... Args>
+	void SetFirstScene(const char *name, Args&&... args)
+	{
+		_sceneManager.AddScene<T>(name, std::forward<Args>(args)...);
+		_sceneManager.ChangeScene(name);
+	}
+
+	void Run(const u32 targetFps);
+
+private:
+
+	// Event handeling
+	void OnCloseGameEvent(const Event::CloseGame& event);
 
 private:
 
@@ -25,7 +37,9 @@ private:
 
 	// Core systems
 	Renderer _renderer;
-	ResourceManger _resourceManger;
+	ResourceManager _resourceManager;
 	SceneManager _sceneManager;
 	SystemManager _systemManager;
+
+	bool _running = true;
 };

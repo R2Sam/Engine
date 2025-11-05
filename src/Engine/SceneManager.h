@@ -3,6 +3,8 @@
 //Forward
 struct Context;
 
+#include "Assert.h"
+
 #include <unordered_map>
 #include <memory>
 
@@ -10,21 +12,25 @@ class Scene
 {
 public:
 
-	Scene(const Context& context) : 
+	// First arguement of any derived class must be the same as here
+	Scene(const Context& context) :
 	_context(context)
 	{
 
 	}
 
-	virtual ~Scene() = default;
+	virtual ~Scene()
+	{
 
-	virtual void Update(float deltaT);
-	virtual void Draw();
+	}
 
-	virtual void OnEnter();
-	virtual void OnExit();
+	virtual void Update(const float deltaT) = 0;
+	virtual void Draw() = 0;
 
-private:
+	virtual void OnEnter() = 0;
+	virtual void OnExit() = 0;
+
+protected:
 
 	const Context& _context;
 };
@@ -40,15 +46,20 @@ public:
 	void AddScene(const char* name, Args&&... args)
 	{
 		Assert((std::is_base_of_v<Scene, T>), "Scenes must derive from Scene");
+		Assert(_context, "Context must be set first");
 
-		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
+		auto ptr = std::make_unique<T>(*_context, std::forward<Args>(args)...);
 		_scenes.emplace(name, std::move(ptr));
 	}
 
 	void RemoveScene(const char* name);
 	void ChangeScene(const char* name);
 
+	void SetContext(Context& context);
+
 private:
+
+	Context* _context = nullptr;
 
 	Scene* _currentScene = nullptr;
 

@@ -15,3 +15,8 @@ void SystemManager::Draw()
 		ptr->Draw();
 	}
 }
+
+void SystemManager::SetContext(Context& context)
+{
+	_context = &context;
+}

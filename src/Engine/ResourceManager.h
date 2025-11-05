@@ -32,7 +32,7 @@ public:
 	{
 		for (auto& [path, object] : _map)
 		{
-			unloadFunction(object);
+			_unloadFunction(*object);
 		}
 	}
 
@@ -71,29 +71,28 @@ private:
 	std::function<void (T)> _unloadFunction;
 };
 
-class ResourceManger
+class ResourceManager
 {
 public:
 
-	template<typename T, typename T2, typename... Args>
-	T& AddCache(Args&&... args)
+	template<typename T, typename... Args>
+	ResourceCache<T>& AddCache(Args&&... args)
 	{
-		Assert((std::is_base_of_v<Cache, T>), "ResourceCache must derive from Cache");
+		auto ptr = std::make_unique<ResourceCache<T>>(std::forward<Args>(args)...);
+		ResourceCache<T>& ref = *ptr;
 
-		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
-		T& ref = *ptr;
-
-		_caches.emplace(typeid(T2), std::move(ptr));
+		_caches.emplace(typeid(T), std::move(ptr));
 
 		return ref;
 	}
 
 	template<typename T>
-	T& GetCache()
+	ResourceCache<T>& GetCache()
 	{
-		Assert(_caches.find(typeid(T)) != _caches.end(), "No cache exists holding type ", typeid(T).name());
+		auto it = _caches.find(typeid(T));
+		Assert(it != _caches.end(), "No cache exists holding type ", typeid(T).name());
 
-		return *static_cast<ResourceCache<T>*>(_caches[typeid(T)].get());
+		return *static_cast<ResourceCache<T>*>(it->second.get());
 	}
 
 private:

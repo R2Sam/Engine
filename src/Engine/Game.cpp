@@ -1,5 +1,6 @@
 #include "Engine/Game.h"
 
+#include "Engine/Context.h"
 #include "Raylib/raylib.h"
 
 #include "Renderer.h"
@@ -12,6 +13,13 @@ Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitl
 	
 	InitWindow(windowWidth, windowHeight, windowTitle);
 	SetExitKey(KEY_NULL);
+
+	_context.emplace(_registry, _dispatcher, _renderer, _resourceManager, _sceneManager, _systemManager);
+	_sceneManager.SetContext(_context.value());
+	_systemManager.SetContext(_context.value());
+
+	// Set event catcher
+	_dispatcher.sink<Event::CloseGame>().connect<&Game::OnCloseGameEvent>(this);
 }
 
 Game::~Game()
@@ -21,15 +29,27 @@ Game::~Game()
 
 void Game::Run(const u32 targetFps)
 {
+	Assert(targetFps, "Target fps must be positive");
+	Assert(targetFps <= 1000, "Target fps must not be above 1000");
+
 	SetTargetFPS(targetFps);
 
-	while(!WindowShouldClose())
+	const float timeStep = 1.0 / targetFps;
+	float accummulator = 0.0;
+
+	while(_running && !WindowShouldClose())
 	{
-		float deltaT = GetFrameTime();
+		const float deltaT = std::min(GetFrameTime(), 1.0f);
+		accummulator += deltaT;
 
-		_systemManager.Update(deltaT);
+		while (accummulator >= timeStep)
+		{
+			_systemManager.Update(timeStep);
 
-		_sceneManager.Update(deltaT);
+			_sceneManager.Update(timeStep);
+
+			accummulator -= timeStep;
+		}
 
 		BeginDrawing();
 		ClearBackground(BLANK);
@@ -42,4 +62,9 @@ void Game::Run(const u32 targetFps)
 
 		EndDrawing();
 	}
+}
+
+void Game::OnCloseGameEvent(const Event::CloseGame& event)
+{
+	_running = false;
 }

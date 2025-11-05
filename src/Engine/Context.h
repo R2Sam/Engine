@@ -11,7 +11,15 @@ struct Context
 	entt::registry& registry;
 	entt::dispatcher& dispatcher;
 	Renderer& renderer;
-	ResourceManger& resourceManger;
+	ResourceManager& resourceManger;
 	SceneManager& sceneManager;
 	SystemManager& systemManager;
 };
+
+namespace Event
+{
+	struct CloseGame
+	{
+
+	};
+}

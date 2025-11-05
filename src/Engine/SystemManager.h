@@ -3,6 +3,8 @@
 // Forward
 struct Context;
 
+#include "Assert.h"
+
 #include <type_traits>
 #include <vector>
 #include <memory>
@@ -11,18 +13,22 @@ class System
 {
 public:
 
+	// First arguement of any derived class must be the same as here
 	System(const Context& context) :
 	_context(context)
 	{
 
 	}
 
-	virtual ~System() = default;
+	virtual ~System()
+	{
 
-	virtual void Update(const float deltaT);
-	virtual void Draw();
+	}
 
-private:
+	virtual void Update(const float deltaT) = 0;
+	virtual void Draw() = 0;
+
+protected:
 
 	const Context& _context;
 };
@@ -38,12 +44,17 @@ public:
 	void AddSystem(Args&&... args)
 	{
 		Assert((std::is_base_of_v<System, T>), "Systems must derive from System");
+		Assert(_context, "Context must be set first");
 
-		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
+		auto ptr = std::make_unique<T>(*_context, std::forward<Args>(args)...);
 		_systems.push_back(std::move(ptr));
 	}
 
+	void SetContext(Context& context);
+
 private:
+
+	Context* _context = nullptr;
 
 	std::vector<std::unique_ptr<System>> _systems;
 };
