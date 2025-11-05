@@ -1,0 +1,7 @@
+*.exe linguist-generated
+*.a linguist-generated
+*.txt linguist-generated
+*.sublime-project linguist-generated
+*.sublime-workspace linguist-generated
+
+include/* linguist-generated
