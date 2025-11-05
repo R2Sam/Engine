@@ -14,9 +14,10 @@ Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitl
 	InitWindow(windowWidth, windowHeight, windowTitle);
 	SetExitKey(KEY_NULL);
 
-	_context.emplace(_registry, _dispatcher, _renderer, _resourceManager, _sceneManager, _systemManager);
+	_context.emplace(_registry, _dispatcher, _renderer, _resourceManager, _sceneManager, _systemManager, _luaManager);
 	_sceneManager.SetContext(_context.value());
 	_systemManager.SetContext(_context.value());
+	_luaManager.SetContext(_context.value());
 
 	// Set event catcher
 	_dispatcher.sink<Event::CloseGame>().connect<&Game::OnCloseGameEvent>(this);
@@ -24,6 +25,10 @@ Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitl
 
 Game::~Game()
 {
+	_resourceManager.ClearCaches();
+
+	_context->registry.clear();
+
 	CloseWindow();
 }
 
@@ -45,6 +50,8 @@ void Game::Run(const u32 targetFps)
 		while (accummulator >= timeStep)
 		{
 			_systemManager.Update(timeStep);
+
+			_luaManager.Update(timeStep);
 
 			_sceneManager.Update(timeStep);
 

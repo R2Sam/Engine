@@ -95,6 +95,18 @@ public:
 		return *static_cast<ResourceCache<T>*>(it->second.get());
 	}
 
+	template<typename T>
+	void RemoveCache()
+	{
+		auto it = _caches.find(typeid(T));
+		if (it != _caches.end())
+		{
+			_caches.erase(it);
+		}
+	}
+
+	void ClearCaches();
+
 private:
 
 	std::unordered_map<std::type_index, std::unique_ptr<Cache>> _caches;

@@ -2,17 +2,17 @@
 
 void SystemManager::Update(const float deltaT)
 {
-	for (auto& ptr : _systems)
+	for (auto& pair : _systems)
 	{
-		ptr->Update(deltaT);
+		pair.second->Update(deltaT);
 	}
 }
 
 void SystemManager::Draw()
 {
-	for (auto& ptr : _systems)
+	for (auto& pair : _systems)
 	{
-		ptr->Draw();
+		pair.second->Draw();
 	}
 }
 

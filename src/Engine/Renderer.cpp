@@ -3,6 +3,7 @@
 #include "MyRaylib/MyRaylib.h"
 
 #include "Components.h"
+#include "Raylib/raylib.h"
 
 Renderer::Renderer()
 {
@@ -14,6 +15,8 @@ Renderer::Renderer()
 
 void Renderer::Draw(entt::registry& registry)
 {
+	BeginMode2D(camera);
+
 	auto view = registry.view<const Component::Transform, const Component::Sprite>();
 
 	for (auto [entity, transform, sprite] : view.each())
@@ -23,4 +26,6 @@ void Renderer::Draw(entt::registry& registry)
 			DrawTextureRotScaleSelect(sprite.texture, sprite.rectangle, transform.position.vec2(), transform.rotation, sprite.scale, sprite.color);
 		}
 	}
+
+	EndMode2D();
 }

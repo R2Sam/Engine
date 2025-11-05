@@ -40,6 +40,7 @@ private:
 	ResourceManager _resourceManager;
 	SceneManager _sceneManager;
 	SystemManager _systemManager;
+	LuaManager _luaManager;
 
 	bool _running = true;
 };
