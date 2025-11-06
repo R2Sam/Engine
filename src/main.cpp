@@ -1,6 +1,6 @@
 #include "Engine/Game.h"
 
-#include "FirstScene.cpp"
+#include "FirstScene.h"
 
 int main ()
 {

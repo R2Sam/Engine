@@ -41,6 +41,7 @@ private:
 	SceneManager _sceneManager;
 	SystemManager _systemManager;
 	LuaManager _luaManager;
+	Logger _logger;
 
 	bool _running = true;
 };

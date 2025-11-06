@@ -15,7 +15,7 @@ SRCS = $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/*/*.cpp)
 OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 # Common compiler flags
-COMMON_FLAGS = -std=c++23 -fmax-errors=5 -Wall -Wextra -pedantic -fopenmp -I$(INCLUDE_DIR) -I$(SRC_DIR)
+COMMON_FLAGS = -std=c++23 -fmax-errors=5 -Wall -Wextra -pedantic -fopenmp -MMD -MP -I$(INCLUDE_DIR) -I$(SRC_DIR)
 # COMMON_FLAGS += -Werror
 COMMON_FLAGS += -Wno-missing-field-initializers -Wno-narrowing -Wno-enum-compare -Wno-reorder -Wno-shadow -Wno-deprecated-declarations
 
@@ -48,8 +48,6 @@ endif
 
 # Rules
 
-default: debug | run
-
 debug: FLAGS = $(DEBUG_FLAGS)
 debug: $(OBJS)
 	$(CXX) $(OBJS) -o $(BIN_DIR)/main $(LIBS)
@@ -61,6 +59,8 @@ release: $(OBJS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(COMMON_FLAGS) $(FLAGS) -c $< -o $@
 
+-include $(OBJS:.o=.d)
+
 ifeq ($(UNAME),Linux)
 run:
 	kitty --hold bash -c "cd  $(BIN_DIR) && ./main"
@@ -69,7 +69,7 @@ gdb:
 	kitty --hold bash -c "cd  $(BIN_DIR) && gdb main"
 
 clean:
-	find "$(OBJ_DIR)" -name "*.o" -type f -delete
+	find "$(OBJ_DIR)" -name "*.o" -type f -delete && find "$(OBJ_DIR)" -name "*.d" -type f -delete
 
 all: clean debug
 
@@ -81,7 +81,7 @@ gdb:
 	cmd /c start cmd /k "cd $(BIN_DIR) && gdb main.exe"
 
 clean:
-	del /S /Q "$(OBJ_DIR)\*.o"
+	del /S /Q "$(OBJ_DIR)\*.o" && del /S /Q "$(OBJ_DIR)\*.d"
 
 Cmd:
 	cmd /c start cmd

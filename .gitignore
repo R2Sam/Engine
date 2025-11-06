@@ -1,5 +1,6 @@
 *.exe
 *.o
+*.d
 *.sublime-project
 *.sublime-workspace
 *.res

@@ -6,6 +6,7 @@
 #include "SceneManager.h"
 #include "SystemManager.h"
 #include "LuaManager.h"
+#include "Logger.h"
 
 struct Context
 {
@@ -16,6 +17,7 @@ struct Context
 	SceneManager& sceneManager;
 	SystemManager& systemManager;
 	LuaManager& luaManager;
+	Logger& logger;
 };
 
 namespace Event
