@@ -1,0 +1,24 @@
+name: C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: make debug
+      run: make debug
+
+  windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - name: make debug
+      run: make debug
