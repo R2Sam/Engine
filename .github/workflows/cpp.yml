@@ -8,17 +8,26 @@ on:
 
 jobs:
   linux:
-
     runs-on: ubuntu-latest
-
     steps:
-    - name: make debug
-      run: make debug
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libgl1-mesa-dev libx11-dev
+
+      - name: Build with make
+        run: make -j4 debug
+        working-directory: ${{ github.workspace }}
 
   windows:
-
     runs-on: windows-latest
-
     steps:
-    - name: make debug
-      run: make debug
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build with make
+        run: make -j4 debug
+        working-directory: ${{ github.workspace }}

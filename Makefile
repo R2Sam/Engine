@@ -15,7 +15,7 @@ SRCS = $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/*/*.cpp)
 OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 # Common compiler flags
-COMMON_FLAGS = -std=c++23 -fmax-errors=5 -Wall -Wextra -pedantic -fopenmp -MMD -MP -I$(INCLUDE_DIR) -I$(SRC_DIR)
+COMMON_FLAGS = -std=c++20 -fmax-errors=5 -Wall -Wextra -pedantic -fopenmp -MMD -MP -I$(INCLUDE_DIR) -I$(SRC_DIR)
 # COMMON_FLAGS += -Werror
 COMMON_FLAGS += -Wno-missing-field-initializers -Wno-narrowing -Wno-enum-compare -Wno-reorder -Wno-shadow -Wno-deprecated-declarations
 

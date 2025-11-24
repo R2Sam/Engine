@@ -1,6 +1,5 @@
 #pragma once
 
-#define ANSI
 #include "Log/Log.h"
 
 #include <mutex>

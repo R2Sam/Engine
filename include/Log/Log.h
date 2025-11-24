@@ -36,224 +36,72 @@ inline std::string GetCurrentTimeString()
     return ss.str();
 }
 
-#if defined(__linux) || defined(ANSI)
+inline const char* ANSI_RESET = "\033[0m";
+inline const char* ANSI_SAVE_CURSOR = "\033[s";
+inline const char* ANSI_LOAD_CURSOR = "\033[u";
+inline const char* ANSI_HIDE_CURSOR = "\033[?25l";
+inline const char* ANSI_SHOW_CURSOR = "\033[?25h";
+inline const char* ANSI_CLEAR_LINE = "\033[2K";
+inline const char* ANSI_SCROLL_DOWN = "\033[D";
 
-    inline const char* ANSI_RESET = "\033[0m";
-    inline const char* ANSI_SAVE_CURSOR = "\033[s";
-    inline const char* ANSI_LOAD_CURSOR = "\033[u";
-    inline const char* ANSI_HIDE_CURSOR = "\033[?25l";
-    inline const char* ANSI_SHOW_CURSOR = "\033[?25h";
-    inline const char* ANSI_CLEAR_LINE = "\033[2K";
-    inline const char* ANSI_SCROLL_DOWN = "\033[D";
+inline const char* LOG_GREEN = "\033[92m";
+inline const char* LOG_BLUE = "\033[94m";
+inline const char* LOG_YELLOW = "\033[93m";
+inline const char* LOG_RED = "\033[91m";
+inline const char* LOG_WHITE = "\033[97m";
 
-    inline const char* LOG_GREEN = "\033[92m";
-    inline const char* LOG_BLUE = "\033[94m";
-    inline const char* LOG_YELLOW = "\033[93m";
-    inline const char* LOG_RED = "\033[91m";
-    inline const char* LOG_WHITE = "\033[97m";
-
-    template<typename... Args>
-    void Log(Args&&... args)
-    {
-        #ifdef LOGFILE
-            std::ofstream logFile("log.txt", std::ios_base::app);
-            logFile << "[" << GetCurrentTimeString() << "] ";
-            (logFile << ... << std::forward<Args>(args)) << '\n';
-        #endif
-
-        std::cerr << LOG_WHITE << "[" << GetCurrentTimeString() << "] ";
-        (std::cerr << ... << std::forward<Args>(args)) << ANSI_RESET << '\n';
-    }
-
-    template<typename... Args>
-    void LogColor(const char* color, Args&&... args)
-    {
-        #ifdef LOGFILE
-            std::ofstream logFile("log.txt", std::ios_base::app);
-            logFile << "[" << GetCurrentTimeString() << "] ";
-            (logFile << ... << std::forward<Args>(args)) << '\n';
-        #endif
-        
-        std::cerr << LOG_WHITE << "[" << GetCurrentTimeString() << "] ";
-        std::cerr << color;
-        (std::cerr << ... << std::forward<Args>(args));
-        std::cerr << ANSI_RESET << '\n';
-    }
-
-    template<typename... Args>
-    void Output(Args&&... args)
-    {
-        (std::cout << ... << std::forward<Args>(args)) << ANSI_RESET << '\n';
-    }
-
-    template<typename... Args>
-    void OutputColor(const char* color, Args&&... args)
-    {
-        std::cout << color;
-        (std::cout << ... << std::forward<Args>(args));
-        std::cout << ANSI_RESET << '\n';
-    }
-
-    template<typename... Args>
-    void OutputErr(Args&&... args)
-    {
-        (std::cerr << ... << std::forward<Args>(args)) << ANSI_RESET << '\n';
-    }
-
-    template<typename... Args>
-    void OutputErrColor(const char* color, Args&&... args)
-    {
-        std::cerr << color;
-        (std::cerr << ... << std::forward<Args>(args));
-        std::cerr << ANSI_RESET << '\n';
-    }
-
-#endif
-
-#ifdef _WIN32
-
-    #ifndef _INC_WINDOWS
-
-        extern "C"
-        {
-            __declspec(dllimport) void* __stdcall GetStdHandle(unsigned long);
-            __declspec(dllimport) int __stdcall GetConsoleMode(void*, unsigned long*);
-             __declspec(dllimport) int __stdcall SetConsoleMode(void*, unsigned long);
-            __declspec(dllimport) int __stdcall SetConsoleTextAttribute(void*, unsigned short);
-        }
-
+template<typename... Args>
+void Log(Args&&... args)
+{
+    #ifdef LOGFILE
+        std::ofstream logFile("log.txt", std::ios_base::app);
+        logFile << "[" << GetCurrentTimeString() << "] ";
+        (logFile << ... << std::forward<Args>(args)) << '\n';
     #endif
 
-    #ifdef ANSI
+    std::cerr << LOG_WHITE << "[" << GetCurrentTimeString() << "] ";
+    (std::cerr << ... << std::forward<Args>(args)) << ANSI_RESET << '\n';
+}
 
-        class Ansi
-        {
-
-        public:
-
-            Ansi()
-            {
-                void* hOutput = GetStdHandle(-11);
-                unsigned long outMode;
-                GetConsoleMode(hOutput, &outMode);
-                SetConsoleMode(hOutput, outMode | 0x0004);
-
-                void* hError = GetStdHandle(-12);
-                unsigned long errMode;
-                GetConsoleMode(hError, &errMode);
-                SetConsoleMode(hError, errMode | 0x0004);
-            }
-
-            ~Ansi()
-            {
-                void* hOutput = GetStdHandle(-11);
-                unsigned long outMode;
-                GetConsoleMode(hOutput, &outMode);
-                SetConsoleMode(hOutput, outMode & ~0x0004);
-
-                void* hError = GetStdHandle(-12);
-                unsigned long errMode;
-                GetConsoleMode(hError, &errMode);
-                SetConsoleMode(hError, errMode & ~0x0004);
-            }
-        };
-
-        Ansi ansi;
-
-    #else
-
-        const unsigned short LGREEN     = 0x2;
-        const unsigned short LBLUE      = 0x1;
-        const unsigned short LRED       = 0x4;
-        const unsigned short LYELLOW = LRED | LGREEN;
-        const unsigned short INTENSITY = 0x8;
-        const unsigned short LWHITE     = LRED | LGREEN | LBLUE;
-
-        const unsigned short LOG_GREEN = LGREEN | INTENSITY;
-        const unsigned short LOG_BLUE  = LBLUE | INTENSITY;
-        const unsigned short LOG_YELLOW = LYELLOW | INTENSITY;
-        const unsigned short LOG_RED   = LRED | INTENSITY;
-
-        template<typename... Args>
-        void Log(Args&&... args)
-        {
-            void* hConsole = GetStdHandle(-11);
-            SetConsoleTextAttribute(hConsole, LWHITE);
-
-            #ifdef LOGFILE
-                std::ofstream logFile("log.txt", std::ios_base::app);
-                logFile << "[" << GetCurrentTimeString() << "] ";
-                (logFile << ... << std::forward<Args>(args)) << '\n';
-            #endif
-
-            std::cerr << "[" << GetCurrentTimeString() << "] ";
-            (std::cerr << ... << std::forward<Args>(args)) << '\n';
-            
-            SetConsoleTextAttribute(hConsole, LWHITE);
-        }
-
-        template<typename... Args>
-        void LogColor(const unsigned int color, Args&&... args)
-        {
-            void* hConsole = GetStdHandle(-11);
-            SetConsoleTextAttribute(hConsole, color);
-
-            #ifdef LOGFILE
-                std::ofstream logFile("log.txt", std::ios_base::app);
-                logFile << "[" << GetCurrentTimeString() << "] ";
-                (logFile << ... << std::forward<Args>(args)) << '\n';
-            #endif
-            
-            std::cerr << "[" << GetCurrentTimeString() << "] ";
-            (std::cerr << ... << std::forward<Args>(args)) << '\n';
-            
-            SetConsoleTextAttribute(hConsole, LWHITE);
-        }
-
-        template<typename... Args>
-        void Output(Args&&... args)
-        {
-            void* hConsole = GetStdHandle(-11);
-            SetConsoleTextAttribute(hConsole, LWHITE);
-
-            (std::cout << ... << std::forward<Args>(args)) << '\n';
-            
-            SetConsoleTextAttribute(hConsole, LWHITE);
-        }
-
-        template<typename... Args>
-        void OutputColor(const unsigned int color, Args&&... args)
-        {
-            void* hConsole = GetStdHandle(-11);
-            SetConsoleTextAttribute(hConsole, color);
-            
-            (std::cout << ... << std::forward<Args>(args)) << '\n';
-            
-            SetConsoleTextAttribute(hConsole, LWHITE);
-        }
-
-        template<typename... Args>
-        void OutputErr(Args&&... args)
-        {
-            void* hConsole = GetStdHandle(-11);
-            SetConsoleTextAttribute(hConsole, LWHITE);
-
-            (std::cerr << ... << std::forward<Args>(args)) << '\n';
-            
-            SetConsoleTextAttribute(hConsole, LWHITE);
-        }
-
-        template<typename... Args>
-        void OutputErrColor(const unsigned int color, Args&&... args)
-        {
-            void* hConsole = GetStdHandle(-11);
-            SetConsoleTextAttribute(hConsole, color);
-            
-            (std::cerr << ... << std::forward<Args>(args)) << '\n';
-            
-            SetConsoleTextAttribute(hConsole, LWHITE);
-        }
-
+template<typename... Args>
+void LogColor(const char* color, Args&&... args)
+{
+    #ifdef LOGFILE
+        std::ofstream logFile("log.txt", std::ios_base::app);
+        logFile << "[" << GetCurrentTimeString() << "] ";
+        (logFile << ... << std::forward<Args>(args)) << '\n';
     #endif
+    
+    std::cerr << LOG_WHITE << "[" << GetCurrentTimeString() << "] ";
+    std::cerr << color;
+    (std::cerr << ... << std::forward<Args>(args));
+    std::cerr << ANSI_RESET << '\n';
+}
 
-#endif
+template<typename... Args>
+void Output(Args&&... args)
+{
+    (std::cout << ... << std::forward<Args>(args)) << ANSI_RESET << '\n';
+}
+
+template<typename... Args>
+void OutputColor(const char* color, Args&&... args)
+{
+    std::cout << color;
+    (std::cout << ... << std::forward<Args>(args));
+    std::cout << ANSI_RESET << '\n';
+}
+
+template<typename... Args>
+void OutputErr(Args&&... args)
+{
+    (std::cerr << ... << std::forward<Args>(args)) << ANSI_RESET << '\n';
+}
+
+template<typename... Args>
+void OutputErrColor(const char* color, Args&&... args)
+{
+    std::cerr << color;
+    (std::cerr << ... << std::forward<Args>(args));
+    std::cerr << ANSI_RESET << '\n';
+}

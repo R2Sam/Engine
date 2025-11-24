@@ -4,6 +4,7 @@
 #include "MyMath/MyVectors.h"
 
 #include "Lua/MyLua.h"
+#include "Types.h"
 
 #include <string>
 
@@ -22,6 +23,7 @@ namespace Component
 		Rectangle rectangle = {0, 0, 0, 0};
 		Color color = WHITE;
 		float scale = 1;
+		u32 layer = 1;
 	};
 
 	struct LuaScript

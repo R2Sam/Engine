@@ -11,6 +11,10 @@ public:
 
 	void Draw(entt::registry& registry);
 
+private:
+
+	void SortSprites(entt::registry& registry);
+
 public:
 
 	Camera2D camera;

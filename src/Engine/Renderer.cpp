@@ -15,6 +15,8 @@ Renderer::Renderer()
 
 void Renderer::Draw(entt::registry& registry)
 {
+	SortSprites(registry);
+
 	BeginMode2D(camera);
 
 	auto view = registry.view<const Component::Transform, const Component::Sprite>();
@@ -28,4 +30,12 @@ void Renderer::Draw(entt::registry& registry)
 	}
 
 	EndMode2D();
+}
+
+void Renderer::SortSprites(entt::registry& registry)
+{
+	registry.sort<Component::Sprite>([](const Component::Sprite& a, const Component::Sprite& b)
+	{
+        return a.layer < b.layer;
+    });
 }
