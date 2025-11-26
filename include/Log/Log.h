@@ -105,3 +105,53 @@ void OutputErrColor(const char* color, Args&&... args)
     (std::cerr << ... << std::forward<Args>(args));
     std::cerr << ANSI_RESET << '\n';
 }
+
+#ifdef _WIN32
+
+    #ifndef _INC_WINDOWS
+
+        extern "C"
+        {
+            __declspec(dllimport) void* __stdcall GetStdHandle(unsigned long);
+            __declspec(dllimport) int __stdcall GetConsoleMode(void*, unsigned long*);
+             __declspec(dllimport) int __stdcall SetConsoleMode(void*, unsigned long);
+            __declspec(dllimport) int __stdcall SetConsoleTextAttribute(void*, unsigned short);
+        }
+
+    #endif
+
+    class Ansi
+    {
+
+    public:
+
+        Ansi()
+        {
+            void* hOutput = GetStdHandle(-11);
+            unsigned long outMode;
+            GetConsoleMode(hOutput, &outMode);
+            SetConsoleMode(hOutput, outMode | 0x0004);
+
+            void* hError = GetStdHandle(-12);
+            unsigned long errMode;
+            GetConsoleMode(hError, &errMode);
+            SetConsoleMode(hError, errMode | 0x0004);
+        }
+
+        ~Ansi()
+        {
+            void* hOutput = GetStdHandle(-11);
+            unsigned long outMode;
+            GetConsoleMode(hOutput, &outMode);
+            SetConsoleMode(hOutput, outMode & ~0x0004);
+
+            void* hError = GetStdHandle(-12);
+            unsigned long errMode;
+            GetConsoleMode(hError, &errMode);
+            SetConsoleMode(hError, errMode & ~0x0004);
+        }
+    };
+
+    inline Ansi ansi;
+
+#endif

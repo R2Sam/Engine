@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core/Types.h"
+#include "Types.h"
+#include "Assert.h"
 
 #include <vector>
-#include <cassert>
 
 template<typename T>
 class Matrix2D
@@ -19,7 +19,7 @@ public:
     rows(rows),
     vector(cols * rows)
     {
-        assert(cols > 0 && rows > 0);
+        Assert(cols > 0 && rows > 0);
     }
 
     Matrix2D()
@@ -30,28 +30,28 @@ public:
 
     T& operator[](const u64 x, const u64 y)
     {
-        assert((y * cols + x) < vector.size());
+        Assert((y * cols + x) < vector.size());
 
         return vector[y * cols + x];
     }
 
     const T& operator[](const u64 x, const u64 y) const
     {
-        assert((y * cols + x) < vector.size());
+        Assert((y * cols + x) < vector.size());
 
         return vector[y * cols + x];
     }
 
     T& operator()(const u64 x, const u64 y)
     {
-        assert((y * cols + x) < vector.size());
+        Assert((y * cols + x) < vector.size());
 
         return vector[y * cols + x];
     }
 
     const T& operator()(const u64 x, const u64 y) const
     {
-        assert((y * cols + x) < vector.size());
+        Assert((y * cols + x) < vector.size());
 
         return vector[y * cols + x];
     }
@@ -153,7 +153,7 @@ public:
 
     void removeColumn(const u64 colIndex)
     {
-        assert(colIndex < cols);
+        Assert(colIndex < cols);
 
         std::vector<T> newVector((cols - 1) * rows);
 
@@ -177,7 +177,7 @@ public:
 
     void removeRow(u64 rowIndex)
     {
-        assert(rowIndex < rows);
+        Assert(rowIndex < rows);
 
         std::vector<T> newVector(cols * (rows - 1));
 
@@ -201,7 +201,7 @@ public:
 
     void insertColumn(const u64 colIndex)
     {
-        assert(colIndex <= cols);
+        Assert(colIndex <= cols);
 
         std::vector<T> newVector((cols + 1) * rows);
 

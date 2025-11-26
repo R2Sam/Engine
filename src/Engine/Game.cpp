@@ -61,11 +61,11 @@ void Game::Run(const u32 targetFps)
 		BeginDrawing();
 		ClearBackground(BLANK);
 
+		_renderer.Draw(_registry);
+
 		_systemManager.Draw();
 
 		_sceneManager.Draw();
-
-		_renderer.Draw(_registry);
 
 		EndDrawing();
 	}
