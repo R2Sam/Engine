@@ -1,4 +1,6 @@
 *.exe
+bin/main
+bin/lib*
 *.o
 *.d
 *.sublime-project
@@ -7,8 +9,8 @@
 *build
 *.cache
 *.vscode
-*CMakeLists.*
 *.bat
 *.sh
 *.py
 *.ini
+.*

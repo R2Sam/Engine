@@ -1,91 +1,31 @@
 UNAME := $(shell uname -s)
-ARCH := $(shell uname -m)
 
-# Variables
-NAME = main
-SRC_DIR = src
-OBJ_DIR = src
-BIN_DIR = bin
-DATA_DIR = data
-INCLUDE_DIR = include
-LIB_DIR = lib
+ifeq ($(UNAME), Linux)
+debug:
+	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && $(MAKE) -j$(nproc) -s
 
-# Source and Object files
-SRCS = $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/*/*.cpp)
-OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+release:
+	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j$(nproc) -s
 
-# Common compiler flags
-COMMON_FLAGS = -std=c++23 -fmax-errors=5 -Wall -Wextra -pedantic -fopenmp -MMD -MP -I$(INCLUDE_DIR) -I$(SRC_DIR)
-# COMMON_FLAGS += -Werror
-COMMON_FLAGS += -Wno-missing-field-initializers -Wno-narrowing -Wno-enum-compare -Wno-reorder -Wno-shadow -Wno-deprecated-declarations
-
-# Debug and Release flags
-DEBUG_FLAGS = -Og -gdwarf-4
-
-ifeq ($(OS),Windows_NT)
-	SHELL := cmd
-	CXX := g++
-	RELEASE_FLAGS = -O3 -s -mwindows
-	LIBS := 
-	LIBS += $(LIB_DIR)/Raylib/libraylib.a -lopengl32 -lgdi32 -lwinmm  $(LIB_DIR)/Lua/libluajit.a -lgomp $(LIB_DIR)/rlImGui/librlImGui.a -lws2_32 -lwinmm -static
-else ifeq ($(ARCH),aarch64)
-	$(error Pi build not complete)
-	SHELL := /bin/bash
-	CXX := g++
-	RELEASE_FLAGS := -O3 -s
-	LIBS := -lpthread
-else ifeq ($(UNAME),Linux)
-	SHELL := /bin/bash
-	CXX := g++
-	RELEASE_FLAGS := -O3 -s
-	LIBS := 
-	LIBS += $(LIB_DIR)/Raylib/libraylib-Linux.a  -lGL -lm -lpthread -ldl -lrt -lX11 $(LIB_DIR)/Lua/libluajit-Linux.a -lgomp $(LIB_DIR)/rlImGui/librlImGui-Linux.a
-else ifeq ($(UNAME),Darwin)
-	$(error Mac not supported)
+clear:
+	-rm -r build/CMakeFiles
+	-rm build/CMakeCache.txt
+	-rm build/cmake_install.cmake
 else
-    $(error Unknown operating system: $(OS))
+debug:
+	mkdir build && cd build && cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug .. && $(MAKE) -j$(nproc) -s
+
+release:
+	mkdir build && cd build && cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j$(nproc) -s
+
+clear:
+	-rmdir /s /q build/CMakeFiles
+	-del build/CMakeCache.txt
+	-del build/cmake_install.cmake
 endif
 
-# Rules
-
-debug: FLAGS = $(DEBUG_FLAGS)
-debug: $(OBJS)
-	$(CXX) $(OBJS) $(FLAGS) -o $(BIN_DIR)/main $(LIBS)
-
-release: FLAGS = $(RELEASE_FLAGS)
-release: $(OBJS)
-	$(CXX) $(OBJS) $(FLAGS) -o $(BIN_DIR)/$(NAME) $(LIBS)
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	$(CXX) $(COMMON_FLAGS) $(FLAGS) -c $< -o $@
-
--include $(OBJS:.o=.d)
-
-ifeq ($(UNAME),Linux)
-run:
-	kitty --hold bash -c "cd  $(BIN_DIR) && ./main"
-
-gdb:
-	kitty --hold bash -c "cd  $(BIN_DIR) && gdb main"
-
 clean:
-	find "$(OBJ_DIR)" -name "*.o" -type f -delete && find "$(OBJ_DIR)" -name "*.d" -type f -delete
+	$(MAKE) -s -C build clean
 
-all: clean debug
-
-else
 run:
-	cmd /c start cmd /k "cd $(BIN_DIR) && main.exe"
-
-gdb:
-	cmd /c start cmd /k "cd $(BIN_DIR) && gdb main.exe"
-
-clean:
-	del /S /Q "$(OBJ_DIR)\*.o" && del /S /Q "$(OBJ_DIR)\*.d"
-
-Cmd:
-	cmd /c start cmd
-
-all: clean | debug
-
-endif
+	$(MAKE) -j$(nproc) -s -C build run
