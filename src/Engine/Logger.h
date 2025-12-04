@@ -33,6 +33,11 @@ public:
     		_file.close();
     	}
 
+        if (std::string(path).empty())
+        {
+            return;
+        }
+
     	_file.open(path, std::ios::app);
     }
 

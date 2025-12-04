@@ -12,7 +12,6 @@ struct Context
 {
 	entt::registry& registry;
 	entt::dispatcher& dispatcher;
-	Renderer& renderer;
 	ResourceManager& resourceManager;
 	SceneManager& sceneManager;
 	SystemManager& systemManager;

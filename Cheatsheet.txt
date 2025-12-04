@@ -1,0 +1,69 @@
+// Core
+#include "Engine/ResourceManager.h"
+#include "src/Engine/Context.h"
+Game Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle);	// Initializes the whole engine
+void Game::SetFirstScene<T>(const char *name, Args&&... args);						// Creates the first scene of type T with a given name and passes its args to the scene
+void Game::Run(const u32 targetFps);												// Starts the game loop (blocking)
+
+// Scenes
+class Scene;																		// Base scene class from which all scenes are built apon
+Scene(const Context& context);														// The context must be always be first and passed to the base class
+void Scene::Update(const float deltaT);												// Scenes must have a Update method taking in the frameTime in second
+void Scene::Draw();																	// Scenes must have a Draw method
+void Scene::OnEnter();																// Scenes must have a OnEnter method that is triggered whenever the scene is entred
+void Scene::OnExit();																// Scenes must have a OnExit method that is triggered whenever the scene is exited
+
+// Context
+struct Context;																		// A struct that provides refrences to all the following systems and should be passed when needed (by default given to scenes)
+
+// Scene Manager
+void SceneManager::AddScene<T>(const char* name, Args&&... args);					// Adds a scene of type T to the manager with a given name and passes its args to the scene
+void SceneManager::RemoveScene(const char* name);									// Deletes the scene with the given name
+void SceneManager::ChangeScene(const char* name);									// Exits the current scene and enteres the given scene with given name
+
+// Entity Component System 															// https://github.com/skypjack/entt/wiki
+entt::Registry::create();															// Creates an entity
+entt::Registry::emplace<T>(const entt::entity entity, Args&&... args);				// Adds a component of type T to the given entity with the components args passed
+T& entt::Registry::get<T>(const entt::entity entity);								// Gets a reference to the component of type T of the given entity
+auto entt::Registry::view<T, ...>();												// Given a list of compoent types returns a iterable list of entities with all said components
+
+// Event system
+entt::Dispatcher.sink<T>().connect<F>(ptr);											// Given an event type T links a function F or method to an event (this pointer must be passed for methods)
+entt::Dispatcher.trigger<T>(Args&&... args);										// Sends out an event of type T with given args
+
+// Renderer
+class Renderer;																		// If an entity has a Sprite component it is drawn automatically by the renderer
+
+// Systems
+class System;																		// Base system class. Systems are indepenedant of scenes and are updated and drawn every frame
+System(const Context& context)														// The context must be always be first and passed to the base class
+void System::Update(const float deltaT);											// Systems must have a Update method taking in the frameTime in seconds
+void System::Draw();																// Systems must have a Draw method
+
+// System Manager
+T& AddSystem<T>(const u32 priority, Args&&... args);								// Adds a system of type T to the manager with a priority (smaller = higher priority) and args passed
+
+// Resource Manager
+ResourceCache<T>& ResourceManager::AddCache<T>(Args&&... args);						// Creates a resoruce cache that store type T, the args provided must be a load function that returns T and takes a path, and an unload function taking in T
+ResourceCache<T>& ResourceManager::GetCache<T>();									// Returns the cache for type T
+void ResourceManager::RemoveCache<T>();												// Removes and unloads the cache for type T
+void ResourceManager::ClearCaches();												// Removes and unloads all caches
+
+// Resource Cache
+class ResourceCache<T>;																// A cache of a certain type T, using the provided load and unload functions when created in the manager
+T& ResourceCache::Get(const char* path)												// Loads type T into the cache using its load function and the path given
+void ResourceCache::Remove(const char* path)										// Unloads any cached object with given path
+
+// Lua Manager
+class LuaManager;																	// Runs all scripts each frame by calling their "Update" function and passing the frameTime as the only paramater (entity scrips can be enables and disabled)
+bool LuaManager::LoadScript(const char* path);										// Loads a lua script from the given path
+bool LuaManager::LoadEntityScript(entt::entity& entity, const char* path);			// Loads a lua script from the given path but associates it with an entity
+bool LuaManager::RemoveScript(const char* path);									// Removes the scripts loaded from given path
+bool LuaManager::LoadEntityScript(entt::entity& entity);							// Removes the scripts associated with the entity
+void LuaManager::ReloadScripts();													// Reloads all non entity scripts
+void LuaManager::RelaodEntityScripts();												// Reloads all entitity scripts
+
+// Logger
+void Logger::SetLogLevel(const LogLevel level);										// Sets the log level of text and file output
+void Logger::SetLogFile(const char* path);											// Sets the output file path (empty path closes file)
+void Logger::Write(const LogLevel level, Args&&... args);							// Logs at the given level with args being any inputs seperated by commas
