@@ -4,6 +4,8 @@
 
 #include "Context.h"
 
+#include "Renderer.h"
+
 #include <optional>
 
 class Game

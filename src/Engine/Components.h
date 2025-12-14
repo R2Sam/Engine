@@ -3,10 +3,7 @@
 #include "Raylib/raylib.h"
 #include "MyMath/MyVectors.h"
 
-#include "Lua/MyLua.h"
 #include "Types.h"
-
-#include <string>
 
 namespace Component
 {
@@ -24,12 +21,5 @@ namespace Component
 		Color color = WHITE;
 		float scale = 1;
 		u32 layer = 1;
-	};
-
-	struct LuaScript
-	{
-		sol::environment environment;
-		std::string path;
-		bool enabled = true;
 	};
 }

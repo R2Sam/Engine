@@ -1,7 +1,6 @@
 #pragma once
 
 #include "entt/entt.h"
-#include "Renderer.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
 #include "SystemManager.h"
@@ -23,6 +22,9 @@ namespace Event
 {
 	struct CloseGame
 	{
-
+		void LuaRegister(sol::state& lua)
+		{
+			Lua::RegisterType<Event::CloseGame>(lua, "CloseGame");
+		}
 	};
 }

@@ -17,7 +17,6 @@ Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitl
 	_context.emplace(_registry, _dispatcher, _resourceManager, _sceneManager, _systemManager, _luaManager, _logger);
 	_sceneManager.SetContext(_context.value());
 	_systemManager.SetContext(_context.value());
-	_luaManager.SetContext(_context.value());
 
 	// Set event catcher
 	_dispatcher.sink<Event::CloseGame>().connect<&Game::OnCloseGameEvent>(this);

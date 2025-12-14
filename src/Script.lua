@@ -26,3 +26,7 @@ function Update(deltaT)
 
     end
 end
+
+function OnCloseGameEvent(event)
+    print("Captured event from lua")
+end

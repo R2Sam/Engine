@@ -20,6 +20,19 @@ inline std::string Demangle(const char* name)
     return (status==0) ? res.get() : name ;
 }
 
+inline std::string DemangleWithoutNamespace(const char* name)
+{
+    std::string demangled = Demangle(name);
+    
+    size_t pos = demangled.find_last_of("::");
+    if (pos != std::string::npos) 
+  	{
+        return demangled.substr(pos + 1);
+  	}
+    
+    return demangled;
+}
+
 inline void SanitizeEnvironment(sol::environment& env)
 {
 	env["os"] = sol::nil;
@@ -180,7 +193,25 @@ namespace Lua
 		}
 	}
 
-	template<typename... Args>
+	template<typename T>
+	bool TypeExists(sol::state& lua)
+	{
+	    std::string typeName = Demangle(typeid(T).name());
+
+	    sol::object obj = lua[typeName];
+	    return obj.valid();  // True if Lua already has something by that name
+	}
+
+	template<typename T>
+	bool TypeExists(sol::environment& env)
+	{
+	    std::string typeName = Demangle(typeid(T).name());
+
+	    sol::object obj = env[typeName];
+	    return obj.valid();
+	}
+
+	template<bool log = true, typename... Args>
 	bool CallFunction(sol::state& lua, const std::string& key, Args&&... args)
 	{
 		sol::protected_function function = lua[key];
@@ -195,7 +226,11 @@ namespace Lua
 			else
 			{
 				sol::error e = result;
-				LogColor(LOG_YELLOW, "Invalid call of function ", key, " with error: ", e.what());
+
+				if (log)
+				{
+					LogColor(LOG_YELLOW, "Invalid call of function ", key, " with error: ", e.what());
+				}
 
 				return false;
 			}
@@ -203,13 +238,16 @@ namespace Lua
 
 		else
 		{
-			LogColor(LOG_YELLOW, "Function ", key, " does not exists");
+			if (log)
+			{
+				LogColor(LOG_YELLOW, "Function ", key, " does not exists");
+			}
 
 			return false;
 		}
 	}
 
-	template<typename... Args>
+	template<bool log = true, typename... Args>
 	bool CallFunction(sol::environment& env, const std::string& key, Args&&... args)
 	{
 		sol::protected_function function = env[key];
@@ -224,7 +262,11 @@ namespace Lua
 			else
 			{
 				sol::error e = result;
-				LogColor(LOG_YELLOW, "Invalid call of function ", key, " with error: ", e.what());
+
+				if (log)
+				{
+					LogColor(LOG_YELLOW, "Invalid call of function ", key, " with error: ", e.what());
+				}
 
 				return false;
 			}
@@ -232,7 +274,10 @@ namespace Lua
 
 		else
 		{
-			LogColor(LOG_YELLOW, "Function ", key, " does not exists");
+			if (log)
+			{
+				LogColor(LOG_YELLOW, "Function ", key, " does not exists");
+			}
 
 			return false;
 		}

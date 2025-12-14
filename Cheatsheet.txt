@@ -55,13 +55,12 @@ T& ResourceCache::Get(const char* path)												// Loads type T into the cach
 void ResourceCache::Remove(const char* path)										// Unloads any cached object with given path
 
 // Lua Manager
-class LuaManager;																	// Runs all scripts each frame by calling their "Update" function and passing the frameTime as the only paramater (entity scrips can be enables and disabled)
+class LuaManager;																	// Runs all scripts each frame by calling their "Update" function and passing the frameTime as the only paramater
+void RegisterEvent<T>();															// Registers an event type to be sent to all scrips with a function called "On" + *struct name* + "Event" that takes in the event
 bool LuaManager::LoadScript(const char* path);										// Loads a lua script from the given path
-bool LuaManager::LoadEntityScript(entt::entity& entity, const char* path);			// Loads a lua script from the given path but associates it with an entity
 bool LuaManager::RemoveScript(const char* path);									// Removes the scripts loaded from given path
-bool LuaManager::LoadEntityScript(entt::entity& entity);							// Removes the scripts associated with the entity
+void Enable/DisableScript(const char* path);										// Enables or disables the associated script with that path
 void LuaManager::ReloadScripts();													// Reloads all non entity scripts
-void LuaManager::RelaodEntityScripts();												// Reloads all entitity scripts
 
 // Logger
 void Logger::SetLogLevel(const LogLevel level);										// Sets the log level of text and file output

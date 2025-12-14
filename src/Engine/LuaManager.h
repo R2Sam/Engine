@@ -2,13 +2,10 @@
 
 // Forward
 struct Context;
-#include <cstdint> 
-namespace entt
-{
-    enum class entity : uint32_t;
-}
 
 #include "Lua/MyLua.h"
+
+#include "entt/entt.h"
 
 #include <string>
 #include <unordered_map>
@@ -27,14 +24,25 @@ public:
 
 	void Update(const float deltaT);
 
-	bool LoadScript(const char* path);
-	bool LoadEntityScript(entt::entity& entity, const char* path);
+	template<typename Event>
+	void RegisterEvent(entt::dispatcher& dispatcher)
+	{
+		if (!Lua::TypeExists<Event>(lua))
+		{
+			Event event;
+			event.LuaRegister(lua);
+		}
 
+		dispatcher.sink<Event>().template connect<&LuaManager::OnEvent<Event>>(this);
+	}
+
+	bool LoadScript(const char* path);
 	void RemoveScript(const char* path);
-	void RemoveEntityScript(entt::entity& entity);
+
+	void EnableScript(const char* path);
+	void DisableScript(const char* path);
 
 	void ReloadScripts();
-	void RelaodEntityScripts();
 
 	void SetContext(Context& context);
 
@@ -44,7 +52,18 @@ public:
 
 private:
 
-	void RegisterEngineAPIs();
+	template<typename Event>
+	void OnEvent(const Event& event)
+	{
+		for (auto& [path, script] : _scripts)
+		{
+			if (script.enabled)
+			{
+				std::string functionName = "On" + DemangleWithoutNamespace(typeid(Event).name()) + "Event";
+				Lua::CallFunction<false>(script.environment, functionName, event);
+			}
+		}
+	}
 
 private:
 
