@@ -1,16 +1,14 @@
 cmake_minimum_required(VERSION 3.25)
 project(MyProject CXX)
 
+# -------------------------
+# C++ standard & output
+# -------------------------
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include(cmake/Utils.cmake)
-
-# Global list to accumulate custom libs
-set(CUSTOM_LIBS "")
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)
 
 # -------------------------
@@ -19,12 +17,10 @@ set(LIB_DIR ${CMAKE_SOURCE_DIR}/lib)
 if (WIN32)
     message(STATUS "Building on Windows")
 
-    set(RELEASE_FLAGS "-O3")
-    set(DEBUG_FLAGS "-Og -gdwarf-4")
+    set(COMMON_FLAGS "-Wall -Wextra -pedantic -fopenmp -fmax-errors=5 -Wno-missing-field-initializers -Wno-narrowing -Wno-enum-compare -Wno-reorder -Wno-shadow -Wno-deprecated-declarations -O3")
+    set(LINK_FLAGS "-s -mwindows")
 
-    set(RELEASE_LINKER_FLAGS "-s -mwindows")
-
-    set(SYSTEM_LIBS opengl32 gdi32 winmm ws2_32 winmm gomp -static)
+    set(SYSTEM_LIBS opengl32 gdi32 winmm ws2_32 gomp -static)
 
     set(RAYLIB_LIB ${LIB_DIR}/Raylib/libraylib.a)
     set(RLIMGUI_LIB ${LIB_DIR}/rlImGui/librlImGui.a)
@@ -33,10 +29,8 @@ if (WIN32)
 elseif(UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
     message(STATUS "Building on Linux")
 
-    set(RELEASE_FLAGS "-O3")
-    set(DEBUG_FLAGS "-Og -gdwarf-4")
-
-    set(RELEASE_LINKER_FLAGS "-s")
+    set(COMMON_FLAGS "-Wall -Wextra -pedantic -fopenmp -fmax-errors=5 -Wno-missing-field-initializers -Wno-narrowing -Wno-enum-compare -Wno-reorder -Wno-shadow -Wno-deprecated-declarations -O3")
+    set(LINK_FLAGS "-s")
 
     set(SYSTEM_LIBS GL m pthread dl rt X11 gomp)
 
@@ -52,63 +46,35 @@ else()
 endif()
 
 # -------------------------
-# Common flags
+# Compiler flags
 # -------------------------
-set(COMMON_FLAGS "-Wall -Wextra -pedantic -fopenmp -fmax-errors=5 -Wno-missing-field-initializers -Wno-narrowing -Wno-enum-compare -Wno-reorder -Wno-shadow -Wno-deprecated-declarations")
+set(CMAKE_CXX_FLAGS "${COMMON_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${LINK_FLAGS}")
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose build type" FORCE)
-endif()
+# -------------------------
+# Imported libraries (release only)
+# -------------------------
+add_library(Engine::raylib STATIC IMPORTED)
+set_target_properties(Engine::raylib PROPERTIES IMPORTED_LOCATION ${RAYLIB_LIB})
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    message(STATUS "Building release")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Building debug")
-endif()
+add_library(Engine::rlImGui STATIC IMPORTED)
+set_target_properties(Engine::rlImGui PROPERTIES IMPORTED_LOCATION ${RLIMGUI_LIB})
 
-set(CMAKE_CXX_FLAGS_DEBUG   "${COMMON_FLAGS} ${DEBUG_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE "${COMMON_FLAGS} ${RELEASE_FLAGS}")
+add_library(Engine::luajit STATIC IMPORTED)
+set_target_properties(Engine::luajit PROPERTIES IMPORTED_LOCATION ${LUAJIT_LIB})
 
-add_or_fetch_library(NAME raylib STATIC_LIB_FILE ${RAYLIB_LIB} GIT_URL https://github.com/raysan5/raylib.git GIT_TAG 5.0)
-add_or_fetch_library(NAME rlImGui STATIC_LIB_FILE ${RLIMGUI_LIB} GIT_URL https://github.com/raylib-extras/rlImGui.git)
-add_or_fetch_library(NAME luajit STATIC_LIB_FILE ${LUAJIT_LIB} GIT_URL https://github.com/LuaJIT/LuaJIT.git)
-
-# Objects
-file(GLOB_RECURSE SOURCES src/*.cpp)
+# -------------------------
+# Object library for sources
+# -------------------------
+file(GLOB_RECURSE SOURCES src/**/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX ".*/main\\.cpp$")
+
 add_library(objects OBJECT ${SOURCES})
 target_include_directories(objects PUBLIC include src)
 
-# Main executable
-add_executable(main src/main.cpp $<TARGET_OBJECTS:objects>)
-target_link_libraries(main PRIVATE ${CUSTOM_LIBS} ${SYSTEM_LIBS})
-target_include_directories(main PUBLIC include src)
-
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set_target_properties(main PROPERTIES LINK_FLAGS ${RELEASE_LINKER_FLAGS})
-endif()
-
-# Library
-add_library(lib STATIC $<TARGET_OBJECTS:objects>)
-target_link_libraries(lib PRIVATE ${CUSTOM_LIBS} ${SYSTEM_LIBS})
-
-# Custom target for MakeTarget
-add_custom_target(MAKE_TARGETS
-    COMMAND ${CMAKE_COMMAND} -P "cmake/MakeTargets.cmake"
-    VERBATIM
-)
-
-# Run target
-if (UNIX AND NOT APPLE)
-    add_custom_target(run
-        COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/main
-        DEPENDS main
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    )
-elseif(WIN32)
-    add_custom_target(run
-        COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/main.exe
-        DEPENDS main
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    )
-endif()
+# -------------------------
+# Static library for engine
+# -------------------------
+add_library(engine STATIC $<TARGET_OBJECTS:objects>)
+target_include_directories(engine PUBLIC include src)
+target_link_libraries(engine PUBLIC Engine::raylib Engine::rlImGui Engine::luajit ${SYSTEM_LIBS})
