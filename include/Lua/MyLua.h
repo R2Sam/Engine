@@ -7,22 +7,25 @@
 
 #include <cxxabi.h>
 
-inline std::string Demangle(const char* name)
+template<typename T>
+std::string Demangle()
 {
+	std::string name = typeid(T).name();
 
     int status = -4;
 
     std::unique_ptr<char, void(*)(void*)> res{
-        abi::__cxa_demangle(name, NULL, NULL, &status),
+        abi::__cxa_demangle(name.c_str(), NULL, NULL, &status),
         std::free
     };
 
     return (status==0) ? res.get() : name ;
 }
 
-inline std::string DemangleWithoutNamespace(const char* name)
+template<typename T>
+std::string DemangleWithoutNamespace()
 {
-    std::string demangled = Demangle(name);
+    std::string demangled = Demangle<T>();
     
     size_t pos = demangled.find_last_of("::");
     if (pos != std::string::npos) 
@@ -33,18 +36,33 @@ inline std::string DemangleWithoutNamespace(const char* name)
     return demangled;
 }
 
-inline void SanitizeEnvironment(sol::environment& env)
+inline void SanitizeEnvironment(sol::state& lua, sol::environment& env)
 {
-	env["os"] = sol::nil;
-	env["io"] = sol::nil;
-	env["debug"] = sol::nil;
-	env["package"] = sol::nil;
-	env["dofile"] = sol::nil;
-	env["load"] = sol::nil;
-	env["loadfile"] = sol::nil;
-	env["loadstring"] = sol::nil;
-	env["rawget"] = sol::nil;
 	env["collectgarbage"] = sol::nil;
+    env["dofile"] = sol::nil;
+    env["loadfile"] = sol::nil;
+    env["module"] = sol::nil;
+    env["load"] = sol::nil;
+    // env["require"] = sol::nil;
+    // env["package"] = sol::nil;
+    env["getfenv"] = sol::nil;
+    env["setfenv"] = sol::nil;
+    env["newproxy"] = sol::nil;
+    env["rawset"] = sol::nil;
+    env["rawget"] = sol::nil;
+
+    sol::table metatable = lua.create_table();
+    metatable["__index"] = lua.globals();
+    metatable["__newindex"] = [](sol::table self, sol::object key, sol::object value)
+    {
+        self.raw_set(key, value);
+    };
+    metatable[sol::metatable_key] = sol::nil;
+    metatable["__metatable"] = "locked";
+    
+    env[sol::metatable_key] = metatable;
+    env["_G"] = env;
+    env["_ENV"] = env;
 }
 
 namespace Lua
@@ -55,19 +73,19 @@ namespace Lua
 		{
 			sol::environment env = sol::environment(lua, sol::create, lua.globals());
 
-			SanitizeEnvironment(env);
+			SanitizeEnvironment(lua, env);
 
 	    	return env;
 		}
 
 		sol::environment env(lua, sol::create);
 
-		SanitizeEnvironment(env);
+		SanitizeEnvironment(lua, env);
 
 	    return env;
 	}
 
-	inline bool LoadFile(sol::state& lua, const std::string& name)
+	inline bool LoadFile(sol::state& lua, const char* name)
 	{
 		sol::protected_function_result result = lua.safe_script_file(name);
 
@@ -85,7 +103,7 @@ namespace Lua
 		}
 	}
 
-	inline bool LoadFile(sol::state& lua, sol::environment& env, const std::string& name)
+	inline bool LoadFile(sol::state& lua, sol::environment& env, const char* name)
 	{
 		sol::protected_function_result result = lua.safe_script_file(name, env);
 
@@ -104,7 +122,7 @@ namespace Lua
 	}
 
 	template<typename T>
-	std::optional<T> GetValue(sol::state& lua, const std::string& key)
+	std::optional<T> GetValue(sol::state& lua, const char* key)
 	{
 		sol::object object = lua[key];
 		if (object.is<T>())
@@ -114,14 +132,14 @@ namespace Lua
 
 		else
 		{
-			LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected ", Demangle(typeid(T).name()));
+			LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected ", Demangle<T>());
 
 			return std::nullopt;
 		}
 	}
 
 	template<typename T>
-	std::optional<T> GetValue(sol::environment& env, const std::string& key)
+	std::optional<T> GetValue(sol::environment& env, const char* key)
 	{
 		sol::object object = env[key];
 		if (object.is<T>())
@@ -131,14 +149,14 @@ namespace Lua
 
 		else
 		{
-			LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected ", Demangle(typeid(T).name()));
+			LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected ", Demangle<T>());
 
 			return std::nullopt;
 		}
 	}
 
 	template<typename O, typename T>
-	std::optional<T> GetValueObjectValue(sol::state& lua, const std::string& objectKey, const std::string& key)
+	std::optional<T> GetValueObjectValue(sol::state& lua, const char* objectKey, const char* key)
 	{
 		sol::object object = lua[objectKey];
 		if (object.is<O>())
@@ -151,7 +169,7 @@ namespace Lua
 
 			else
 			{
-				LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected ", Demangle(typeid(T).name()));
+				LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected ", Demangle<T>());
 
 				return std::nullopt;
 			}
@@ -159,14 +177,14 @@ namespace Lua
 
 		else
 		{
-			LogColor(LOG_YELLOW, "Type mismatch for: ", objectKey, " expected ", Demangle(typeid(O).name()));
+			LogColor(LOG_YELLOW, "Type mismatch for: ", objectKey, " expected ", Demangle<O>());
 
 			return std::nullopt;
 		}
 	}
 
 	template<typename O, typename T>
-	std::optional<T> GetValueObjectValue(sol::environment& env, const std::string& objectKey, const std::string& key)
+	std::optional<T> GetValueObjectValue(sol::environment& env, const char* objectKey, const char* key)
 	{
 		sol::object object = env[objectKey];
 		if (object.is<O>())
@@ -179,7 +197,7 @@ namespace Lua
 
 			else
 			{
-				LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected ", Demangle(typeid(T).name()));
+				LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected ", Demangle<T>());
 
 				return std::nullopt;
 			}
@@ -187,7 +205,7 @@ namespace Lua
 
 		else
 		{
-			LogColor(LOG_YELLOW, "Type mismatch for: ", objectKey, " expected ", Demangle(typeid(O).name()));
+			LogColor(LOG_YELLOW, "Type mismatch for: ", objectKey, " expected ", Demangle<O>());
 
 			return std::nullopt;
 		}
@@ -196,23 +214,47 @@ namespace Lua
 	template<typename T>
 	bool TypeExists(sol::state& lua)
 	{
-	    std::string typeName = Demangle(typeid(T).name());
+	    std::string typeName = DemangleWithoutNamespace<T>();
 
 	    sol::object obj = lua[typeName];
-	    return obj.valid();  // True if Lua already has something by that name
+	    return obj.valid();
 	}
 
 	template<typename T>
 	bool TypeExists(sol::environment& env)
 	{
-	    std::string typeName = Demangle(typeid(T).name());
+	    std::string typeName = DemangleWithoutNamespace<T>();
 
 	    sol::object obj = env[typeName];
 	    return obj.valid();
 	}
 
+	inline bool ObjectExists(sol::state& lua, const char* key)
+	{
+		sol::object obj = lua[key];
+		return obj.valid();
+	}
+
+	inline bool ObjectExists(sol::environment& env, const char* key)
+	{
+		sol::object obj = env[key];
+		return obj.valid();
+	}
+
+	inline bool FunctionExists(sol::state& lua, const char* key)
+	{
+		sol::object obj = lua[key];
+		return obj.valid() && obj.is<sol::function>();
+	}
+
+	inline bool FunctionExists(sol::environment& env, const char* key)
+	{
+		sol::object obj = env[key];
+		return obj.valid() && obj.is<sol::function>();
+	}
+
 	template<bool log = true, typename... Args>
-	bool CallFunction(sol::state& lua, const std::string& key, Args&&... args)
+	bool CallFunction(sol::state& lua, const char* key, Args&&... args)
 	{
 		sol::protected_function function = lua[key];
 		if (function)
@@ -227,10 +269,7 @@ namespace Lua
 			{
 				sol::error e = result;
 
-				if (log)
-				{
-					LogColor(LOG_YELLOW, "Invalid call of function ", key, " with error: ", e.what());
-				}
+				LogColor(LOG_YELLOW, "Invalid call of function ", key, " with error: ", e.what());
 
 				return false;
 			}
@@ -248,7 +287,7 @@ namespace Lua
 	}
 
 	template<bool log = true, typename... Args>
-	bool CallFunction(sol::environment& env, const std::string& key, Args&&... args)
+	bool CallFunction(sol::environment& env, const char* key, Args&&... args)
 	{
 		sol::protected_function function = env[key];
 		if (function)
@@ -263,10 +302,7 @@ namespace Lua
 			{
 				sol::error e = result;
 
-				if (log)
-				{
-					LogColor(LOG_YELLOW, "Invalid call of function ", key, " with error: ", e.what());
-				}
+				LogColor(LOG_YELLOW, "Invalid call of function ", key, " with error: ", e.what());
 
 				return false;
 			}
@@ -284,7 +320,7 @@ namespace Lua
 	}
 
 	template<typename T, typename... Args>
-	std::optional<T> CallFunctionWithReturn(sol::state& lua, const std::string& key, Args&&... args)
+	std::optional<T> CallFunctionWithReturn(sol::state& lua, const char* key, Args&&... args)
 	{
 		sol::protected_function function = lua[key];
 		if (function)
@@ -300,7 +336,7 @@ namespace Lua
 
 				else
 				{
-					LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected: ", Demangle(typeid(T).name()));
+					LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected: ", Demangle<T>());
 
 					return std::nullopt;
 				}
@@ -324,7 +360,7 @@ namespace Lua
 	}
 
 	template<typename T, typename... Args>
-	std::optional<T> CallFunctionWithReturn(sol::environment& env, const std::string& key, Args&&... args)
+	std::optional<T> CallFunctionWithReturn(sol::environment& env, const char* key, Args&&... args)
 	{
 		sol::protected_function function = env[key];
 		if (function)
@@ -340,7 +376,7 @@ namespace Lua
 
 				else
 				{
-					LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected: ", Demangle(typeid(T).name()));
+					LogColor(LOG_YELLOW, "Type mismatch for: ", key, " expected: ", Demangle<T>());
 
 					return std::nullopt;
 				}
@@ -364,51 +400,51 @@ namespace Lua
 	}
 
 	template<typename T>
-	void RegisterFunction(sol::state& lua, const std::string& key, T function)
+	void RegisterFunction(sol::state& lua, const char* key, T function)
 	{
 		lua[key] = function;
 	}
 
 	template<typename T>
-	void RegisterFunction(sol::environment& env, const std::string& key, T function)
+	void RegisterFunction(sol::environment& env, const char* key, T function)
 	{
 		env[key] = function;
 	}
 
 	template<typename T, typename I, typename... Args>
-	void RegisterMethod(sol::state& lua, const std::string& key, I& instance, T (I::*method)(Args...))
+	void RegisterMethod(sol::state& lua, const char* key, I& instance, T (I::*method)(Args...))
 	{
 	    lua.set_function(key, method, &instance);
 	}
 
 
 	template<typename T, typename I, typename... Args>
-	void RegisterMethod(sol::environment& env, const std::string& key, I& instance, T (I::*method)(Args...))
+	void RegisterMethod(sol::environment& env, const char* key, I& instance, T (I::*method)(Args...))
 	{
 	    env.set_function(key, method, &instance);
 	}
 
 	template<typename T, typename... Args>
-	void RegisterType(sol::state& lua, const std::string& name, Args&&... args)
+	void RegisterType(sol::state& lua, const char* name, Args&&... args)
 	{
 		lua.new_usertype<T>(name, std::forward<Args>(args)...);
 	}
 
 
 	template<typename T, typename... Args>
-	void RegisterType(sol::environment& env, const std::string& name, Args&&... args)
+	void RegisterType(sol::environment& env, const char* name, Args&&... args)
 	{
 		env.new_usertype<T>(name, std::forward<Args>(args)...);
 	}
 
 	template<typename T>
-	void BindObject(sol::state& lua, const std::string& name, T object)
+	void BindObject(sol::state& lua, const char* name, T object)
 	{
 		lua[name] = object;
 	}
 
 	template<typename T>
-	void BindObject(sol::environment& env, const std::string& name, T object)
+	void BindObject(sol::environment& env, const char* name, T object)
 	{
 		env[name] = object;
 	}

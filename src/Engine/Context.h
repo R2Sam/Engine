@@ -24,7 +24,8 @@ namespace Event
 	{
 		void LuaRegister(sol::state& lua)
 		{
-			Lua::RegisterType<Event::CloseGame>(lua, "CloseGame");
+			Lua::RegisterType<Event::CloseGame>(lua, DemangleWithoutNamespace<Event::CloseGame>().c_str(),
+				sol::constructors<CloseGame()>());
 		}
 	};
 }

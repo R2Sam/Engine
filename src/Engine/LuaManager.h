@@ -9,6 +9,7 @@ struct Context;
 
 #include <string>
 #include <unordered_map>
+#include <optional>
 
 struct LuaScript
 {
@@ -25,7 +26,7 @@ public:
 	void Update(const float deltaT);
 
 	template<typename Event>
-	void RegisterEvent(entt::dispatcher& dispatcher)
+	void RegisterRecieveEvent(entt::dispatcher& dispatcher)
 	{
 		if (!Lua::TypeExists<Event>(lua))
 		{
@@ -36,11 +37,36 @@ public:
 		dispatcher.sink<Event>().template connect<&LuaManager::OnEvent<Event>>(this);
 	}
 
+	template<typename Event>
+	void RegisterSendEvent(entt::dispatcher& dispatcher)
+	{
+		if (!Lua::TypeExists<Event>(lua))
+		{
+			Event event;
+			event.LuaRegister(lua);
+		};
+
+		std::string functionName = "Trigger" + DemangleWithoutNamespace<Event>() + "Event";
+
+		if (!Lua::FunctionExists(lua, functionName.c_str()))
+		{
+			Lua::RegisterFunction(lua, functionName.c_str(),
+			[this, &dispatcher](Event event)
+			{
+				dispatcher.trigger<Event>(std::move(event));
+			});
+		}
+	}
+
 	bool LoadScript(const char* path);
 	void RemoveScript(const char* path);
 
+	bool IsScriptLoaded(const char* path);
+
 	void EnableScript(const char* path);
 	void DisableScript(const char* path);
+
+	std::optional<sol::environment> GetScriptEnvironment(const char* path);
 
 	void ReloadScripts();
 
@@ -59,8 +85,8 @@ private:
 		{
 			if (script.enabled)
 			{
-				std::string functionName = "On" + DemangleWithoutNamespace(typeid(Event).name()) + "Event";
-				Lua::CallFunction<false>(script.environment, functionName, event);
+				std::string functionName = "On" + DemangleWithoutNamespace<Event>() + "Event";
+				Lua::CallFunction<false>(script.environment, functionName.c_str(), event);
 			}
 		}
 	}
