@@ -3,7 +3,6 @@
 #include "Assert.h"
 
 #include <string>
-#include <type_traits>
 #include <typeindex>
 #include <unordered_map>
 #include <memory>
@@ -44,10 +43,20 @@ public:
 			return *it->second();
 		}
 
-		auto ptr = std::make_unique<T>(_loadFunction(path));
+		auto ptr = std::make_unique<T>(std::move(_loadFunction(path)));
 		auto& ref = *ptr;
 
 		_map.emplace(path, std::move(ptr));
+
+		return ref;
+	}
+
+	T& Add(const T& object, const char* name)
+	{
+		auto ptr = std::make_unique<T>(std::move(object));
+		auto& ref = *ptr;
+
+		_map.emplace(name, std::move(ptr));
 
 		return ref;
 	}
@@ -78,6 +87,9 @@ public:
 	template<typename T, typename... Args>
 	ResourceCache<T>& AddCache(Args&&... args)
 	{
+		auto it = _caches.find(typeid(T));
+		Assert(it == _caches.end(), "Cache of type ", typeid(T).name(), " already exists");
+
 		auto ptr = std::make_unique<ResourceCache<T>>(std::forward<Args>(args)...);
 		ResourceCache<T>& ref = *ptr;
 
