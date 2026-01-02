@@ -37,7 +37,11 @@ bool NetworkManager::InitClient(const u32 channels, const u32 timeoutMs)
 void NetworkManager::Shutdown() 
 {
 	_running = false;
-	_thread.join();
+
+	if (_thread.joinable())
+	{
+		_thread.join();
+	}
 }
 
 PeerId NetworkManager::Connect(const Address& address, const u32 data) 
