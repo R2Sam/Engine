@@ -54,6 +54,8 @@ void Game::Run(const u32 targetFps)
 
 			_sceneManager.Update(timeStep);
 
+			_renderer.Update(_registry);
+
 			accummulator -= timeStep;
 		}
 

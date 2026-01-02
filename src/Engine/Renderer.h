@@ -9,6 +9,8 @@ public:
 
 	Renderer();
 
+	void Update(entt::registry& registry);
+
 	void Draw(entt::registry& registry);
 
 private:

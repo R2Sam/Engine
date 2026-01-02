@@ -13,15 +13,35 @@ Renderer::Renderer()
 	camera.rotation = 0;
 }
 
+void Renderer::Update(entt::registry& registry) 
+{
+	auto view = registry.view<Component::Sprite>();
+
+	for (const entt::entity entity : view)
+	{
+		Component::Sprite& sprite = registry.get<Component::Sprite>(entity);
+
+		if (!IsTextureValid(sprite.texture))
+		{
+			Image image = GenImageColor(sprite.rectangle.width, sprite.rectangle.height, PURPLE);
+			ImageDrawRectangleRec(&image, Rectangle{0, 0, sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5}, BLACK);
+			ImageDrawRectangleRec(&image, Rectangle{sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5, sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5}, BLACK);
+
+			sprite.texture = LoadTextureFromImage(image);
+			UnloadImage(image);
+		}
+	}
+}
+
 void Renderer::Draw(entt::registry& registry)
 {
 	SortSprites(registry);
 
+	auto group = registry.group<Component::Sprite>(entt::get<const Component::Transform>);
+
 	BeginMode2D(camera);
 
-	auto view = registry.view<const Component::Transform, const Component::Sprite>();
-
-	for (auto [entity, transform, sprite] : view.each())
+	for (auto [entity, sprite, transform] : group.each())
 	{
 		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.vec2(), camera))
 		{
