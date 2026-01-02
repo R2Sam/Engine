@@ -43,6 +43,7 @@ private:
 	SceneManager _sceneManager;
 	SystemManager _systemManager;
 	LuaManager _luaManager;
+	NetworkManager _networkManager;
 	Logger _logger;
 
 	bool _running = true;

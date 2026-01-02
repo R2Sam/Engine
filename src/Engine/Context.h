@@ -5,6 +5,7 @@
 #include "SceneManager.h"
 #include "SystemManager.h"
 #include "LuaManager.h"
+#include "NetworkManager.h"
 #include "Logger.h"
 
 using Entity = entt::entity;
@@ -21,6 +22,7 @@ struct Context
 	SceneManager& sceneManager;
 	SystemManager& systemManager;
 	LuaManager& luaManager;
+	NetworkManager& networkManager;
 	Logger& logger;
 
 	double updateTime;

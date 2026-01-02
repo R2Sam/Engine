@@ -64,17 +64,25 @@ add_library(Engine::luajit STATIC IMPORTED)
 set_target_properties(Engine::luajit PROPERTIES IMPORTED_LOCATION ${LUAJIT_LIB})
 
 # -------------------------
+# Fetched libraries
+# -------------------------
+include(FetchContent)
+
+FetchContent_Declare(networking GIT_REPOSITORY https://github.com/R2Sam/Networking.git GIT_TAG lib)
+FetchContent_MakeAvailable(networking)
+
+# -------------------------
 # Object library for sources
 # -------------------------
 file(GLOB_RECURSE SOURCES src/**/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX ".*/main\\.cpp$")
 
-add_library(objects OBJECT ${SOURCES})
-target_include_directories(objects PUBLIC include src)
+add_library(EngineObjects OBJECT ${SOURCES})
+target_include_directories(EngineObjects PUBLIC include src)
 
 # -------------------------
 # Static library for engine
 # -------------------------
-add_library(engine STATIC $<TARGET_OBJECTS:objects>)
+add_library(engine STATIC $<TARGET_OBJECTS:EngineObjects>)
 target_include_directories(engine PUBLIC include src)
-target_link_libraries(engine PUBLIC Engine::raylib Engine::rlImGui Engine::luajit ${SYSTEM_LIBS})
+target_link_libraries(engine PUBLIC Engine::raylib Engine::rlImGui Engine::luajit networking ${SYSTEM_LIBS})

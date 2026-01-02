@@ -16,7 +16,7 @@ Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitl
 	InitWindow(windowWidth, windowHeight, windowTitle);
 	SetExitKey(KEY_NULL);
 
-	_context.emplace(_registry, _dispatcher, _resourceManager, _sceneManager, _systemManager, _luaManager, _logger);
+	_context.emplace(_registry, _dispatcher, _resourceManager, _sceneManager, _systemManager, _luaManager, _networkManager, _logger);
 	_sceneManager.SetContext(_context.value());
 	_systemManager.SetContext(_context.value());
 
