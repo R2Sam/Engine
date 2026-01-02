@@ -2,8 +2,8 @@
 
 #include "MyRaylib/MyRaylib.h"
 
-#include "Components.h"
 #include "Raylib/raylib.h"
+#include <cstdio>
 
 Renderer::Renderer()
 {
@@ -13,16 +13,22 @@ Renderer::Renderer()
 	camera.rotation = 0;
 }
 
-void Renderer::Draw(entt::registry& registry)
+void Renderer::Draw(std::vector<std::pair<Component::Sprite, Component::Transform>>& sprites)
 {
-	SortSprites(registry);
-
 	BeginMode2D(camera);
 
-	auto view = registry.view<const Component::Transform, const Component::Sprite>();
-
-	for (auto [entity, transform, sprite] : view.each())
+	for (auto& [sprite, transform] : sprites)
 	{
+		if (!IsTextureValid(sprite.texture))
+		{
+			Image image = GenImageColor(sprite.rectangle.width, sprite.rectangle.height, PURPLE);
+			ImageDrawRectangleRec(&image, Rectangle{0, 0, sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5}, BLACK);
+			ImageDrawRectangleRec(&image, Rectangle{sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5, sprite.rectangle.width, sprite.rectangle.height}, BLACK);
+
+			sprite.texture = LoadTextureFromImage(image);
+			UnloadImage(image);
+		}
+
 		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.vec2(), camera))
 		{
 			DrawTextureRotScaleSelect(sprite.texture, sprite.rectangle, transform.position.vec2(), transform.rotation, sprite.scale, sprite.color);
@@ -30,12 +36,4 @@ void Renderer::Draw(entt::registry& registry)
 	}
 
 	EndMode2D();
-}
-
-void Renderer::SortSprites(entt::registry& registry)
-{
-	registry.sort<Component::Sprite>([](const Component::Sprite& a, const Component::Sprite& b)
-	{
-        return a.layer < b.layer;
-    });
 }

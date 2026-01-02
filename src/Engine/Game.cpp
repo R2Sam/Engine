@@ -1,9 +1,13 @@
 #include "Engine/Game.h"
 
+#include "Engine/Components.h"
 #include "Engine/Context.h"
 #include "Raylib/raylib.h"
 
 #include "Renderer.h"
+
+#include <chrono>
+#include <thread>
 
 Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle)
 {
@@ -41,33 +45,90 @@ void Game::Run(const u32 targetFps)
 	const float timeStep = 1.0 / targetFps;
 	float accummulator = 0.0;
 
+	std::thread updateThread(
+	[this, &accummulator, &timeStep]()
+	{
+		auto last = std::chrono::steady_clock::now();
+
+		while (_running)
+		{
+			auto now = std::chrono::steady_clock::now();
+			const float deltaT = std::chrono::duration<float>(now - last).count();
+			accummulator += deltaT;
+
+			while (accummulator >= timeStep)
+			{
+				_systemManager.Update(timeStep);
+
+				_luaManager.Update(timeStep);
+
+				_sceneManager.Update(timeStep);
+
+				accummulator -= timeStep;
+			}
+
+			while(!_renderComplete)
+			{
+				std::this_thread::yield();
+			}
+
+			RenderSync();
+
+			_updateComplete = true;
+
+			_renderComplete = false;
+		}
+	});
+
 	while(_running && !WindowShouldClose())
 	{
-		const float deltaT = std::min(GetFrameTime(), 1.0f);
-		accummulator += deltaT;
-
-		while (accummulator >= timeStep)
+		while(!_updateComplete)
 		{
-			_systemManager.Update(timeStep);
-
-			_luaManager.Update(timeStep);
-
-			_sceneManager.Update(timeStep);
-
-			accummulator -= timeStep;
+			std::this_thread::yield();
 		}
 
 		BeginDrawing();
 		ClearBackground(BLANK);
 
-		_renderer.Draw(_registry);
+		_renderer.Draw(_renderBuffers[_renderReadIndex]);
 
 		_systemManager.Draw();
 
 		_sceneManager.Draw();
 
 		EndDrawing();
+
+		_renderComplete = true;
+
+		_updateComplete = false;
 	}
+
+	updateThread.join();
+}
+
+void Game::RenderSync() 
+{
+	std::vector<std::pair<Component::Sprite, Component::Transform>>& buffer = _renderBuffers[_renderWriteIndex];
+
+	buffer.clear();
+
+	auto group = _registry.group<Component::Sprite>(entt::get<const Component::Transform>);
+
+	for (auto [entity, sprite, transform] : group.each())
+	{
+		buffer.emplace_back(sprite, transform);
+	}
+
+	std::sort(buffer.begin(), buffer.end(),
+    [](const auto& a, const auto& b) {
+        return a.first.layer < b.first.layer;
+    });
+
+    u8 oldReadIndex = _renderReadIndex;
+	u8 oldWriteIndex = _renderWriteIndex;
+
+	_renderReadIndex = oldWriteIndex;
+	_renderWriteIndex = oldReadIndex;
 }
 
 void Game::OnCloseGameEvent(const Event::CloseGame& event)

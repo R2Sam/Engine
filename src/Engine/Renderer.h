@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Components.h"
+
 #include "entt/entt.h"
 #include "Raylib/raylib.h"
 
@@ -9,11 +11,7 @@ public:
 
 	Renderer();
 
-	void Draw(entt::registry& registry);
-
-private:
-
-	void SortSprites(entt::registry& registry);
+	void Draw(std::vector<std::pair<Component::Sprite, Component::Transform>>& sprites);
 
 public:
 
