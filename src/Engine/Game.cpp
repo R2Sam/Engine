@@ -5,6 +5,8 @@
 
 #include "Renderer.h"
 
+#include "Log/Timer.h"
+
 Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle)
 {
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_ALWAYS_RUN);
@@ -41,10 +43,16 @@ void Game::Run(const u32 targetFps)
 	const float timeStep = 1.0 / targetFps;
 	float accummulator = 0.0;
 
+	RollingAverage<double> updateTimeAverage;
+	RollingAverage<double> drawTimeAverage;
+
 	while(_running && !WindowShouldClose())
 	{
 		const float deltaT = std::min(GetFrameTime(), 1.0f);
 		accummulator += deltaT;
+
+		Timer updateTimer;
+		updateTimer.Start();
 
 		while (accummulator >= timeStep)
 		{
@@ -59,6 +67,12 @@ void Game::Run(const u32 targetFps)
 			accummulator -= timeStep;
 		}
 
+		updateTimeAverage += updateTimer.Stop();
+		_context->updateTime = updateTimeAverage.Average();
+
+		Timer drawTimer;
+		drawTimer.Start();
+
 		BeginDrawing();
 		ClearBackground(BLANK);
 
@@ -69,6 +83,9 @@ void Game::Run(const u32 targetFps)
 		_sceneManager.Draw();
 
 		EndDrawing();
+
+		drawTimeAverage += drawTimer.Stop();
+		_context->drawTime = drawTimeAverage.Average();
 	}
 }
 

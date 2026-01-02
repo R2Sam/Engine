@@ -22,6 +22,9 @@ struct Context
 	SystemManager& systemManager;
 	LuaManager& luaManager;
 	Logger& logger;
+
+	double updateTime;
+	double drawTime; 
 };
 
 namespace Event
