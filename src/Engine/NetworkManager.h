@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef assert
+#define assert(condition) ((void)0)
+#endif
+
 #include "Networking/NetworkCore.h"
 #include "ThreadSafeQueue/concurrentqueue.h"
 #include "ThreadSafeQueue/blockingconcurrentqueue.h"
