@@ -33,14 +33,19 @@ Game::~Game()
 	CloseWindow();
 }
 
-void Game::Run(const u32 targetFps)
+void Game::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame)
 {
 	Assert(targetFps, "Target fps must be positive");
 	Assert(targetFps <= 1000, "Target fps must not be above 1000");
 
+	Assert(updateFrequency, "Update frequency must be positive");
+	Assert(updateFrequency <= targetFps, "Update frequency must be at or bellow target fps");
+
+	Assert(maxUpdatesPerFrame, "Must have at least one update per frame");
+
 	SetTargetFPS(targetFps);
 
-	const float timeStep = 1.0 / targetFps;
+	const float timeStep = std::max(1.0f / updateFrequency, 1.0f / targetFps);
 	float accummulator = 0.0;
 
 	RollingAverage<double> updateTimeAverage;
@@ -48,13 +53,14 @@ void Game::Run(const u32 targetFps)
 
 	while(_running && !WindowShouldClose())
 	{
-		const float deltaT = std::min(GetFrameTime(), 1.0f);
+		float deltaT = std::min(GetFrameTime(), 0.1f);
 		accummulator += deltaT;
 
 		Timer updateTimer;
 		updateTimer.Start();
 
-		while (accummulator >= timeStep)
+		u8 steps = 0;
+		while (accummulator >= timeStep && steps < maxUpdatesPerFrame)
 		{
 			_systemManager.Update(timeStep);
 
@@ -62,10 +68,15 @@ void Game::Run(const u32 targetFps)
 
 			_sceneManager.Update(timeStep);
 
-			_renderer.Update(_registry);
-
 			accummulator -= timeStep;
 		}
+
+		if (steps >= maxUpdatesPerFrame)
+		{
+			accummulator = 0;
+		}
+
+		_renderer.Update(_registry);
 
 		updateTimeAverage += updateTimer.Stop();
 		_context->updateTime = updateTimeAverage.Average();

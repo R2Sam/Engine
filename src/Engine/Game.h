@@ -22,11 +22,11 @@ public:
 		_sceneManager.ChangeScene(name);
 	}
 
-	void Run(const u32 targetFps);
+	void Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame = 5);
 
 private:
 
-	// Event handeling
+	// Event handling
 	void OnCloseGameEvent(const Event::CloseGame& event);
 
 private:
