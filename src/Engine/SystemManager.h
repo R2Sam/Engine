@@ -45,7 +45,7 @@ public:
 
 	// Smaller priority done first
 	template<typename T, typename... Args>
-	T& AddSystem(const u32 priority = 0, Args&&... args)
+	T& AddSystem(const u32 priority = 1, Args&&... args)
 	{
 		Assert((std::is_base_of_v<System, T>), "Systems must derive from System");
 		Assert(_context, "Context must be set first");

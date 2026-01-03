@@ -20,6 +20,10 @@ void AnimationSystem::Update(const float deltaT)
 			continue;
 		}
 
+		u32 rowLength = sprite.texture.width / sprite.rectangle.width;
+		u32 rowCount = sprite.texture.height / sprite.rectangle.height;
+		u32 totalSprites = rowLength * rowCount;
+
 		if (animation.frameAccumulator >= animation.frameLengthS)
 		{
 			animation.frameAccumulator -= animation.frameLengthS;
@@ -31,20 +35,15 @@ void AnimationSystem::Update(const float deltaT)
 				animation.currentIndex = animation.startingIndex;
 			}
 
-			u32 rowLength = sprite.texture.width / sprite.rectangle.width;
-			u32 rowCount = sprite.texture.height / sprite.rectangle.height;
-			u32 totalSprites = rowLength * rowCount;
-
 			if (animation.currentIndex >= totalSprites)
 			{
 				animation.currentIndex = 0;
 			}
-
-
-			Vector2i gridPosition = {animation.currentIndex % rowLength, animation.currentIndex / rowLength};
-
-			sprite.rectangle = {gridPosition.x * sprite.rectangle.width, gridPosition.y * sprite.rectangle.height, sprite.rectangle.width, sprite.rectangle.height};
 		}
+
+		Vector2i gridPosition = {animation.currentIndex % rowLength, animation.currentIndex / rowLength};
+
+		sprite.rectangle = {gridPosition.x * sprite.rectangle.width, gridPosition.y * sprite.rectangle.height, sprite.rectangle.width, sprite.rectangle.height};
 
 		animation.frameAccumulator += deltaT;
 	}

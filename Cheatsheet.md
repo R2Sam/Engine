@@ -189,7 +189,7 @@ Systems must have a Draw method.
 template<typename T, typename... Args>
 T& AddSystem<T>(const u32 priority = 0, Args&&... args);
 ```
-Adds a system of type `T` to the manager with a priority (smaller = lower priority) and args passed.
+Adds a system of type `T` to the manager with a priority (smaller = lower priority, 0 should only be used by engine systems) and args passed.
 
 ---
 

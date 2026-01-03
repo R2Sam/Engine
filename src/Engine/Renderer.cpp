@@ -31,12 +31,12 @@ void Renderer::Update(entt::registry& registry)
 			UnloadImage(image);
 		}
 	}
+
+	SortSprites(registry);
 }
 
 void Renderer::Draw(entt::registry& registry)
 {
-	SortSprites(registry);
-
 	auto group = registry.group<Component::Sprite>(entt::get<Component::Transform>);
 
 	BeginMode2D(camera);

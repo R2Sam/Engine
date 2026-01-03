@@ -22,7 +22,7 @@ Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitl
 	_systemManager.SetContext(_context.value());
 
 	// Systems
-	_systemManager.AddSystem<AnimationSystem>();
+	_systemManager.AddSystem<AnimationSystem>(0);
 
 	// Set event catcher
 	_dispatcher.sink<Event::CloseGame>().connect<&Game::OnCloseGameEvent>(this);
