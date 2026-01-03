@@ -68,7 +68,13 @@ set_target_properties(Engine::luajit PROPERTIES IMPORTED_LOCATION ${LUAJIT_LIB})
 # -------------------------
 include(FetchContent)
 
-FetchContent_Declare(networking GIT_REPOSITORY https://github.com/R2Sam/Networking.git GIT_TAG lib)
+if (EXISTS "../Networking/.git")
+    set(NETWORKING_REPO file://../Networking/.git)
+else()
+    set(NETWORKING_REPO https://github.com/R2Sam/Networking.git)
+endif()
+
+FetchContent_Declare(networking GIT_REPOSITORY ${NETWORKING_REPO} GIT_TAG lib)
 FetchContent_MakeAvailable(networking)
 
 # -------------------------
