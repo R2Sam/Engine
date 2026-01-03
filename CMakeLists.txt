@@ -68,10 +68,15 @@ set_target_properties(Engine::luajit PROPERTIES IMPORTED_LOCATION ${LUAJIT_LIB})
 # -------------------------
 include(FetchContent)
 
-if (EXISTS "../Networking/.git")
-    set(NETWORKING_REPO file://../Networking/.git)
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../Networking/.git")
+    set(NETWORKING_REPO file://${CMAKE_CURRENT_SOURCE_DIR}/../Networking/.git)
+    message(STATUS "Using local networking repo")
+elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../../../Networking/.git")
+    set(NETWORKING_REPO file://${CMAKE_CURRENT_SOURCE_DIR}/../../../../Networking/.git)
+    message(STATUS "Using local networking repo")
 else()
     set(NETWORKING_REPO https://github.com/R2Sam/Networking.git)
+    message(STATUS "Using online networking repo")
 endif()
 
 FetchContent_Declare(networking GIT_REPOSITORY ${NETWORKING_REPO} GIT_TAG lib)
