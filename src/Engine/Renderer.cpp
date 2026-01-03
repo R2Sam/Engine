@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-#include "MyRaylib/MyRaylib.h"
+#include "Utils/RaylibUtils.h"
 
 #include "Components.h"
 #include "Raylib/raylib.h"

@@ -10,7 +10,7 @@
 
 using Entity = entt::entity;
 using Registry = entt::registry;
-using Dispathcer = entt::dispatcher;
+using Dispatcher = entt::dispatcher;
 
 #define LogDebug(...) do { _context.logger.Write(LogLevel::DEBUG, __VA_ARGS__); } while(0)
 

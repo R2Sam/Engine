@@ -14,9 +14,9 @@ void Game::SetFirstScene<T>(const char* name, Args&&... args);
 Creates the first scene of type `T` with a given name and passes its args to the scene.
 
 ```cpp
-void Game::Run(const u32 targetFps);
+void Game::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame = 5);
 ```
-Starts the game loop (blocking).
+Starts the game loop with a target rendering fps, update loop frequency and the maximum amount of update loops per frame (blocking).
 
 ---
 
@@ -129,9 +129,9 @@ A more efficient view for iteration that is based around a main component.
 
 ```cpp
 template<typename... T>
-for (auto [T...] : (view/group).each())
+for (auto [entity, T...] : (view/group).each())
 ```
-An easy we to iterate through all entities and their components.
+An easy we to iterate through all entities and their components as references.
 
 ---
 
@@ -187,9 +187,9 @@ Systems must have a Draw method.
 
 ```cpp
 template<typename T, typename... Args>
-T& AddSystem<T>(const u32 priority, Args&&... args);
+T& AddSystem<T>(const u32 priority = 0, Args&&... args);
 ```
-Adds a system of type `T` to the manager with a priority (smaller = higher priority) and args passed.
+Adds a system of type `T` to the manager with a priority (smaller = lower priority) and args passed.
 
 ---
 

@@ -12,7 +12,7 @@ class Scene
 {
 public:
 
-	// First arguement of any derived class must be the same as here
+	// First argument of any derived class must be the same as here
 	Scene(const Context& context) :
 	_context(context)
 	{

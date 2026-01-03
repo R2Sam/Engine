@@ -53,6 +53,12 @@ public:
 
 	T& Add(const T& object, const char* name)
 	{
+		auto it = _map.find(name);
+		if (it != _map.end())
+		{
+			_unloadFunction(*it->second);
+		}
+
 		auto ptr = std::make_unique<T>(std::move(object));
 		auto& ref = *ptr;
 

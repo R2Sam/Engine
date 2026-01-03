@@ -16,7 +16,7 @@ class System
 {
 public:
 
-	// First arguement of any derived class must be the same as here
+	// First argument of any derived class must be the same as here
 	System(const Context& context) :
 	_context(context)
 	{
@@ -45,7 +45,7 @@ public:
 
 	// Smaller priority done first
 	template<typename T, typename... Args>
-	T& AddSystem(const u32 priority, Args&&... args)
+	T& AddSystem(const u32 priority = 0, Args&&... args)
 	{
 		Assert((std::is_base_of_v<System, T>), "Systems must derive from System");
 		Assert(_context, "Context must be set first");
@@ -57,7 +57,7 @@ public:
 
 		std::sort(_systems.begin(), _systems.end(), [](const auto& a, const auto& b)
 		{
-			return a.first < b.first;
+			return a.first > b.first;
 		});
 
 		return ref;

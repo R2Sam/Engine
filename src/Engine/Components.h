@@ -22,4 +22,14 @@ namespace Component
 		float scale = 1;
 		u32 layer = 1;
 	};
+
+	struct Animation
+	{
+		bool active = false;
+		u32 startingIndex = 0;
+		u32 endingIndex = 1;
+		u32 currentIndex = 0;
+		float frameLengthS = 1;
+		float frameAccumulator = 0;
+	};
 }

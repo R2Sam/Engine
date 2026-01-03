@@ -1,9 +1,10 @@
-#include "Engine/Game.h"
+#include "Game.h"
 
-#include "Engine/Context.h"
+#include "Context.h"
 #include "Raylib/raylib.h"
 
 #include "Renderer.h"
+#include "AnimationSystem.h"
 
 #include "Log/Timer.h"
 
@@ -19,6 +20,9 @@ Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitl
 	_context.emplace(_registry, _dispatcher, _resourceManager, _sceneManager, _systemManager, _luaManager, _networkManager, _logger);
 	_sceneManager.SetContext(_context.value());
 	_systemManager.SetContext(_context.value());
+
+	// Systems
+	_systemManager.AddSystem<AnimationSystem>();
 
 	// Set event catcher
 	_dispatcher.sink<Event::CloseGame>().connect<&Game::OnCloseGameEvent>(this);
