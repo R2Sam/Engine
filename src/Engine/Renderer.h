@@ -7,7 +7,7 @@ class Renderer
 {
 public:
 
-	Renderer();
+	Renderer(entt::registry& registry);
 
 	void Update(entt::registry& registry);
 
@@ -17,7 +17,13 @@ private:
 
 	void SortSprites(entt::registry& registry);
 
+	void MarkNeedSort(entt::registry& registry, entt::entity entity);
+
 public:
 
 	Camera2D camera;
+
+private:
+
+	bool _needSort = false;
 };

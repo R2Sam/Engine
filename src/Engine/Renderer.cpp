@@ -5,15 +5,19 @@
 #include "Components.h"
 #include "Raylib/raylib.h"
 
-Renderer::Renderer()
+Renderer::Renderer(entt::registry& registry)
 {
 	camera.target = {0, 0};
 	camera.offset =  {0, 0};
 	camera.zoom = 1;
 	camera.rotation = 0;
+
+	registry.on_construct<Component::Sprite>().connect<&Renderer::MarkNeedSort>(this);
+	registry.on_update<Component::Sprite>().connect<&Renderer::MarkNeedSort>(this);
+	registry.on_destroy<Component::Sprite>().connect<&Renderer::MarkNeedSort>(this);
 }
 
-void Renderer::Update(entt::registry& registry) 
+void Renderer::Update(entt::registry& registry)
 {
 	auto view = registry.view<Component::Sprite>();
 
@@ -32,7 +36,12 @@ void Renderer::Update(entt::registry& registry)
 		}
 	}
 
-	SortSprites(registry);
+	if (_needSort)
+	{
+		SortSprites(registry);
+
+		_needSort = false;
+	}
 }
 
 void Renderer::Draw(entt::registry& registry)
@@ -58,4 +67,9 @@ void Renderer::SortSprites(entt::registry& registry)
 	{
         return a.layer < b.layer;
     });
+}
+
+void Renderer::MarkNeedSort(entt::registry& registry, entt::entity entity) 
+{
+	_needSort = true;
 }

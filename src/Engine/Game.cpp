@@ -8,7 +8,8 @@
 
 #include "Log/Timer.h"
 
-Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle)
+Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle) :
+_renderer(_registry)
 {
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_ALWAYS_RUN);
 
