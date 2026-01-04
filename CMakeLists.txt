@@ -17,8 +17,10 @@ set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 if (WIN32)
     message(STATUS "Building on Windows")
 
-    set(COMMON_FLAGS "-Wall -Wextra -pedantic -fopenmp -fmax-errors=5 -Wno-missing-field-initializers -Wno-narrowing -Wno-enum-compare -Wno-reorder -Wno-shadow -Wno-deprecated-declarations -O3")
-    set(LINK_FLAGS "-s -mwindows")
+    set(RELEASE_FLAGS -O3)
+    set(DEBUG_FLAGS -Og -gdwarf-4)
+
+    set(RELEASE_LINKER_FLAGS -s -mwindows)
 
     set(SYSTEM_LIBS opengl32 gdi32 winmm ws2_32 gomp -static)
 
@@ -29,8 +31,10 @@ if (WIN32)
 elseif(UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
     message(STATUS "Building on Linux")
 
-    set(COMMON_FLAGS "-Wall -Wextra -pedantic -fopenmp -fmax-errors=5 -Wno-missing-field-initializers -Wno-narrowing -Wno-enum-compare -Wno-reorder -Wno-shadow -Wno-deprecated-declarations -O3")
-    set(LINK_FLAGS "-s")
+    set(RELEASE_FLAGS -O3)
+    set(DEBUG_FLAGS -Og -gdwarf-4 -fno-omit-frame-pointer)
+
+    set(RELEASE_LINKER_FLAGS -s)
 
     set(SYSTEM_LIBS GL m pthread dl rt X11 gomp)
 
@@ -45,11 +49,29 @@ else()
     message(FATAL_ERROR "Unsupported OS")
 endif()
 
-# -------------------------
-# Compiler flags
-# -------------------------
-set(CMAKE_CXX_FLAGS "${COMMON_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "${LINK_FLAGS}")
+set(COMMON_FLAGS
+    -Wall
+    -Wextra
+    -pedantic
+    -fopenmp
+    -fmax-errors=5
+    -Wno-missing-field-initializers
+    -Wno-narrowing
+    -Wno-enum-compare
+    -Wno-reorder
+    -Wno-shadow
+    -Wno-deprecated-declarations
+)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose build type")
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    message(STATUS "Building engine release")
+elseif(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(STATUS "Building engine debug")
+endif()
 
 # -------------------------
 # Imported libraries (release only)
@@ -91,9 +113,26 @@ list(FILTER SOURCES EXCLUDE REGEX ".*/main\\.cpp$")
 add_library(EngineObjects OBJECT ${SOURCES})
 target_include_directories(EngineObjects PUBLIC include src)
 
+target_compile_options(EngineObjects PRIVATE
+    ${COMMON_FLAGS}
+    $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
+    $<$<CONFIG:Release>:${RELEASE_FLAGS}>
+)
+
 # -------------------------
 # Static library for engine
 # -------------------------
 add_library(engine STATIC $<TARGET_OBJECTS:EngineObjects>)
 target_include_directories(engine PUBLIC include src)
+
+target_compile_options(engine PRIVATE
+    ${COMMON_FLAGS}
+    $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
+    $<$<CONFIG:Release>:${RELEASE_FLAGS}>
+)
+
 target_link_libraries(engine PUBLIC Engine::raylib Engine::rlImGui Engine::luajit networking ${SYSTEM_LIBS})
+
+target_link_options(engine PRIVATE
+    $<$<CONFIG:Release>:${RELEASE_LINKER_FLAGS}>
+)
