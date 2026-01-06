@@ -65,7 +65,12 @@ void Renderer::SortSprites(entt::registry& registry)
 {
 	registry.sort<Component::Sprite>([](const Component::Sprite& a, const Component::Sprite& b)
 	{
-        return a.layer < b.layer;
+		if (a.layer != b.layer)
+		{
+        	return a.layer < b.layer;
+		}
+
+		return a.texture.id < b.texture.id;
     });
 }
 

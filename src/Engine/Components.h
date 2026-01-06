@@ -21,7 +21,7 @@ namespace Component
 		Color color = WHITE;
 		float scale = 1;
 		u32 layer = 1;
-		// When editing the layer value
+		// When editing the texture or layer value
 		// registry.replace<Component::Sprite>(entity, sprite);
 		// with the updated reference for the sprites to be reordered correctly
 	};
