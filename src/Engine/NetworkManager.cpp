@@ -44,24 +44,24 @@ void NetworkManager::Shutdown()
 	}
 }
 
-PeerId NetworkManager::Connect(const Address& address, const u32 data) 
+Peer NetworkManager::Connect(const Address& address, const u32 data) 
 {
 	_connectQueue.enqueue(std::make_pair(address, data));
 
-	PeerId id;
-	_connectReturnQueue.wait_dequeue(id);
+	Peer peer;
+	_connectReturnQueue.wait_dequeue(peer);
 
-	return id;
+	return peer;
 }
 
-void NetworkManager::Disconnect(const PeerId peer, const u32 data) 
+void NetworkManager::Disconnect(const PeerId peerId, const u32 data) 
 {
-	_disconnectQueue.enqueue(std::make_pair(peer, data));
+	_disconnectQueue.enqueue(std::make_pair(peerId, data));
 }
 
-void NetworkManager::Send(const PeerId peer, const std::vector<u8>& data, const ChannelId channel, const bool reliable) 
+void NetworkManager::Send(const PeerId peerId, const std::vector<u8>& data, const ChannelId channel, const bool reliable) 
 {
-	SendData sendData = {peer, std::move(data), channel, reliable};
+	SendData sendData = {peerId, std::move(data), channel, reliable};
 
 	_sendQueue.enqueue(sendData);
 }
@@ -77,14 +77,24 @@ std::queue<NetworkEvent> NetworkManager::Poll()
 	return queue;
 }
 
-Peer NetworkManager::GetPeer(const PeerId peer) 
+Peer NetworkManager::GetPeer(const PeerId peerId)
 {
-	_peerIdQueue.enqueue(peer);
+	_peerIdQueue.enqueue(peerId);
 
-	Peer p;
-	_peersQueue.wait_dequeue(p);
+	Peer peer;
+	_peersQueue.wait_dequeue(peer);
 
-	return p;
+	return peer;
+}
+
+const std::unordered_map<PeerId, Peer>& NetworkManager::GetPeers() 
+{
+	_peerMapRequest = true;
+
+	const std::unordered_map<PeerId, Peer>* map;
+	_peerMapQueue.wait_dequeue(map);
+
+	return *map;
 }
 
 void NetworkManager::Loop(const u32 timeoutMs) 
@@ -113,6 +123,13 @@ void NetworkManager::Loop(const u32 timeoutMs)
 		if (_peerIdQueue.try_dequeue(id))
 		{
 			_peersQueue.enqueue(_networkCore.GetPeer(id));
+		}
+
+		if (_peerMapRequest)
+		{
+			_peerMapRequest = false;
+
+			_peerMapQueue.enqueue(&_networkCore.GetPeers());
 		}
 
 		std::queue<NetworkEvent> events;

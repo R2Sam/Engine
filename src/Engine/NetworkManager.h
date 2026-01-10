@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #ifndef assert
 #define assert(condition) ((void)0)
 #endif
@@ -19,14 +20,15 @@ public:
 	bool InitClient(const u32 channels = 1, const u32 timeoutMs = 0);
 	void Shutdown();
 
-	PeerId Connect(const Address& address, const u32 data = 0);
-	void Disconnect(const PeerId peer, const u32 data = 0);
+	Peer Connect(const Address& address, const u32 data = 0);
+	void Disconnect(const PeerId peerId, const u32 data = 0);
 
-	void Send(const PeerId peer, const std::vector<u8>& data, const ChannelId channel = 0, const bool reliable = true);
+	void Send(const PeerId peerId, const std::vector<u8>& data, const ChannelId channel = 0, const bool reliable = true);
 
 	std::queue<NetworkEvent> Poll();
 
-	Peer GetPeer(const PeerId peer);
+	Peer GetPeer(const PeerId peerId);
+	const std::unordered_map<PeerId, Peer>& GetPeers();
 
 private:
 
@@ -50,10 +52,13 @@ private:
 	std::thread _thread;
 
 	moodycamel::ConcurrentQueue<std::pair<Address, u32>> _connectQueue;
-	moodycamel::BlockingConcurrentQueue<PeerId> _connectReturnQueue;
+	moodycamel::BlockingConcurrentQueue<Peer> _connectReturnQueue;
 	moodycamel::ConcurrentQueue<SendData> _sendQueue;
 	moodycamel::ConcurrentQueue<std::queue<NetworkEvent>> _eventQueue;
 	moodycamel::ConcurrentQueue<std::pair<PeerId, u32>> _disconnectQueue;
 	moodycamel::ConcurrentQueue<PeerId> _peerIdQueue;
 	moodycamel::BlockingConcurrentQueue<Peer> _peersQueue;
+
+	std::atomic<bool> _peerMapRequest = false;
+	moodycamel::BlockingConcurrentQueue<const std::unordered_map<PeerId, Peer>*> _peerMapQueue;
 };
