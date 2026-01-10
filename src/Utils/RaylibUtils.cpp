@@ -1,7 +1,7 @@
 #include "Utils/RaylibUtils.h"
 
-#include "Raylib/raylib.h"
-#include "Raylib/raymath.h"
+#include "raylib.h"
+#include "raymath.h"
 
 #include <iomanip>
 #include <sstream>

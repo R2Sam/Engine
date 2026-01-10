@@ -1,7 +1,7 @@
 #pragma once
 
 #include "entt/entt.h"
-#include "Raylib/raylib.h"
+#include "raylib.h"
 
 class Renderer
 {

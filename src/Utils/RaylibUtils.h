@@ -1,6 +1,6 @@
 #pragma once
-#include "Raylib/raylib.h"
-#include "Raylib/rlgl.h"
+#include "raylib.h"
+#include "rlgl.h"
 
 #include <string>
 #include <vector>

@@ -32,7 +32,7 @@
 
 #define NO_FONT_AWESOME
 
-#include "Raylib/raylib.h"
+#include "raylib.h"
 
 // Function specifiers in case library is build/used as a shared library
 // NOTE: Microsoft specifiers to tell compiler that symbols are imported/exported from a .dll

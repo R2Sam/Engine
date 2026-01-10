@@ -1,7 +1,7 @@
 #include "Game.h"
 
 #include "Context.h"
-#include "Raylib/raylib.h"
+#include "raylib.h"
 
 #include "Renderer.h"
 #include "AnimationSystem.h"

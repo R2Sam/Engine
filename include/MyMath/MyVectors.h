@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Raylib/raylib.h"
+#include "raylib.h"
 
 #include <cmath>
 

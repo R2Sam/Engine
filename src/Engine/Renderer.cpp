@@ -3,7 +3,7 @@
 #include "Utils/RaylibUtils.h"
 
 #include "Components.h"
-#include "Raylib/raylib.h"
+#include "raylib.h"
 
 Renderer::Renderer(entt::registry& registry)
 {

@@ -32,7 +32,6 @@ if (WIN32)
     -static
   )
 
-  set(RAYLIB_LIB  ${LIB_DIR}/Raylib/libraylib.a)
   set(RLIMGUI_LIB ${LIB_DIR}/rlImGui/librlImGui.a)
   set(LUAJIT_LIB  ${LIB_DIR}/Lua/libluajit.a)
 
@@ -51,7 +50,6 @@ elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
     gomp
   )
 
-  set(RAYLIB_LIB  ${LIB_DIR}/Raylib/libraylib-Linux.a)
   set(RLIMGUI_LIB ${LIB_DIR}/rlImGui/librlImGui-Linux.a)
   set(LUAJIT_LIB  ${LIB_DIR}/Lua/libluajit-Linux.a)
 
@@ -86,18 +84,14 @@ set(COMMON_FLAGS
 # ------------------------------------------------------------------------------
 # Imported third-party libraries
 # ------------------------------------------------------------------------------
-add_library(Engine::raylib STATIC IMPORTED)
-set_target_properties(Engine::raylib PROPERTIES
-  IMPORTED_LOCATION ${RAYLIB_LIB}
-)
 
-add_library(Engine::rlImGui STATIC IMPORTED)
-set_target_properties(Engine::rlImGui PROPERTIES
+add_library(rlImGui STATIC IMPORTED)
+set_target_properties(rlImGui PROPERTIES
   IMPORTED_LOCATION ${RLIMGUI_LIB}
 )
 
-add_library(Engine::luajit STATIC IMPORTED)
-set_target_properties(Engine::luajit PROPERTIES
+add_library(luajit STATIC IMPORTED)
+set_target_properties(luajit PROPERTIES
   IMPORTED_LOCATION ${LUAJIT_LIB}
 )
 
@@ -129,6 +123,16 @@ FetchContent_Declare(networking
 
 FetchContent_MakeAvailable(networking)
 
+FetchContent_Declare(raylib
+  GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
+  GIT_TAG 5.5
+  GIT_SHALLOW TRUE
+  EXCLUDE_FROM_ALL
+)
+
+FetchContent_MakeAvailable(raylib)
+
+
 # ------------------------------------------------------------------------------
 # Engine static library
 # ------------------------------------------------------------------------------
@@ -154,9 +158,9 @@ target_compile_options(engine PRIVATE
 
 target_link_libraries(engine
   PUBLIC
-    Engine::raylib
-    Engine::rlImGui
-    Engine::luajit
+    raylib
+    rlImGui
+    luajit
     networking
     ${SYSTEM_LIBS}
 )
