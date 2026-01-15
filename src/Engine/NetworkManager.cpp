@@ -58,7 +58,7 @@ void NetworkManager::Disconnect(const PeerId peerId, const u32 data)
 	_disconnectQueue.enqueue(std::make_pair(peerId, data));
 }
 
-void NetworkManager::Send(const PeerId peerId, const std::vector<u8>& data, const ChannelId channel, const bool reliable)
+void NetworkManager::Send(const PeerId peerId, std::vector<u8>& data, const ChannelId channel, const bool reliable)
 {
 	SendData sendData = {peerId, std::move(data), channel, reliable};
 

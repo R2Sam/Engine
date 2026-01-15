@@ -23,7 +23,7 @@ public:
 	Peer Connect(const Address& address, const u32 data = 0);
 	void Disconnect(const PeerId peerId, const u32 data = 0);
 
-	void Send(const PeerId peerId, const std::vector<u8>& data, const ChannelId channel = 0, const bool reliable = true);
+	void Send(const PeerId peerId, std::vector<u8>& data, const ChannelId channel = 0, const bool reliable = true);
 
 	std::queue<NetworkEvent> Poll();
 
