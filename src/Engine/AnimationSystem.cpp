@@ -1,15 +1,15 @@
 #include "AnimationSystem.h"
 
-#include "Context.h"
 #include "Components.h"
+#include "Context.h"
 
 AnimationSystem::AnimationSystem(const Context& context) :
-System(context) 
+System(context)
 {
 	_context.registry.on_construct<Component::Animation>().connect<&AnimationSystem::Check>(this);
 }
 
-void AnimationSystem::Update(const float deltaT) 
+void AnimationSystem::Update(const float deltaT)
 {
 	auto group = _context.registry.group<Component::Animation>(entt::get<Component::Sprite>);
 
@@ -49,12 +49,11 @@ void AnimationSystem::Update(const float deltaT)
 	}
 }
 
-void AnimationSystem::Draw() 
+void AnimationSystem::Draw()
 {
-	
 }
 
-void AnimationSystem::Check(entt::registry& registry, entt::entity entity) 
+void AnimationSystem::Check(entt::registry& registry, entt::entity entity)
 {
 	const Component::Animation& animation = registry.get<Component::Animation>(entity);
 
@@ -66,7 +65,7 @@ void AnimationSystem::Check(entt::registry& registry, entt::entity entity)
 	u32 totalSprites = rowLength * rowCount;
 
 	Assert(sprite.rectangle.width && sprite.rectangle.height, "Sprite must have a size");
-	Assert(animation.startingIndex <  totalSprites, "Animation starting index must be smaller than total sprite count");
+	Assert(animation.startingIndex < totalSprites, "Animation starting index must be smaller than total sprite count");
 	Assert(animation.endingIndex < totalSprites, "Animation ending index must be smaller than total sprite count");
 	Assert(animation.currentIndex >= animation.startingIndex && animation.currentIndex <= animation.endingIndex, "Animation starting index must be between starting and ending indices");
 	Assert(animation.frameAccumulator < animation.frameLengthS, "Animation frame accumulator must be bellow frame length");

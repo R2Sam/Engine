@@ -2,11 +2,11 @@
 
 #include "Assert.h"
 
+#include <functional>
+#include <memory>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
-#include <memory>
-#include <functional>
 
 class Cache
 {
@@ -15,16 +15,15 @@ public:
 	virtual ~Cache() = default;
 };
 
-template<class T>
+template <class T>
 class ResourceCache : public Cache
 {
 public:
 
-	ResourceCache(const std::function<T (const char*)>& loadFunction, const std::function<void (T)>& unloadFunction) :
+	ResourceCache(const std::function<T(const char*)>& loadFunction, const std::function<void(T)>& unloadFunction) :
 	_loadFunction(loadFunction),
 	_unloadFunction(unloadFunction)
 	{
-
 	}
 
 	~ResourceCache()
@@ -83,14 +82,14 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<T>> _map;
 
 	std::function<T(const char*)> _loadFunction;
-	std::function<void (T)> _unloadFunction;
+	std::function<void(T)> _unloadFunction;
 };
 
 class ResourceManager
 {
 public:
 
-	template<typename T, typename... Args>
+	template <typename T, typename... Args>
 	ResourceCache<T>& AddCache(Args&&... args)
 	{
 		auto it = _caches.find(typeid(T));
@@ -104,7 +103,7 @@ public:
 		return ref;
 	}
 
-	template<typename T>
+	template <typename T>
 	ResourceCache<T>& GetCache()
 	{
 		auto it = _caches.find(typeid(T));
@@ -113,7 +112,7 @@ public:
 		return *static_cast<ResourceCache<T>*>(it->second.get());
 	}
 
-	template<typename T>
+	template <typename T>
 	void RemoveCache()
 	{
 		auto it = _caches.find(typeid(T));

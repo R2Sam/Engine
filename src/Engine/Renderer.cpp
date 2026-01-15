@@ -8,7 +8,7 @@
 Renderer::Renderer(entt::registry& registry)
 {
 	camera.target = {0, 0};
-	camera.offset =  {0, 0};
+	camera.offset = {0, 0};
 	camera.zoom = 1;
 	camera.rotation = 0;
 
@@ -67,14 +67,14 @@ void Renderer::SortSprites(entt::registry& registry)
 	{
 		if (a.layer != b.layer)
 		{
-        	return a.layer < b.layer;
+			return a.layer < b.layer;
 		}
 
 		return a.texture.id < b.texture.id;
-    });
+	});
 }
 
-void Renderer::MarkNeedSort(entt::registry& registry, entt::entity entity) 
+void Renderer::MarkNeedSort(entt::registry& registry, entt::entity entity)
 {
 	_needSort = true;
 }

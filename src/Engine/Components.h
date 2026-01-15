@@ -1,7 +1,7 @@
 #pragma once
 
-#include "raylib.h"
 #include "MyMath/MyVectors.h"
+#include "raylib.h"
 
 #include "Types.h"
 

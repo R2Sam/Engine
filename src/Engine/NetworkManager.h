@@ -6,8 +6,8 @@
 #endif
 
 #include "Networking/NetworkCore.h"
-#include "ThreadSafeQueue/concurrentqueue.h"
 #include "ThreadSafeQueue/blockingconcurrentqueue.h"
+#include "ThreadSafeQueue/concurrentqueue.h"
 
 class NetworkManager
 {

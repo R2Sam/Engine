@@ -2,9 +2,9 @@
 #include "raylib.h"
 #include "rlgl.h"
 
+#include <cmath>
 #include <string>
 #include <vector>
-#include <cmath>
 
 bool ColorCompare(const Color a, const Color b);
 
@@ -47,7 +47,7 @@ bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vect
 std::vector<std::string> WordList(const std::string& input);
 
 // Draw a texture as a polygon of n points with no intersecting edges all visible to the centre
-void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2 *points, Vector2 *texcoords, int pointCount, Color tint);
+void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2* points, Vector2* texcoords, int pointCount, Color tint);
 
 // Convert a double to a string with a certain amount of precision
 std::string DoubleToRoundedString(const double num, const int precision);

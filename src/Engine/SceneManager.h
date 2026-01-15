@@ -1,12 +1,12 @@
 #pragma once
 
-//Forward
+// Forward
 struct Context;
 
 #include "Assert.h"
 
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 class Scene
 {
@@ -16,12 +16,10 @@ public:
 	Scene(const Context& context) :
 	_context(context)
 	{
-
 	}
 
 	virtual ~Scene()
 	{
-
 	}
 
 	virtual void Update(const float deltaT) = 0;
@@ -42,7 +40,7 @@ public:
 	void Update(const float deltaT);
 	void Draw();
 
-	template<typename T, typename... Args>
+	template <typename T, typename... Args>
 	void AddScene(const char* name, Args&&... args)
 	{
 		Assert((std::is_base_of_v<Scene, T>), "Scenes must derive from Scene");

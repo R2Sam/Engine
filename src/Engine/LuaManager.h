@@ -7,9 +7,9 @@ struct Context;
 
 #include "entt/entt.h"
 
+#include <optional>
 #include <string>
 #include <unordered_map>
-#include <optional>
 
 struct LuaScript
 {
@@ -25,7 +25,7 @@ public:
 
 	void Update(const float deltaT);
 
-	template<typename Event>
+	template <typename Event>
 	void RegisterRecieveEvent(entt::dispatcher& dispatcher)
 	{
 		if (!Lua::TypeExists<Event>(lua))
@@ -37,7 +37,7 @@ public:
 		dispatcher.sink<Event>().template connect<&LuaManager::OnEvent<Event>>(this);
 	}
 
-	template<typename Event>
+	template <typename Event>
 	void RegisterSendEvent(entt::dispatcher& dispatcher)
 	{
 		if (!Lua::TypeExists<Event>(lua))
@@ -78,7 +78,7 @@ public:
 
 private:
 
-	template<typename Event>
+	template <typename Event>
 	void OnEvent(const Event& event)
 	{
 		for (auto& [path, script] : _scripts)

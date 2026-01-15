@@ -7,10 +7,10 @@ struct Context;
 #include "Assert.h"
 #include "Types.h"
 
+#include <algorithm>
+#include <memory>
 #include <type_traits>
 #include <vector>
-#include <memory>
-#include <algorithm>
 
 class System
 {
@@ -20,12 +20,10 @@ public:
 	System(const Context& context) :
 	_context(context)
 	{
-
 	}
 
 	virtual ~System()
 	{
-
 	}
 
 	virtual void Update(const float deltaT) = 0;
@@ -44,7 +42,7 @@ public:
 	void Draw();
 
 	// Smaller priority done first
-	template<typename T, typename... Args>
+	template <typename T, typename... Args>
 	T& AddSystem(const u32 priority = 1, Args&&... args)
 	{
 		Assert((std::is_base_of_v<System, T>), "Systems must derive from System");

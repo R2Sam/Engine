@@ -1,18 +1,22 @@
 #pragma once
 
-#include "entt/entt.h"
+#include "Logger.h"
+#include "LuaManager.h"
+#include "NetworkManager.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
 #include "SystemManager.h"
-#include "LuaManager.h"
-#include "NetworkManager.h"
-#include "Logger.h"
+#include "entt/entt.h"
 
 using Entity = entt::entity;
 using Registry = entt::registry;
 using Dispatcher = entt::dispatcher;
 
-#define LogDebug(...) do { _context.logger.Write(LogLevel::DEBUG, __VA_ARGS__); } while(0)
+#define LogDebug(...)                                        \
+	do                                                       \
+	{                                                        \
+		_context.logger.Write(LogLevel::DEBUG, __VA_ARGS__); \
+	} while (0)
 
 struct Context
 {
@@ -26,7 +30,7 @@ struct Context
 	Logger& logger;
 
 	double updateTime;
-	double drawTime; 
+	double drawTime;
 };
 
 namespace Event
@@ -36,7 +40,7 @@ namespace Event
 		void LuaRegister(sol::state& lua)
 		{
 			Lua::RegisterType<Event::CloseGame>(lua, DemangleWithoutNamespace<Event::CloseGame>().c_str(),
-				sol::constructors<CloseGame()>());
+			sol::constructors<CloseGame()>());
 		}
 	};
 }

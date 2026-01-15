@@ -15,8 +15,8 @@ public:
 	Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle);
 	~Game();
 
-	template<typename T, typename... Args>
-	void SetFirstScene(const char *name, Args&&... args)
+	template <typename T, typename... Args>
+	void SetFirstScene(const char* name, Args&&... args)
 	{
 		_sceneManager.AddScene<T>(name, std::forward<Args>(args)...);
 		_sceneManager.ChangeScene(name);

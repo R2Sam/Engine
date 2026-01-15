@@ -3,8 +3,8 @@
 #include "Context.h"
 #include "raylib.h"
 
-#include "Renderer.h"
 #include "AnimationSystem.h"
+#include "Renderer.h"
 
 #include "Log/Timer.h"
 
@@ -14,7 +14,7 @@ _renderer(_registry)
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_ALWAYS_RUN);
 
 	SetTraceLogLevel(LOG_WARNING);
-	
+
 	InitWindow(windowWidth, windowHeight, windowTitle);
 	SetExitKey(KEY_NULL);
 
@@ -56,7 +56,7 @@ void Game::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdat
 	RollingAverage<double> updateTimeAverage;
 	RollingAverage<double> drawTimeAverage;
 
-	while(_running && !WindowShouldClose())
+	while (_running && !WindowShouldClose())
 	{
 		float deltaT = std::min(GetFrameTime(), 0.1f);
 		accummulator += deltaT;
