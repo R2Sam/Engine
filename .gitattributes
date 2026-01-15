@@ -1,6 +1,5 @@
 *.md linguist-generated
-*.a linguist-generated
 *.txt linguist-generated
 
-include/* linguist-generated
-lib/* linguist-generated
+include/** linguist-generated
+lib/** linguist-generated
