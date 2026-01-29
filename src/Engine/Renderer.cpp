@@ -19,12 +19,10 @@ Renderer::Renderer(entt::registry& registry)
 
 void Renderer::Update(entt::registry& registry)
 {
-	auto view = registry.view<Component::Sprite>();
+	auto group = registry.group<Component::Sprite>();
 
-	for (const entt::entity entity : view)
+	for (auto [entity, sprite] : group.each())
 	{
-		Component::Sprite& sprite = registry.get<Component::Sprite>(entity);
-
 		if (!IsTextureValid(sprite.texture))
 		{
 			Image image = GenImageColor(sprite.rectangle.width, sprite.rectangle.height, PURPLE);
