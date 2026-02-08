@@ -1,6 +1,7 @@
 *.exe
 bin/main
 bin/lib*
+docs
 *.o
 *.d
 *.sublime-project

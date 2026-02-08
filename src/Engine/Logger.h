@@ -5,6 +5,10 @@
 #include <fstream>
 #include <mutex>
 
+/**
+ * @brief Console and file logging levels
+ */
+
 enum class LogLevel
 {
 	DEBUG,
@@ -13,9 +17,19 @@ enum class LogLevel
 	ERROR,
 };
 
+/**
+ * @brief Thread safe logging utility with differing levels for both console and file
+ */
+
 class Logger
 {
 public:
+
+	/**
+	 * @brief Sets minimum log level
+	 *
+	 * @param level Minimum log level to output
+	 */
 
 	void SetLogLevel(const LogLevel level)
 	{
@@ -23,6 +37,14 @@ public:
 
 		_level = level;
 	}
+
+	/**
+	 * @brief Sets the output file
+	 *
+	 * If a file is already opened it is closed.
+	 *
+	 * @param path Path to log file, empty string disables file output
+	 */
 
 	void SetLogFile(const char* path)
 	{
@@ -40,6 +62,22 @@ public:
 
 		_file.open(path, std::ios::app);
 	}
+
+	/**
+	 * @brief Writes a log message
+	 *
+	 * Outputs a message to stderr and a file if set,
+	 * depending if the log level is higher than the set minimum.
+	 *
+	 * @tparam Args Strings and other printables
+	 * @param level Message log level
+	 * @param args Values to be printed separated by commas
+	 *
+	 * Usage:
+	 * @code
+	 * logger.Write(LogLevel::INFO, "Value is: ", number);
+	 * @endcode
+	 */
 
 	template <typename... Args>
 	void Write(const LogLevel level, Args&&... args)
