@@ -41,7 +41,8 @@ public:
 	/**
 	 * @brief Updates the system
 	 *
-	 * Called once per frame before rendering according to system priority
+	 * Called once per frame before rendering according to system priority.
+	 * Called before scenes.
 	 *
 	 * @param deltaT Duration of previous frame
 	 */
@@ -52,6 +53,7 @@ public:
 	 * @brief Renders the system
 	 *
 	 * Called once per frame after updating according to system priority
+	 * Called before scenes
 	 */
 
 	virtual void Draw() = 0;
@@ -66,6 +68,7 @@ protected:
  *
  * Systems are updated and rendered in order.
  * Lower priority values go first.
+ * Systems update and render before scenes.
  */
 
 class SystemManager
@@ -88,20 +91,20 @@ public:
 	/**
 	 * @brief Adds a system to the manager
 	 *
-	 * The system in constructed in within the manager and owned by it.
+	 * The system is constructed in within the manager and owned by it.
 	 * Systems must derive from the System base class.
 	 * They must also accept a immutable reference to Context as first argument.
 	 *
 	 * @tparam T System type
-	 * @tparam Args T constructor argument types
+	 * @tparam Args T Constructor argument types
 	 * @param priority Execution priority (lower executes first)
-	 * @param args T constructor arguments
+	 * @param args System constructor arguments
 	 *
 	 * @return Reference to the created system
 	 *
 	 * Usage:
 	 * @code
-	 * PhysicsSystem& physics = systemManager.AddSystem<PhysicsSystem>(0, gravity);
+	 * PhysicsSystem& physics = systemManager.AddSystem<PhysicsSystem>(3, gravity);
 	 * @endcode
 	 */
 
