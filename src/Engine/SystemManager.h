@@ -12,11 +12,23 @@ struct Context;
 #include <type_traits>
 #include <vector>
 
+/**
+ * @brief Base class for all systems
+ *
+ * All systems must derive from this class and implement Update() and Draw().
+ * The first constructor parameter of any derived system must be a Context reference.
+ */
+
 class System
 {
 public:
 
-	// First argument of any derived class must be the same as here
+	/**
+	 * @brief Constructs the system with a shared context
+	 *
+	 * @param context Immutable reference to engine context
+	 */
+
 	System(const Context& context) :
 	_context(context)
 	{
@@ -26,7 +38,22 @@ public:
 	{
 	}
 
+	/**
+	 * @brief Updates the system
+	 *
+	 * Called once per frame before rendering according to system priority
+	 *
+	 * @param deltaT Duration of previous frame
+	 */
+
 	virtual void Update(const float deltaT) = 0;
+
+	/**
+	 * @brief Renders the system
+	 *
+	 * Called once per frame after updating according to system priority
+	 */
+
 	virtual void Draw() = 0;
 
 protected:
@@ -34,14 +61,50 @@ protected:
 	const Context& _context;
 };
 
+/**
+ * @brief Manages execution and order of systems
+ *
+ * Systems are updated and rendered in order.
+ * Lower priority values go first.
+ */
+
 class SystemManager
 {
 public:
 
+	/**
+	 * @brief Updates all systems in order
+	 *
+	 * @param deltaT Duration of previous frame
+	 */
+
 	void Update(const float deltaT);
+
+	/**
+	 * @brief Renders all systems in order
+	 */
 	void Draw();
 
-	// Smaller priority done first
+	/**
+	 * @brief Adds a system to the manager
+	 *
+	 * The system in constructed in within the manager and owned by it.
+	 * Systems must derive from the System base class.
+	 * They must also accept a immutable reference to Context as first argument.
+	 *
+	 * @tparam T System type
+	 * @tparam Args T constructor argument types
+	 * @param priority Execution priority (lower executes first)
+	 * @param args T constructor arguments
+	 *
+	 * @return Reference to the created system
+	 *
+	 * Usage:
+	 * @code
+	 * PhysicsSystem& physics = systemManager.AddSystem<PhysicsSystem>(0, gravity);
+	 * @endcode
+	 */
+
 	template <typename T, typename... Args>
 	T& AddSystem(const u32 priority = 1, Args&&... args)
 	{
@@ -60,6 +123,14 @@ public:
 
 		return ref;
 	}
+
+	/**
+	 * @brief Sets the shared context used by all systems
+	 *
+	 * Must be called after class construction
+	 *
+	 * @param context Immutable reference to engine context
+	 */
 
 	void SetContext(Context& context);
 

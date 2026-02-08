@@ -6,6 +6,7 @@ Checks: >
   readability-*¨,
   misc-*,
   -misc-const-correctness,
+  -misc-non-private-member-variables-in-classes,
   -misc-include-cleaner,
   -misc-unused-parameters,
   readability-identifier-naming
@@ -29,6 +30,10 @@ CheckOptions:
     value: camelBack
   - key: readability-identifier-naming.MemberCase
     value: camelBack
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.ProtectedMemberPrefix
+    value: _
   - key: readability-identifier-naming.PrivateMemberCase
     value: camelBack
   - key: readability-identifier-naming.PrivateMemberPrefix
