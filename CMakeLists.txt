@@ -142,14 +142,14 @@ file(GLOB_RECURSE FILES CONFIGURE_DEPENDS
 
 add_custom_target(
     clang-format
-    COMMAND clang-format --dry-run --Werror ${FILES} || echo "ERROR: Some files in src/ are not properly formatted." && echo "Differences can be seen with 'clang-format <file> | diff -u <file> -'." && echo "Run 'clang-format -i <file> to fix errors"
+    COMMAND clang-format --dry-run --Werror ${FILES} || {echo "ERROR: Some files in src/ are not properly formatted."; echo "Differences can be seen with 'clang-format <file> | diff -u <file> -'."; echo "Run 'clang-format -i <file>' to fix errors"}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Checking code style with clang-format..."
 )
 
 add_custom_target(
     clang-tidy
-    COMMAND run-clang-tidy -p build ${FILES} || echo "ERROR: Some files in src/ are not properly formatted or have errors." && echo "Run 'clang-tidy -fix --format-style=file <file>' to fix errors"
+    COMMAND run-clang-tidy -quiet -p build ${FILES} || {echo "ERROR: Some files in src/ are not properly formatted or have errors."; echo "Run 'clang-tidy -fix --format-style=file <file>' to fix errors"}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Checking code style with clang-tidy..."
 )

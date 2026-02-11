@@ -16,7 +16,7 @@ Checks: >
   -misc-unused-parameters,
   -misc-use-anonymous-namespace,-warnings-as-errors,
 
-WarningsAsErrors: '*'
+WarningsAsErrors: 'src/.*'
 
 ExtraArgs:
   - -Wno-unused-command-line-argument

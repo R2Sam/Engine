@@ -72,7 +72,7 @@ void Renderer::SortSprites(entt::registry& registry)
 	});
 }
 
-void Renderer::MarkNeedSort(entt::registry& registry, entt::entity entity)
+void Renderer::MarkNeedSort(entt::entity entity)
 {
 	_needSort = true;
 }

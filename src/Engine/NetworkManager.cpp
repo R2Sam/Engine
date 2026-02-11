@@ -133,7 +133,7 @@ void NetworkManager::Loop(const u32 timeoutMs)
 
 		std::queue<NetworkEvent> events;
 		_networkCore.Poll(events, timeoutMs);
-		if (events.size())
+		if (events.empty())
 		{
 			_eventQueue.enqueue(events);
 		}

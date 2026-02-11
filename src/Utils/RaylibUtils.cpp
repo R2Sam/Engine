@@ -8,15 +8,7 @@
 
 bool ColorCompare(const Color a, const Color b)
 {
-	if (a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a)
-	{
-		return true;
-	}
-
-	else
-	{
-		return false;
-	}
+	return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
 }
 
 void DrawTextureScale(const Texture2D& texture, const Vector2 position, const float scale, const Color color)
@@ -81,7 +73,9 @@ int Vector2Angle(const Vector2 vec)
 
 	float deg = rad * RAD2DEG;
 	if (deg < 0)
+	{
 		deg += 360;
+	}
 
 	return deg;
 }
@@ -99,7 +93,9 @@ int DegreeRot(const int rot)
 	int rotation = rot % 360;
 
 	if (rotation < 0)
+	{
 		rotation += 360;
+	}
 
 	return rotation;
 }
@@ -112,10 +108,14 @@ int AngleFromPos(const Vector2 pos1, const Vector2 pos2)
 	angle -= 180;
 
 	if (angle < 0)
+	{
 		angle += 360;
+	}
 
 	else if (angle >= 360)
+	{
 		angle -= 360;
+	}
 
 	return angle;
 }
@@ -257,12 +257,16 @@ RenderTexture2D LoadShadowmapRenderTexture(int width, int height)
 		rlFramebufferAttach(target.id, target.depth.id, RL_ATTACHMENT_DEPTH, RL_ATTACHMENT_TEXTURE2D, 0);
 
 		if (rlFramebufferComplete(target.id))
+		{
 			TRACELOG(LOG_INFO, "FBO: [ID %i] Framebuffer object created successfully", target.id);
+		}
 
 		rlDisableFramebuffer();
 	}
 	else
+	{
 		TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
+	}
 
 	return target;
 }

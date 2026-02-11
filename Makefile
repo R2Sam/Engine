@@ -8,10 +8,10 @@ release:
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j12 -s
 
 clear:
-	-rm -r build/CMakeFiles
-	-rm -r build/_deps
-	-rm build/CMakeCache.txt
-	-rm build/cmake_install.cmake
+	-mv build/compile_commands.json compile_commands.json
+	-rm -r build
+	-mkdir build
+	-mv compile_commands.json build/compile_commands.json
 
 run:
 	gnome-terminal -- zsh -c "cd bin && ./main; exec zsh"
@@ -26,10 +26,10 @@ release:
 	cd build && cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j12 -s
 
 clear:
-	-rmdir /s /q build/CMakeFiles
-	-rmdir /s /q build/_deps
-	-del build/CMakeCache.txt
-	-del build/cmake_install.cmake
+	-mv build/compile_commands.json compile_commands.json
+	-rmdir /s /q build
+	-mkdir build
+	-mv compile_commands.json build/compile_commands.json
 
 run:
 	cd bin && ./main.exe

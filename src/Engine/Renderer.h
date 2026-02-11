@@ -17,7 +17,7 @@ private:
 
 	static void SortSprites(entt::registry& registry);
 
-	void MarkNeedSort(entt::registry& registry, entt::entity entity);
+	void MarkNeedSort(entt::entity entity);
 
 public:
 
