@@ -109,9 +109,9 @@ public:
 	 */
 
 	template <typename T, typename... Args>
+		requires std::is_base_of_v<System, T>
 	T& AddSystem(const u32 priority = 1, Args&&... args)
 	{
-		Assert((std::is_base_of_v<System, T>), "Systems must derive from System");
 		Assert(_context, "Context must be set first");
 
 		auto ptr = std::make_unique<T>(*_context, std::forward<Args>(args)...);
