@@ -31,12 +31,7 @@ public:
 	 * @param levelIn Minimum log level to output
 	 */
 
-	static void SetLogLevel(const LogLevel levelIn)
-	{
-		std::lock_guard<std::mutex> lock(mutex);
-
-		level = levelIn;
-	}
+	static void SetLogLevel(const LogLevel levelIn);
 
 	/**
 	 * @brief Sets the output file
@@ -46,22 +41,7 @@ public:
 	 * @param path Path to log file, empty string disables file output
 	 */
 
-	static void SetLogFile(const char* path)
-	{
-		std::lock_guard<std::mutex> lock(mutex);
-
-		if (file.is_open())
-		{
-			file.close();
-		}
-
-		if (std::string(path).empty())
-		{
-			return;
-		}
-
-		file.open(path, std::ios::app);
-	}
+	static void SetLogFile(const char* path);
 
 	/**
 	 * @brief Writes a log message
@@ -101,39 +81,9 @@ public:
 
 private:
 
-	static const char* LevelName(const LogLevel level)
-	{
-		switch (level)
-		{
-		case LogLevel::DEBUG:
-			return "DEBUG";
-		case LogLevel::INFO:
-			return "INFO";
-		case LogLevel::WARN:
-			return "WARN";
-		case LogLevel::ERROR:
-			return "ERROR";
-		}
+	static const char* LevelName(const LogLevel level);
 
-		return "UNKNOWN";
-	}
-
-	static const char* LevelColor(const LogLevel level)
-	{
-		switch (level)
-		{
-		case LogLevel::DEBUG:
-			return LOG_BLUE;
-		case LogLevel::INFO:
-			return LOG_WHITE;
-		case LogLevel::WARN:
-			return LOG_YELLOW;
-		case LogLevel::ERROR:
-			return LOG_RED;
-		}
-
-		return LOG_WHITE;
-	}
+	static const char* LevelColor(const LogLevel level);
 
 	static std::ofstream file;
 	static LogLevel level;
