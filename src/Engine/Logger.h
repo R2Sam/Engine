@@ -85,7 +85,7 @@ private:
 
 	static const char* LevelColor(const LogLevel level);
 
-	static std::ofstream file;
-	static LogLevel level;
-	static std::mutex mutex;
+	inline static std::ofstream file;
+	inline static LogLevel level = LogLevel::DEBUG;
+	inline static std::mutex mutex;
 };

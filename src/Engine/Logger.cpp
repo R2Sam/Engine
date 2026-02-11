@@ -57,7 +57,3 @@ const char* Logger::LevelColor(const LogLevel level)
 
 	return LOG_WHITE;
 }
-
-std::mutex Logger::mutex;
-LogLevel Logger::level = LogLevel::DEBUG;
-std::ofstream Logger::file;
