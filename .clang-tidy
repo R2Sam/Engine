@@ -3,13 +3,18 @@ Checks: >
   clang-analyzer-*,
   clang-diagnostic-*,
   performance-*,
-  readability-*¨,
+  readability-*,
+  -readability-avoid-const-params-in-decls,
+  -readability-uppercase-literal-suffix,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-implicit-bool-conversion,
   misc-*,
   -misc-const-correctness,
   -misc-non-private-member-variables-in-classes,
   -misc-include-cleaner,
   -misc-unused-parameters,
-  readability-identifier-naming
+  -misc-use-anonymous-namespace,-warnings-as-errors,
 
 WarningsAsErrors: '*'
 

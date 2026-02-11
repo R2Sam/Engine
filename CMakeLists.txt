@@ -132,6 +132,27 @@ FetchContent_Declare(raylib
 
 FetchContent_MakeAvailable(raylib)
 
+# ------------------------------
+# Formatting
+# ------------------------------
+file(GLOB_RECURSE FILES CONFIGURE_DEPENDS
+  src/*.cpp
+  src/*.h
+)
+
+add_custom_target(
+    clang-format
+    COMMAND clang-format --dry-run --Werror ${FILES} || echo "ERROR: Some files in src/ are not properly formatted." && echo "Differences can be seen with 'clang-format <file> | diff -u <file> -'." && echo "Run 'clang-format -i <file> to fix errors"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Checking code style with clang-format..."
+)
+
+add_custom_target(
+    clang-tidy
+    COMMAND run-clang-tidy -p build ${FILES} || echo "ERROR: Some files in src/ are not properly formatted or have errors." && echo "Run 'clang-tidy -fix --format-style=file <file>' to fix errors"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Checking code style with clang-tidy..."
+)
 
 # ------------------------------------------------------------------------------
 # Engine static library
@@ -149,6 +170,8 @@ target_include_directories(engine
     include
     src
 )
+
+add_dependencies(engine clang-format clang-tidy)
 
 target_compile_options(engine PRIVATE
   ${COMMON_FLAGS}
