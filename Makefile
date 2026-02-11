@@ -3,9 +3,11 @@ UNAME := $(shell uname -s)
 ifeq ($(UNAME), Linux)
 debug:
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && $(MAKE) -j12 -s
+	make format
 
 release:
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j12 -s
+	make format
 
 clear:
 	-mv build/compile_commands.json compile_commands.json
@@ -14,8 +16,8 @@ clear:
 	-mv compile_commands.json build/compile_commands.json
 
 format:
-	find src -name "*.cpp" -o -name "*.h" | xargs clang-format --dry-run --Werror
-	find src -name "*.cpp" -o -name "*.h" | xargs run-clang-tidy -quiet -p build
+	find src -name "*.cpp" -o -name "*.h" | xargs -P12 clang-format --dry-run --Werror
+	find src -name "*.cpp" -o -name "*.h" | xargs -P12 run-clang-tidy -quiet -p build
 
 run:
 	gnome-terminal -- zsh -c "cd bin && ./main; exec zsh"
