@@ -9,6 +9,7 @@ Checks: >
   -readability-identifier-length,
   -readability-magic-numbers,
   -readability-implicit-bool-conversion,
+  -readability-use-anyofallof,
   misc-*,
   -misc-const-correctness,
   -misc-non-private-member-variables-in-classes,
@@ -22,7 +23,7 @@ ExtraArgs:
   - -Wno-unused-command-line-argument
   - -Wno-unused-parameter
 
-HeaderFilterRegex: '^$'
+HeaderFilterRegex: '.*\Engine/src\/.*$'
 
 CheckOptions:
   - key: readability-identifier-naming.ClassCase
@@ -38,11 +39,15 @@ CheckOptions:
   - key: readability-identifier-naming.ProtectedMemberCase
     value: camelBack
   - key: readability-identifier-naming.ProtectedMemberPrefix
-    value: _
+    value: m_
   - key: readability-identifier-naming.PrivateMemberCase
     value: camelBack
   - key: readability-identifier-naming.PrivateMemberPrefix
-    value: _
+    value: m_
+  - key: readability-identifier-naming.StaticVariablePrefix
+    value: s_
+  - key: readability-identifier-naming.StaticVariableCase
+    value: camelBack
   - key: readability-identifier-naming.EnumCase
     value: CamelCase
   - key: readability-identifier-naming.EnumConstantCase

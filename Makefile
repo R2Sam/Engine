@@ -1,12 +1,15 @@
 UNAME := $(shell uname -s)
+JOBS := $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)
 
 ifeq ($(UNAME), Linux)
 debug:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && $(MAKE) -j12 -s
-	make format
+	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && $(MAKE) -j${JOBS} -s
+	git diff -U0 HEAD^ | clang-format-diff -p1
+	git diff --name-only | grep .cpp | xargs -r run-clang-tidy -quiet -j${JOBS} -p build
+	
 
 release:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j12 -s
+	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j${JOBS} -s
 	make format
 
 clear:
@@ -14,10 +17,14 @@ clear:
 	-rm -r build
 	-mkdir build
 	-mv compile_commands.json build/compile_commands.json
-
+	
 format:
-	find src -name "*.cpp" -o -name "*.h" | xargs -P12 clang-format --dry-run --Werror
-	find src -name "*.cpp" -o -name "*.h" | xargs -P12 run-clang-tidy -quiet -p build
+	find src -name "*.cpp" -o -name "*.h" | xargs -P${JOBS} clang-format --dry-run --Werror
+	run-clang-tidy -quiet -j${JOBS} -p build $(CURDIR)/src/
+
+fix:
+	find src -name "*.cpp" -o -name "*.h" | xargs -P${JOBS} clang-format -i --Werror
+	run-clang-tidy -quiet -fix -j${JOBS} -p build $(CURDIR)/src/
 
 run:
 	gnome-terminal -- zsh -c "cd bin && ./main; exec zsh"
