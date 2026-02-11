@@ -98,7 +98,7 @@ public:
 
 		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
 
-		_scenes.emplace(name, std::move(ptr));
+		m_scenes.emplace(name, std::move(ptr));
 	}
 
 	/**
@@ -122,9 +122,9 @@ public:
 
 private:
 
-	Scene* _currentScene = nullptr;
+	Scene* m_currentScene = nullptr;
 
-	std::string _nextSceneName;
+	std::string m_nextSceneName;
 
-	std::unordered_map<std::string, std::unique_ptr<Scene>> _scenes;
+	std::unordered_map<std::string, std::unique_ptr<Scene>> m_scenes;
 };

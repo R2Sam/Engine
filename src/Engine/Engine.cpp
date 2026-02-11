@@ -10,7 +10,7 @@
 static Engine* engine = nullptr;
 
 Engine::Engine(const u32 windowWidth, const u32 windowHeight, const char* windowTitle) :
-_renderer(_registry)
+m_renderer(m_registry)
 {
 	engine = this;
 
@@ -22,17 +22,17 @@ _renderer(_registry)
 	SetExitKey(KEY_NULL);
 
 	// Systems
-	_systemManager.AddSystem<AnimationSystem>(0);
+	m_systemManager.AddSystem<AnimationSystem>(0);
 
 	// Set event catcher
-	_dispatcher.sink<Event::CloseGame>().connect<&Engine::OnCloseGameEvent>(this);
+	m_dispatcher.sink<Event::CloseGame>().connect<&Engine::OnCloseGameEvent>(this);
 }
 
 Engine::~Engine()
 {
-	_resourceManager.ClearCaches();
+	m_resourceManager.ClearCaches();
 
-	_registry.clear();
+	m_registry.clear();
 
 	CloseWindow();
 
@@ -57,7 +57,7 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 	RollingAverage<double> updateTimeAverage;
 	RollingAverage<double> drawTimeAverage;
 
-	while (_running && !WindowShouldClose())
+	while (m_running && !WindowShouldClose())
 	{
 		float deltaT = std::min(GetFrameTime(), 0.1f);
 		accummulator += deltaT;
@@ -68,11 +68,11 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		u8 steps = 0;
 		while (accummulator >= timeStep && steps < maxUpdatesPerFrame)
 		{
-			_systemManager.Update(timeStep);
+			m_systemManager.Update(timeStep);
 
-			_luaManager.Update(timeStep);
+			m_luaManager.Update(timeStep);
 
-			_sceneManager.Update(timeStep);
+			m_sceneManager.Update(timeStep);
 
 			accummulator -= timeStep;
 		}
@@ -82,10 +82,10 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 			accummulator = 0;
 		}
 
-		_renderer.Update(_registry);
+		m_renderer.Update(m_registry);
 
 		updateTimeAverage += updateTimer.Stop();
-		_updateTime = updateTimeAverage.Average();
+		m_updateTime = updateTimeAverage.Average();
 
 		Timer drawTimer;
 		drawTimer.Start();
@@ -93,27 +93,27 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		BeginDrawing();
 		ClearBackground(BLANK);
 
-		_renderer.Draw(_registry);
+		m_renderer.Draw(m_registry);
 
-		_systemManager.Draw();
+		m_systemManager.Draw();
 
-		_sceneManager.Draw();
+		m_sceneManager.Draw();
 
 		EndDrawing();
 
 		drawTimeAverage += drawTimer.Stop();
-		_drawTime = drawTimeAverage.Average();
+		m_drawTime = drawTimeAverage.Average();
 	}
 }
 
 double Engine::GetUpdateTime() const
 {
-	return _updateTime;
+	return m_updateTime;
 }
 
 double Engine::GetDrawTime() const
 {
-	return _drawTime;
+	return m_drawTime;
 }
 
 Engine& Engine::Get()
@@ -124,5 +124,5 @@ Engine& Engine::Get()
 
 void Engine::OnCloseGameEvent(const Event::CloseGame& event)
 {
-	_running = false;
+	m_running = false;
 }

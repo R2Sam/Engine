@@ -25,5 +25,5 @@ public:
 
 private:
 
-	bool _needSort = false;
+	bool m_needSort = false;
 };

@@ -36,8 +36,8 @@ public:
 	template <typename T, typename... Args>
 	void SetFirstScene(const char* name, Args&&... args)
 	{
-		_sceneManager.AddScene<T>(name, std::forward<Args>(args)...);
-		_sceneManager.ChangeScene(name);
+		m_sceneManager.AddScene<T>(name, std::forward<Args>(args)...);
+		m_sceneManager.ChangeScene(name);
 	}
 
 	void Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame = 5);
@@ -47,16 +47,16 @@ public:
 
 	static Engine& Get();
 
-	Registry& registry = _registry;
-	Dispatcher& dispatcher = _dispatcher;
+	Registry& registry = m_registry;
+	Dispatcher& dispatcher = m_dispatcher;
 
 	// Core systems
-	Renderer& renderer = _renderer;
-	ResourceManager& resourceManager = _resourceManager;
-	SceneManager& sceneManager = _sceneManager;
-	SystemManager& systemManager = _systemManager;
-	LuaManager& luaManager = _luaManager;
-	NetworkManager& networkManager = _networkManager;
+	Renderer& renderer = m_renderer;
+	ResourceManager& resourceManager = m_resourceManager;
+	SceneManager& sceneManager = m_sceneManager;
+	SystemManager& systemManager = m_systemManager;
+	LuaManager& luaManager = m_luaManager;
+	NetworkManager& networkManager = m_networkManager;
 
 private:
 
@@ -64,20 +64,20 @@ private:
 	void OnCloseGameEvent(const Event::CloseGame& event);
 
 	// Ecs
-	Registry _registry;
-	Dispatcher _dispatcher;
+	Registry m_registry;
+	Dispatcher m_dispatcher;
 
 	// Core systems
-	Renderer _renderer;
-	ResourceManager _resourceManager;
-	SceneManager _sceneManager;
-	SystemManager _systemManager;
-	LuaManager _luaManager;
-	NetworkManager _networkManager;
+	Renderer m_renderer;
+	ResourceManager m_resourceManager;
+	SceneManager m_sceneManager;
+	SystemManager m_systemManager;
+	LuaManager m_luaManager;
+	NetworkManager m_networkManager;
 
 	// Timers
-	double _updateTime = 0;
-	double _drawTime = 0;
+	double m_updateTime = 0;
+	double m_drawTime = 0;
 
-	bool _running = true;
+	bool m_running = true;
 };

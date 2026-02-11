@@ -34,8 +34,6 @@ private:
 
 	void Loop(const u32 timeoutMs = 0);
 
-private:
-
 	struct SendData
 	{
 		PeerId peer;
@@ -44,21 +42,19 @@ private:
 		bool reliable;
 	};
 
-private:
+	NetworkCore m_networkCore;
+	std::atomic<bool> m_running;
 
-	NetworkCore _networkCore;
-	std::atomic<bool> _running;
+	std::thread m_thread;
 
-	std::thread _thread;
+	moodycamel::ConcurrentQueue<std::pair<Address, u32>> m_connectQueue;
+	moodycamel::BlockingConcurrentQueue<Peer> m_connectReturnQueue;
+	moodycamel::ConcurrentQueue<SendData> m_sendQueue;
+	moodycamel::ConcurrentQueue<std::queue<NetworkEvent>> m_eventQueue;
+	moodycamel::ConcurrentQueue<std::pair<PeerId, u32>> m_disconnectQueue;
+	moodycamel::ConcurrentQueue<PeerId> m_peerIdQueue;
+	moodycamel::BlockingConcurrentQueue<Peer> m_peersQueue;
 
-	moodycamel::ConcurrentQueue<std::pair<Address, u32>> _connectQueue;
-	moodycamel::BlockingConcurrentQueue<Peer> _connectReturnQueue;
-	moodycamel::ConcurrentQueue<SendData> _sendQueue;
-	moodycamel::ConcurrentQueue<std::queue<NetworkEvent>> _eventQueue;
-	moodycamel::ConcurrentQueue<std::pair<PeerId, u32>> _disconnectQueue;
-	moodycamel::ConcurrentQueue<PeerId> _peerIdQueue;
-	moodycamel::BlockingConcurrentQueue<Peer> _peersQueue;
-
-	std::atomic<bool> _peerMapRequest = false;
-	moodycamel::BlockingConcurrentQueue<const std::unordered_map<PeerId, Peer>*> _peerMapQueue;
+	std::atomic<bool> m_peerMapRequest = false;
+	moodycamel::BlockingConcurrentQueue<const std::unordered_map<PeerId, Peer>*> m_peerMapQueue;
 };

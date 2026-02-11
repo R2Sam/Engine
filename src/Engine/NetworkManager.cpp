@@ -13,62 +13,62 @@ NetworkManager::~NetworkManager()
 
 bool NetworkManager::InitServer(const u16 port, const u32 maxPeers, const u32 channels, const u32 timeoutMs)
 {
-	Assert(!_running, "Cannot start server when one is already running");
+	Assert(!m_running, "Cannot start server when one is already running");
 
-	_running = _networkCore.InitServer(port, maxPeers, channels);
+	m_running = m_networkCore.InitServer(port, maxPeers, channels);
 
-	_thread = std::thread(&NetworkManager::Loop, this, timeoutMs);
+	m_thread = std::thread(&NetworkManager::Loop, this, timeoutMs);
 
-	return _running;
+	return m_running;
 }
 
 bool NetworkManager::InitClient(const u32 channels, const u32 timeoutMs)
 {
-	Assert(!_running, "Cannot start client when one is already running");
+	Assert(!m_running, "Cannot start client when one is already running");
 
-	_running = _networkCore.InitClient(channels);
+	m_running = m_networkCore.InitClient(channels);
 
-	_thread = std::thread(&NetworkManager::Loop, this, timeoutMs);
+	m_thread = std::thread(&NetworkManager::Loop, this, timeoutMs);
 
-	return _running;
+	return m_running;
 }
 
 void NetworkManager::Shutdown()
 {
-	_running = false;
+	m_running = false;
 
-	if (_thread.joinable())
+	if (m_thread.joinable())
 	{
-		_thread.join();
+		m_thread.join();
 	}
 }
 
 Peer NetworkManager::Connect(const Address& address, const u32 data)
 {
-	_connectQueue.enqueue(std::make_pair(address, data));
+	m_connectQueue.enqueue(std::make_pair(address, data));
 
 	Peer peer;
-	_connectReturnQueue.wait_dequeue(peer);
+	m_connectReturnQueue.wait_dequeue(peer);
 
 	return peer;
 }
 
 void NetworkManager::Disconnect(const PeerId peerId, const u32 data)
 {
-	_disconnectQueue.enqueue(std::make_pair(peerId, data));
+	m_disconnectQueue.enqueue(std::make_pair(peerId, data));
 }
 
 void NetworkManager::Send(const PeerId peerId, std::vector<u8>& data, const ChannelId channel, const bool reliable)
 {
 	SendData sendData = {peerId, std::move(data), channel, reliable};
 
-	_sendQueue.enqueue(sendData);
+	m_sendQueue.enqueue(sendData);
 }
 
 std::queue<NetworkEvent> NetworkManager::Poll()
 {
 	std::queue<NetworkEvent> queue;
-	if (_eventQueue.try_dequeue(queue))
+	if (m_eventQueue.try_dequeue(queue))
 	{
 		return queue;
 	}
@@ -78,64 +78,64 @@ std::queue<NetworkEvent> NetworkManager::Poll()
 
 Peer NetworkManager::GetPeer(const PeerId peerId)
 {
-	_peerIdQueue.enqueue(peerId);
+	m_peerIdQueue.enqueue(peerId);
 
 	Peer peer;
-	_peersQueue.wait_dequeue(peer);
+	m_peersQueue.wait_dequeue(peer);
 
 	return peer;
 }
 
 const std::unordered_map<PeerId, Peer>& NetworkManager::GetPeers()
 {
-	_peerMapRequest = true;
+	m_peerMapRequest = true;
 
 	const std::unordered_map<PeerId, Peer>* map;
-	_peerMapQueue.wait_dequeue(map);
+	m_peerMapQueue.wait_dequeue(map);
 
 	return *map;
 }
 
 void NetworkManager::Loop(const u32 timeoutMs)
 {
-	while (_running)
+	while (m_running)
 	{
 		std::pair<Address, u32> connectPair;
-		if (_connectQueue.try_dequeue(connectPair))
+		if (m_connectQueue.try_dequeue(connectPair))
 		{
-			_connectReturnQueue.enqueue(_networkCore.Connect(connectPair.first, connectPair.second));
+			m_connectReturnQueue.enqueue(m_networkCore.Connect(connectPair.first, connectPair.second));
 		}
 
 		SendData sendData;
-		if (_sendQueue.try_dequeue(sendData))
+		if (m_sendQueue.try_dequeue(sendData))
 		{
-			_networkCore.Send(sendData.peer, sendData.data, sendData.channel, sendData.reliable);
+			m_networkCore.Send(sendData.peer, sendData.data, sendData.channel, sendData.reliable);
 		}
 
 		std::pair<PeerId, u32> disconnectPair;
-		if (_disconnectQueue.try_dequeue(disconnectPair))
+		if (m_disconnectQueue.try_dequeue(disconnectPair))
 		{
-			_networkCore.Disconnect(disconnectPair.first, disconnectPair.second);
+			m_networkCore.Disconnect(disconnectPair.first, disconnectPair.second);
 		}
 
 		PeerId id;
-		if (_peerIdQueue.try_dequeue(id))
+		if (m_peerIdQueue.try_dequeue(id))
 		{
-			_peersQueue.enqueue(_networkCore.GetPeer(id));
+			m_peersQueue.enqueue(m_networkCore.GetPeer(id));
 		}
 
-		if (_peerMapRequest)
+		if (m_peerMapRequest)
 		{
-			_peerMapRequest = false;
+			m_peerMapRequest = false;
 
-			_peerMapQueue.enqueue(&_networkCore.GetPeers());
+			m_peerMapQueue.enqueue(&m_networkCore.GetPeers());
 		}
 
 		std::queue<NetworkEvent> events;
-		_networkCore.Poll(events, timeoutMs);
+		m_networkCore.Poll(events, timeoutMs);
 		if (events.empty())
 		{
-			_eventQueue.enqueue(events);
+			m_eventQueue.enqueue(events);
 		}
 	}
 }

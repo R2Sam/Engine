@@ -21,68 +21,68 @@ class ResourceCache : public Cache
 public:
 
 	ResourceCache(const std::function<T(const char*)>& loadFunction, const std::function<void(T)>& unloadFunction) :
-	_loadFunction(loadFunction),
-	_unloadFunction(unloadFunction)
+	m_loadFunction(loadFunction),
+	m_unloadFunction(unloadFunction)
 	{
 	}
 
 	~ResourceCache()
 	{
-		for (auto& [path, object] : _map)
+		for (auto& [path, object] : m_map)
 		{
-			_unloadFunction(*object);
+			m_unloadFunction(*object);
 		}
 	}
 
 	T& Get(const char* path)
 	{
-		auto it = _map.find(path);
-		if (it != _map.end())
+		auto it = m_map.find(path);
+		if (it != m_map.end())
 		{
 			return *it->second();
 		}
 
-		auto ptr = std::make_unique<T>(std::move(_loadFunction(path)));
+		auto ptr = std::make_unique<T>(std::move(m_loadFunction(path)));
 		auto& ref = *ptr;
 
-		_map.emplace(path, std::move(ptr));
+		m_map.emplace(path, std::move(ptr));
 
 		return ref;
 	}
 
 	T& Add(const T& object, const char* name)
 	{
-		auto it = _map.find(name);
-		if (it != _map.end())
+		auto it = m_map.find(name);
+		if (it != m_map.end())
 		{
-			_unloadFunction(*it->second);
+			m_unloadFunction(*it->second);
 		}
 
 		auto ptr = std::make_unique<T>(std::move(object));
 		auto& ref = *ptr;
 
-		_map.emplace(name, std::move(ptr));
+		m_map.emplace(name, std::move(ptr));
 
 		return ref;
 	}
 
 	void Remove(const char* path)
 	{
-		auto it = _map.find(path);
-		if (it != _map.end())
+		auto it = m_map.find(path);
+		if (it != m_map.end())
 		{
-			_unloadFunction(*it->second);
+			m_unloadFunction(*it->second);
 
-			_map.erase(it);
+			m_map.erase(it);
 		}
 	}
 
 private:
 
-	std::unordered_map<std::string, std::unique_ptr<T>> _map;
+	std::unordered_map<std::string, std::unique_ptr<T>> m_map;
 
-	std::function<T(const char*)> _loadFunction;
-	std::function<void(T)> _unloadFunction;
+	std::function<T(const char*)> m_loadFunction;
+	std::function<void(T)> m_unloadFunction;
 };
 
 class ResourceManager
@@ -92,13 +92,13 @@ public:
 	template <typename T, typename... Args>
 	ResourceCache<T>& AddCache(Args&&... args)
 	{
-		auto it = _caches.find(typeid(T));
-		Assert(it == _caches.end(), "Cache of type ", typeid(T).name(), " already exists");
+		auto it = m_caches.find(typeid(T));
+		Assert(it == m_caches.end(), "Cache of type ", typeid(T).name(), " already exists");
 
 		auto ptr = std::make_unique<ResourceCache<T>>(std::forward<Args>(args)...);
 		ResourceCache<T>& ref = *ptr;
 
-		_caches.emplace(typeid(T), std::move(ptr));
+		m_caches.emplace(typeid(T), std::move(ptr));
 
 		return ref;
 	}
@@ -106,8 +106,8 @@ public:
 	template <typename T>
 	ResourceCache<T>& GetCache()
 	{
-		auto it = _caches.find(typeid(T));
-		Assert(it != _caches.end(), "No cache exists holding type ", typeid(T).name());
+		auto it = m_caches.find(typeid(T));
+		Assert(it != m_caches.end(), "No cache exists holding type ", typeid(T).name());
 
 		return *static_cast<ResourceCache<T>*>(it->second.get());
 	}
@@ -115,10 +115,10 @@ public:
 	template <typename T>
 	void RemoveCache()
 	{
-		auto it = _caches.find(typeid(T));
-		if (it != _caches.end())
+		auto it = m_caches.find(typeid(T));
+		if (it != m_caches.end())
 		{
-			_caches.erase(it);
+			m_caches.erase(it);
 		}
 	}
 
@@ -126,5 +126,5 @@ public:
 
 private:
 
-	std::unordered_map<std::type_index, std::unique_ptr<Cache>> _caches;
+	std::unordered_map<std::type_index, std::unique_ptr<Cache>> m_caches;
 };

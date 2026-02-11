@@ -4,53 +4,53 @@
 
 void SceneManager::Update(const float deltaT)
 {
-	if (_currentScene)
+	if (m_currentScene)
 	{
-		_currentScene->Update(deltaT);
+		m_currentScene->Update(deltaT);
 	}
 }
 
 void SceneManager::Draw()
 {
-	if (_currentScene)
+	if (m_currentScene)
 	{
-		_currentScene->Draw();
+		m_currentScene->Draw();
 	}
 
-	if (!_nextSceneName.empty())
+	if (!m_nextSceneName.empty())
 	{
-		if (_currentScene)
+		if (m_currentScene)
 		{
-			_currentScene->OnExit();
+			m_currentScene->OnExit();
 		}
 
-		auto it = _scenes.find(_nextSceneName);
-		Assert(_scenes.find(_nextSceneName) != _scenes.end(), "Scene ", _nextSceneName.c_str(), " does not exist");
+		auto it = m_scenes.find(m_nextSceneName);
+		Assert(m_scenes.find(m_nextSceneName) != m_scenes.end(), "Scene ", m_nextSceneName.c_str(), " does not exist");
 
-		_currentScene = it->second.get();
+		m_currentScene = it->second.get();
 
-		_currentScene->OnEnter();
+		m_currentScene->OnEnter();
 
-		_nextSceneName = "";
+		m_nextSceneName = "";
 	}
 }
 
 void SceneManager::RemoveScene(const char* name)
 {
-	auto it = _scenes.find(name);
-	if (it != _scenes.end())
+	auto it = m_scenes.find(name);
+	if (it != m_scenes.end())
 	{
-		Assert(it->second.get() != _currentScene, "Cannot delete the current scene");
+		Assert(it->second.get() != m_currentScene, "Cannot delete the current scene");
 
-		_scenes.erase(it);
+		m_scenes.erase(it);
 	}
 }
 
 void SceneManager::ChangeScene(const char* name)
 {
-	auto it = _scenes.find(name);
-	Assert(it != _scenes.end(), "Scene ", name, " does not exist");
-	Assert(it->second.get() != _currentScene, "Cannot change to the current scene");
+	auto it = m_scenes.find(name);
+	Assert(it != m_scenes.end(), "Scene ", name, " does not exist");
+	Assert(it->second.get() != m_currentScene, "Cannot change to the current scene");
 
-	_nextSceneName = name;
+	m_nextSceneName = name;
 }

@@ -74,7 +74,7 @@ private:
 	template <typename Event>
 	void OnEvent(const Event& event)
 	{
-		for (auto& [path, script] : _scripts)
+		for (auto& [path, script] : m_scripts)
 		{
 			if (script.enabled)
 			{
@@ -84,5 +84,5 @@ private:
 		}
 	}
 
-	std::unordered_map<std::string, LuaScript> _scripts;
+	std::unordered_map<std::string, LuaScript> m_scripts;
 };

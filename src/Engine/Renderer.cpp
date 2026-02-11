@@ -34,11 +34,11 @@ void Renderer::Update(entt::registry& registry)
 		}
 	}
 
-	if (_needSort)
+	if (m_needSort)
 	{
 		SortSprites(registry);
 
-		_needSort = false;
+		m_needSort = false;
 	}
 }
 
@@ -74,5 +74,5 @@ void Renderer::SortSprites(entt::registry& registry)
 
 void Renderer::MarkNeedSort(entt::entity entity)
 {
-	_needSort = true;
+	m_needSort = true;
 }

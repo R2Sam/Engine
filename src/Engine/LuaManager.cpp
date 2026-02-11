@@ -11,7 +11,7 @@ LuaManager::LuaManager()
 
 void LuaManager::Update(const float deltaT)
 {
-	for (auto& [path, script] : _scripts)
+	for (auto& [path, script] : m_scripts)
 	{
 		if (script.enabled)
 		{
@@ -22,8 +22,8 @@ void LuaManager::Update(const float deltaT)
 
 bool LuaManager::LoadScript(const char* path)
 {
-	auto it = _scripts.find(path);
-	if (it != _scripts.end())
+	auto it = m_scripts.find(path);
+	if (it != m_scripts.end())
 	{
 		return false;
 	}
@@ -36,26 +36,26 @@ bool LuaManager::LoadScript(const char* path)
 		return false;
 	}
 
-	_scripts.emplace(path, script);
+	m_scripts.emplace(path, script);
 
 	return true;
 }
 
 void LuaManager::RemoveScript(const char* path)
 {
-	_scripts.erase(path);
+	m_scripts.erase(path);
 }
 
 bool LuaManager::IsScriptLoaded(const char* path)
 {
-	auto it = _scripts.find(path);
-	return it != _scripts.end();
+	auto it = m_scripts.find(path);
+	return it != m_scripts.end();
 }
 
 void LuaManager::EnableScript(const char* path)
 {
-	auto it = _scripts.find(path);
-	if (it == _scripts.end())
+	auto it = m_scripts.find(path);
+	if (it == m_scripts.end())
 	{
 		return;
 	}
@@ -65,8 +65,8 @@ void LuaManager::EnableScript(const char* path)
 
 void LuaManager::DisableScript(const char* path)
 {
-	auto it = _scripts.find(path);
-	if (it == _scripts.end())
+	auto it = m_scripts.find(path);
+	if (it == m_scripts.end())
 	{
 		return;
 	}
@@ -76,8 +76,8 @@ void LuaManager::DisableScript(const char* path)
 
 std::optional<sol::environment> LuaManager::GetScriptEnvironment(const char* path)
 {
-	auto it = _scripts.find(path);
-	if (it == _scripts.end())
+	auto it = m_scripts.find(path);
+	if (it == m_scripts.end())
 	{
 		return std::nullopt;
 	}
@@ -87,7 +87,7 @@ std::optional<sol::environment> LuaManager::GetScriptEnvironment(const char* pat
 
 void LuaManager::ReloadScripts()
 {
-	for (auto& [path, script] : _scripts)
+	for (auto& [path, script] : m_scripts)
 	{
 		Lua::LoadFile(lua, script.environment, path.c_str());
 	}

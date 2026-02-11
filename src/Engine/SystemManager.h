@@ -94,9 +94,9 @@ public:
 		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
 		T& ref = *ptr;
 
-		_systems.push_back(std::make_pair(priority, std::move(ptr)));
+		m_systems.push_back(std::make_pair(priority, std::move(ptr)));
 
-		std::sort(_systems.begin(), _systems.end(), [](const auto& a, const auto& b)
+		std::sort(m_systems.begin(), m_systems.end(), [](const auto& a, const auto& b)
 		{
 			return a.first > b.first;
 		});
@@ -106,5 +106,5 @@ public:
 
 private:
 
-	std::vector<std::pair<u32, std::unique_ptr<System>>> _systems;
+	std::vector<std::pair<u32, std::unique_ptr<System>>> m_systems;
 };

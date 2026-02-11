@@ -2,5 +2,5 @@
 
 void ResourceManager::ClearCaches()
 {
-	_caches.clear();
+	m_caches.clear();
 }
