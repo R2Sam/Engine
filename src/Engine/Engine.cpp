@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "Engine.h"
 
 #include "raylib.h"
 
@@ -7,11 +7,13 @@
 
 #include "Log/Timer.h"
 
-static Game* game = nullptr;
+static Engine* engine = nullptr;
 
-Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle) :
+Engine::Engine(const u32 windowWidth, const u32 windowHeight, const char* windowTitle) :
 _renderer(_registry)
 {
+	engine = this;
+
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_ALWAYS_RUN);
 
 	SetTraceLogLevel(LOG_WARNING);
@@ -23,12 +25,10 @@ _renderer(_registry)
 	_systemManager.AddSystem<AnimationSystem>(0);
 
 	// Set event catcher
-	_dispatcher.sink<Event::CloseGame>().connect<&Game::OnCloseGameEvent>(this);
-
-	game = this;
+	_dispatcher.sink<Event::CloseGame>().connect<&Engine::OnCloseGameEvent>(this);
 }
 
-Game::~Game()
+Engine::~Engine()
 {
 	_resourceManager.ClearCaches();
 
@@ -36,10 +36,10 @@ Game::~Game()
 
 	CloseWindow();
 
-	game = nullptr;
+	engine = nullptr;
 }
 
-void Game::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame)
+void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame)
 {
 	Assert(targetFps, "Target fps must be positive");
 	Assert(targetFps <= 1000, "Target fps must not be above 1000");
@@ -106,23 +106,23 @@ void Game::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdat
 	}
 }
 
-double Game::GetUpdateTime() const
+double Engine::GetUpdateTime() const
 {
 	return _updateTime;
 }
 
-double Game::GetDrawTime() const
+double Engine::GetDrawTime() const
 {
 	return _drawTime;
 }
 
-Game& Game::Get()
+Engine& Engine::Get()
 {
-	Assert(game);
-	return *game;
+	Assert(engine);
+	return *engine;
 }
 
-void Game::OnCloseGameEvent(const Event::CloseGame& event)
+void Engine::OnCloseGameEvent(const Event::CloseGame& event)
 {
 	_running = false;
 }

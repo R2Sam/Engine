@@ -26,12 +26,12 @@ namespace Event
 	};
 }
 
-class Game
+class Engine
 {
 public:
 
-	Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle);
-	~Game();
+	Engine(const u32 windowWidth, const u32 windowHeight, const char* windowTitle);
+	~Engine();
 
 	template <typename T, typename... Args>
 	void SetFirstScene(const char* name, Args&&... args)
@@ -45,7 +45,7 @@ public:
 	double GetUpdateTime() const;
 	double GetDrawTime() const;
 
-	static Game& Get();
+	static Engine& Get();
 
 	Registry& registry = _registry;
 	Dispatcher& dispatcher = _dispatcher;

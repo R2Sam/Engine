@@ -2,16 +2,16 @@
 
 #include "Components.h"
 
-#include "Game.h"
+#include "Engine.h"
 
 AnimationSystem::AnimationSystem()
 {
-	Game::Get().registry.on_construct<Component::Animation>().connect<&AnimationSystem::Check>();
+	Engine::Get().registry.on_construct<Component::Animation>().connect<&AnimationSystem::Check>();
 }
 
 void AnimationSystem::Update(const float deltaT)
 {
-	auto group = Game::Get().registry.group<Component::Animation>(entt::get<Component::Sprite>);
+	auto group = Engine::Get().registry.group<Component::Animation>(entt::get<Component::Sprite>);
 
 	for (auto [entity, animation, sprite] : group.each())
 	{
