@@ -13,6 +13,10 @@ clear:
 	-mkdir build
 	-mv compile_commands.json build/compile_commands.json
 
+format:
+	find src -name "*.cpp" -o -name "*.h" | xargs clang-format --dry-run --Werror
+	find src -name "*.cpp" -o -name "*.h" | xargs run-clang-tidy -quiet -p build
+
 run:
 	gnome-terminal -- zsh -c "cd bin && ./main; exec zsh"
 
