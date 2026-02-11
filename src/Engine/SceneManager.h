@@ -110,7 +110,7 @@ public:
 	void RemoveScene(const char* name);
 
 	/**
-	 * @brief Changed the current scene
+	 * @brief Queues a scene change at the end of the frame
 	 *
 	 * OnExit of the current scene will be called.
 	 * OnEnter of the next scene will be called.
@@ -123,6 +123,8 @@ public:
 private:
 
 	Scene* _currentScene = nullptr;
+
+	std::string _nextSceneName;
 
 	std::unordered_map<std::string, std::unique_ptr<Scene>> _scenes;
 };
