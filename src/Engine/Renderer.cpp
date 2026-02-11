@@ -42,7 +42,7 @@ void Renderer::Update(entt::registry& registry)
 	}
 }
 
-void Renderer::Draw(entt::registry& registry)
+void Renderer::Draw(entt::registry& registry) const
 {
 	auto group = registry.group<Component::Sprite>(entt::get<Component::Transform>);
 

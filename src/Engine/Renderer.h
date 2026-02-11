@@ -11,11 +11,11 @@ public:
 
 	void Update(entt::registry& registry);
 
-	void Draw(entt::registry& registry);
+	void Draw(entt::registry& registry) const;
 
 private:
 
-	void SortSprites(entt::registry& registry);
+	static void SortSprites(entt::registry& registry);
 
 	void MarkNeedSort(entt::registry& registry, entt::entity entity);
 

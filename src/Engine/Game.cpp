@@ -1,12 +1,13 @@
 #include "Game.h"
 
-#include "Context.h"
 #include "raylib.h"
 
 #include "AnimationSystem.h"
 #include "Renderer.h"
 
 #include "Log/Timer.h"
+
+static Game* game = nullptr;
 
 Game::Game(const u32 windowWidth, const u32 windowHeight, const char* windowTitle) :
 _renderer(_registry)
@@ -18,24 +19,24 @@ _renderer(_registry)
 	InitWindow(windowWidth, windowHeight, windowTitle);
 	SetExitKey(KEY_NULL);
 
-	_context.emplace(_registry, _dispatcher, _resourceManager, _sceneManager, _systemManager, _luaManager, _networkManager, _logger);
-	_sceneManager.SetContext(_context.value());
-	_systemManager.SetContext(_context.value());
-
 	// Systems
 	_systemManager.AddSystem<AnimationSystem>(0);
 
 	// Set event catcher
 	_dispatcher.sink<Event::CloseGame>().connect<&Game::OnCloseGameEvent>(this);
+
+	game = this;
 }
 
 Game::~Game()
 {
 	_resourceManager.ClearCaches();
 
-	_context->registry.clear();
+	_registry.clear();
 
 	CloseWindow();
+
+	game = nullptr;
 }
 
 void Game::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame)
@@ -84,7 +85,7 @@ void Game::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdat
 		_renderer.Update(_registry);
 
 		updateTimeAverage += updateTimer.Stop();
-		_context->updateTime = updateTimeAverage.Average();
+		_updateTime = updateTimeAverage.Average();
 
 		Timer drawTimer;
 		drawTimer.Start();
@@ -101,8 +102,24 @@ void Game::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdat
 		EndDrawing();
 
 		drawTimeAverage += drawTimer.Stop();
-		_context->drawTime = drawTimeAverage.Average();
+		_drawTime = drawTimeAverage.Average();
 	}
+}
+
+double Game::GetUpdateTime() const
+{
+	return _updateTime;
+}
+
+double Game::GetDrawTime() const
+{
+	return _drawTime;
+}
+
+Game& Game::Get()
+{
+	Assert(game);
+	return *game;
 }
 
 void Game::OnCloseGameEvent(const Event::CloseGame& event)

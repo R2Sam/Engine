@@ -28,14 +28,14 @@ public:
 	/**
 	 * @brief Sets minimum log level
 	 *
-	 * @param level Minimum log level to output
+	 * @param levelIn Minimum log level to output
 	 */
 
-	void SetLogLevel(const LogLevel level)
+	static void SetLogLevel(const LogLevel levelIn)
 	{
-		std::lock_guard<std::mutex> lock(_mutex);
+		std::lock_guard<std::mutex> lock(mutex);
 
-		_level = level;
+		level = levelIn;
 	}
 
 	/**
@@ -46,13 +46,13 @@ public:
 	 * @param path Path to log file, empty string disables file output
 	 */
 
-	void SetLogFile(const char* path)
+	static void SetLogFile(const char* path)
 	{
-		std::lock_guard<std::mutex> lock(_mutex);
+		std::lock_guard<std::mutex> lock(mutex);
 
-		if (_file.is_open())
+		if (file.is_open())
 		{
-			_file.close();
+			file.close();
 		}
 
 		if (std::string(path).empty())
@@ -60,7 +60,7 @@ public:
 			return;
 		}
 
-		_file.open(path, std::ios::app);
+		file.open(path, std::ios::app);
 	}
 
 	/**
@@ -69,8 +69,8 @@ public:
 	 * Outputs a message to stderr and a file if set,
 	 * depending if the log level is higher than the set minimum.
 	 *
-	 * @tparam Args Strings and other printables
-	 * @param level Message log level
+	 * @tparam Args Strings and other printable
+	 * @param levelIn Message log level
 	 * @param args Values to be printed separated by commas
 	 *
 	 * Usage:
@@ -80,19 +80,19 @@ public:
 	 */
 
 	template <typename... Args>
-	void Write(const LogLevel level, Args&&... args)
+	static void Write(const LogLevel levelIn, Args&&... args)
 	{
-		if (level < _level)
+		if (levelIn < level)
 		{
 			return;
 		}
 
-		std::lock_guard<std::mutex> lock(_mutex);
+		std::lock_guard<std::mutex> lock(mutex);
 
-		if (_file.is_open())
+		if (file.is_open())
 		{
-			_file << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(level) << "] ";
-			(_file << ... << std::forward<Args>(args)) << '\n';
+			file << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(level) << "] ";
+			(file << ... << std::forward<Args>(args)) << '\n';
 		}
 
 		std::cerr << LevelColor(level) << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(level) << "] ";
@@ -101,7 +101,7 @@ public:
 
 private:
 
-	const char* LevelName(const LogLevel level)
+	static const char* LevelName(const LogLevel level)
 	{
 		switch (level)
 		{
@@ -118,7 +118,7 @@ private:
 		return "UNKNOWN";
 	}
 
-	const char* LevelColor(const LogLevel level)
+	static const char* LevelColor(const LogLevel level)
 	{
 		switch (level)
 		{
@@ -135,9 +135,7 @@ private:
 		return LOG_WHITE;
 	}
 
-private:
-
-	std::ofstream _file;
-	LogLevel _level = LogLevel::DEBUG;
-	std::mutex _mutex;
+	static std::ofstream file;
+	static LogLevel level;
+	static std::mutex mutex;
 };

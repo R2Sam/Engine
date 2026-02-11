@@ -8,12 +8,12 @@ class AnimationSystem : public System
 {
 public:
 
-	AnimationSystem(const Context& context);
+	AnimationSystem();
 
 	void Update(const float deltaT) override;
 	void Draw() override;
 
 private:
 
-	void Check(entt::registry& registry, entt::entity entity);
+	static void Check(entt::registry& registry, entt::entity entity);
 };

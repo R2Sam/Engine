@@ -15,8 +15,3 @@ void SystemManager::Draw()
 		pair.second->Draw();
 	}
 }
-
-void SystemManager::SetContext(Context& context)
-{
-	_context = &context;
-}

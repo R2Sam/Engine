@@ -2,11 +2,29 @@
 
 #include "Types.h"
 
-#include "Context.h"
-
+#include "LuaManager.h"
+#include "NetworkManager.h"
 #include "Renderer.h"
+#include "ResourceManager.h"
+#include "SceneManager.h"
+#include "SystemManager.h"
+#include "entt/entt.h"
 
-#include <optional>
+using Entity = entt::entity;
+using Registry = entt::registry;
+using Dispatcher = entt::dispatcher;
+
+namespace Event
+{
+	struct CloseGame
+	{
+		static void LuaRegister(sol::state& lua)
+		{
+			Lua::RegisterType<Event::CloseGame>(lua, DemangleWithoutNamespace<Event::CloseGame>().c_str(),
+			sol::constructors<CloseGame()>());
+		}
+	};
+}
 
 class Game
 {
@@ -24,18 +42,30 @@ public:
 
 	void Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame = 5);
 
+	double GetUpdateTime() const;
+	double GetDrawTime() const;
+
+	static Game& Get();
+
+	Registry& registry = _registry;
+	Dispatcher& dispatcher = _dispatcher;
+
+	// Core systems
+	Renderer& renderer = _renderer;
+	ResourceManager& resourceManager = _resourceManager;
+	SceneManager& sceneManager = _sceneManager;
+	SystemManager& systemManager = _systemManager;
+	LuaManager& luaManager = _luaManager;
+	NetworkManager& networkManager = _networkManager;
+
 private:
 
 	// Event handling
 	void OnCloseGameEvent(const Event::CloseGame& event);
 
-private:
-
-	std::optional<Context> _context;
-
 	// Ecs
-	entt::registry _registry;
-	entt::dispatcher _dispatcher;
+	Registry _registry;
+	Dispatcher _dispatcher;
 
 	// Core systems
 	Renderer _renderer;
@@ -44,7 +74,10 @@ private:
 	SystemManager _systemManager;
 	LuaManager _luaManager;
 	NetworkManager _networkManager;
-	Logger _logger;
+
+	// Timers
+	double _updateTime = 0;
+	double _drawTime = 0;
 
 	bool _running = true;
 };

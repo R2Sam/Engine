@@ -1,8 +1,5 @@
 #pragma once
 
-// Forward
-struct Context;
-
 #include "Lua/MyLua.h"
 
 #include "entt/entt.h"
@@ -70,10 +67,6 @@ public:
 
 	void ReloadScripts();
 
-	void SetContext(Context& context);
-
-public:
-
 	sol::state lua;
 
 private:
@@ -90,10 +83,6 @@ private:
 			}
 		}
 	}
-
-private:
-
-	Context* _context;
 
 	std::unordered_map<std::string, LuaScript> _scripts;
 };

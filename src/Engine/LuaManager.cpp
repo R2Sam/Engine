@@ -49,12 +49,7 @@ void LuaManager::RemoveScript(const char* path)
 bool LuaManager::IsScriptLoaded(const char* path)
 {
 	auto it = _scripts.find(path);
-	if (it == _scripts.end())
-	{
-		return false;
-	}
-
-	return true;
+	return it != _scripts.end();
 }
 
 void LuaManager::EnableScript(const char* path)

@@ -1,17 +1,17 @@
 #include "AnimationSystem.h"
 
 #include "Components.h"
-#include "Context.h"
 
-AnimationSystem::AnimationSystem(const Context& context) :
-System(context)
+#include "Game.h"
+
+AnimationSystem::AnimationSystem()
 {
-	_context.registry.on_construct<Component::Animation>().connect<&AnimationSystem::Check>(this);
+	Game::Get().registry.on_construct<Component::Animation>().connect<&AnimationSystem::Check>();
 }
 
 void AnimationSystem::Update(const float deltaT)
 {
-	auto group = _context.registry.group<Component::Animation>(entt::get<Component::Sprite>);
+	auto group = Game::Get().registry.group<Component::Animation>(entt::get<Component::Sprite>);
 
 	for (auto [entity, animation, sprite] : group.each())
 	{

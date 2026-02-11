@@ -1,10 +1,5 @@
 #pragma once
 
-// Forward
-struct Context;
-
-#include "Assert.h"
-
 #include <memory>
 #include <unordered_map>
 
@@ -13,23 +8,11 @@ struct Context;
  *
  * All scenes must derive from this class,
  * and implement Update, Draw, OnEnter and OnExit.
- * The first constructor parameter of any derived system must be a Context reference.
  */
 
 class Scene
 {
 public:
-
-	/**
-	 * @brief Constructs the scene with a shared context
-	 *
-	 * @param context Immutable reference to engine context
-	 */
-
-	Scene(const Context& context) :
-	_context(context)
-	{
-	}
 
 	virtual ~Scene()
 	{
@@ -64,10 +47,6 @@ public:
 	 */
 
 	virtual void OnExit() = 0;
-
-protected:
-
-	const Context& _context;
 };
 
 /**
@@ -100,7 +79,6 @@ public:
 	 *
 	 * The scene is constructed in within the manager and owned by it.
 	 * Scenes must derive from the Scene base class.
-	 * They must also accept a immutable reference to Context as first argument.
 	 *
 	 * @tparam T Scene type
 	 * @tparam Args Constructor arguments types
@@ -117,9 +95,8 @@ public:
 		requires std::is_base_of_v<Scene, T>
 	void AddScene(const char* name, Args&&... args)
 	{
-		Assert(_context, "Context must be set first");
 
-		auto ptr = std::make_unique<T>(*_context, std::forward<Args>(args)...);
+		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
 
 		_scenes.emplace(name, std::move(ptr));
 	}
@@ -143,19 +120,7 @@ public:
 
 	void ChangeScene(const char* name);
 
-	/**
-	 * @brief Sets the shared context used by all scenes
-	 *
-	 * Must be called after class construction
-	 *
-	 * @param context Immutable reference to engine context
-	 */
-
-	void SetContext(Context& context);
-
 private:
-
-	Context* _context = nullptr;
 
 	Scene* _currentScene = nullptr;
 
