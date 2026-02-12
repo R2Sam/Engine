@@ -10,7 +10,6 @@ debug:
 
 release:
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j${JOBS} -s
-	make format
 
 clear:
 	-mv build/compile_commands.json compile_commands.json

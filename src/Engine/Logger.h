@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Log/Log.h"
+#include "Types.h"
 
 #include <fstream>
 #include <mutex>
@@ -9,7 +10,7 @@
  * @brief Console and file logging levels
  */
 
-enum class LogLevel
+enum class LogLevel : u8
 {
 	DEBUG,
 	INFO,
