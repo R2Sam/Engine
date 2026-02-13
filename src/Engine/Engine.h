@@ -10,14 +10,28 @@
 #include "SystemManager.h"
 #include "entt/entt.h"
 
+#include <string>
+
 using Entity = entt::entity;
 using Registry = entt::registry;
 using Dispatcher = entt::dispatcher;
 
 namespace Event
 {
+	/**
+	 * @brief Event signalling that the game should close
+	 */
+
 	struct CloseGame
 	{
+		/**
+		 * @brief Registers the event type with Lua
+		 *
+		 * This is called by lua when registering an even with the lua manager.
+		 *
+		 * @param lua Lua state to register into
+		 */
+
 		static void LuaRegister(sol::state& lua)
 		{
 			Lua::RegisterType<Event::CloseGame>(lua, DemangleWithoutNamespace<Event::CloseGame>().c_str(),
@@ -26,11 +40,36 @@ namespace Event
 	};
 }
 
+struct WindowInfo
+{
+	u32 width = 1080;
+	u32 height = 720;
+	std::string title;
+
+	bool fullscreen = false;
+	bool borderlessFullscreen = false;
+	bool resizable = false;
+	bool undecorated = false;
+	bool topmost = false;
+	bool alwaysRun = false;
+	bool transparent = false;
+	bool highDpi = false;
+	bool msaa4x = false;
+};
+
+/**
+ * @brief Core engine
+ *
+ * Owns and coordinates all major subsystems.
+ *
+ * Only a single Engine instance may exist at a time.
+ */
+
 class Engine
 {
 public:
 
-	Engine(const u32 windowWidth, const u32 windowHeight, const char* windowTitle);
+	Engine(const WindowInfo& windowInfo);
 	~Engine();
 
 	template <typename T, typename... Args>
@@ -59,6 +98,8 @@ public:
 	NetworkManager& networkManager = m_networkManager;
 
 private:
+
+	static void SetFlags(const WindowInfo& windowInfo);
 
 	// Event handling
 	void OnCloseGameEvent(const Event::CloseGame& event);

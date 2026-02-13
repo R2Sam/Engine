@@ -9,16 +9,16 @@
 
 static Engine* engine = nullptr;
 
-Engine::Engine(const u32 windowWidth, const u32 windowHeight, const char* windowTitle) :
+Engine::Engine(const WindowInfo& windowInfo) :
 m_renderer(m_registry)
 {
 	engine = this;
 
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_ALWAYS_RUN);
+	SetFlags(windowInfo);
 
 	SetTraceLogLevel(LOG_WARNING);
 
-	InitWindow(windowWidth, windowHeight, windowTitle);
+	InitWindow(windowInfo.width, windowInfo.height, windowInfo.title.c_str());
 	SetExitKey(KEY_NULL);
 
 	// Systems
@@ -120,6 +120,58 @@ Engine& Engine::Get()
 {
 	Assert(engine);
 	return *engine;
+}
+
+void Engine::SetFlags(const WindowInfo& windowInfo)
+{
+	u32 flags = 0;
+
+	if (windowInfo.fullscreen)
+	{
+		flags |= FLAG_FULLSCREEN_MODE;
+	}
+
+	if (windowInfo.borderlessFullscreen)
+	{
+		flags |= FLAG_BORDERLESS_WINDOWED_MODE;
+	}
+
+	if (windowInfo.resizable)
+	{
+		flags |= FLAG_WINDOW_RESIZABLE;
+	}
+
+	if (windowInfo.undecorated)
+	{
+		flags |= FLAG_WINDOW_UNDECORATED;
+	}
+
+	if (windowInfo.topmost)
+	{
+		flags |= FLAG_WINDOW_TOPMOST;
+	}
+
+	if (windowInfo.alwaysRun)
+	{
+		flags |= FLAG_WINDOW_ALWAYS_RUN;
+	}
+
+	if (windowInfo.transparent)
+	{
+		flags |= FLAG_WINDOW_TRANSPARENT;
+	}
+
+	if (windowInfo.highDpi)
+	{
+		flags |= FLAG_WINDOW_HIGHDPI;
+	}
+
+	if (windowInfo.msaa4x)
+	{
+		flags |= FLAG_MSAA_4X_HINT;
+	}
+
+	SetConfigFlags(flags);
 }
 
 void Engine::OnCloseGameEvent(const Event::CloseGame& event)
