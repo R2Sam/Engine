@@ -17,40 +17,25 @@ void SceneManager::Draw()
 		m_currentScene->Draw();
 	}
 
-	if (!m_nextSceneName.empty())
+	CheckForChange();
+}
+
+void SceneManager::CheckForChange()
+{
+	if (m_changeScene)
 	{
 		if (m_currentScene)
 		{
 			m_currentScene->OnExit();
 		}
 
-		auto it = m_scenes.find(m_nextSceneName);
-		Assert(m_scenes.find(m_nextSceneName) != m_scenes.end(), "Scene ", m_nextSceneName.c_str(), " does not exist");
+		auto it = m_scenes.find(m_nextSceneType);
+		Assert(m_scenes.contains(m_nextSceneType), "Scene ", Demangle(m_nextSceneType).c_str(), " does not exist");
 
 		m_currentScene = it->second.get();
 
 		m_currentScene->OnEnter();
 
-		m_nextSceneName = "";
+		m_changeScene = false;
 	}
-}
-
-void SceneManager::RemoveScene(const char* name)
-{
-	auto it = m_scenes.find(name);
-	if (it != m_scenes.end())
-	{
-		Assert(it->second.get() != m_currentScene, "Cannot delete the current scene");
-
-		m_scenes.erase(it);
-	}
-}
-
-void SceneManager::ChangeScene(const char* name)
-{
-	auto it = m_scenes.find(name);
-	Assert(it != m_scenes.end(), "Scene ", name, " does not exist");
-	Assert(it->second.get() != m_currentScene, "Cannot change to the current scene");
-
-	m_nextSceneName = name;
 }

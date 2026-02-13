@@ -6,6 +6,7 @@
 #include "Log/Log.h"
 
 #include <cxxabi.h>
+#include <typeindex>
 
 template<typename T>
 std::string Demangle()
@@ -20,6 +21,20 @@ std::string Demangle()
     };
 
     return (status==0) ? res.get() : name ;
+}
+
+inline std::string Demangle(const std::type_index& type)
+{
+    const char* name = type.name();
+
+    int status = -4;
+
+    std::unique_ptr<char, void(*)(void*)> res{
+        abi::__cxa_demangle(name, nullptr, nullptr, &status),
+        std::free
+    };
+
+    return (status == 0) ? res.get() : name;
 }
 
 template<typename T>

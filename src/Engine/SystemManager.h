@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <memory>
 #include <type_traits>
+#include <typeindex>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -95,6 +97,7 @@ public:
 		T& ref = *ptr;
 
 		m_systems.push_back(std::make_pair(priority, std::move(ptr)));
+		m_systemsMap.emplace(typeid(T), ptr.get());
 
 		std::sort(m_systems.begin(), m_systems.end(), [](const auto& a, const auto& b)
 		{
@@ -104,7 +107,29 @@ public:
 		return ref;
 	}
 
+	/**
+	 * @brief Gets a system pointer
+	 *
+	 * Return a nullptr if the system does not exist.
+	 *
+	 * @tparam System type
+	 */
+
+	template <typename T>
+		requires std::is_base_of_v<System, T>
+	T* GetSystem()
+	{
+		auto it = m_systemsMap.find(typeid(T));
+		if (it != m_systemsMap.end())
+		{
+			return it->second;
+		}
+
+		return nullptr;
+	}
+
 private:
 
 	std::vector<std::pair<u32, std::unique_ptr<System>>> m_systems;
+	std::unordered_map<std::type_index, System*> m_systemsMap;
 };

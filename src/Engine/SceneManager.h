@@ -1,6 +1,10 @@
 #pragma once
 
+#include "Assert.h"
+#include "Lua/MyLua.h"
+
 #include <memory>
+#include <typeindex>
 #include <unordered_map>
 
 /**
@@ -82,7 +86,6 @@ public:
 	 *
 	 * @tparam T Scene type
 	 * @tparam Args Constructor arguments types
-	 * @param name Scene name which it can be referenced with
 	 * @param args Scene constructor arguments
 	 *
 	 * Usage:
@@ -93,21 +96,31 @@ public:
 
 	template <typename T, typename... Args>
 		requires std::is_base_of_v<Scene, T>
-	void AddScene(const char* name, Args&&... args)
+	void AddScene(Args&&... args)
 	{
-
 		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
 
-		m_scenes.emplace(name, std::move(ptr));
+		m_scenes.emplace(typeid(T), std::move(ptr));
 	}
 
 	/**
 	 * @brief Removes a scene from the manager
 	 *
-	 * @param name Scene reference name
+	 * @tparam Scene type
 	 */
 
-	void RemoveScene(const char* name);
+	template <typename T>
+		requires std::is_base_of_v<Scene, T>
+	void RemoveScene()
+	{
+		auto it = m_scenes.find(typeid(T));
+		if (it != m_scenes.end())
+		{
+			Assert(it->second.get() != m_currentScene, "Cannot delete the current scene");
+
+			m_scenes.erase(it);
+		}
+	}
 
 	/**
 	 * @brief Queues a scene change at the end of the frame
@@ -115,16 +128,29 @@ public:
 	 * OnExit of the current scene will be called.
 	 * OnEnter of the next scene will be called.
 	 *
-	 * @param name Scene reference name
+	 * @tparam Scene type
 	 */
 
-	void ChangeScene(const char* name);
+	template <typename T>
+		requires std::is_base_of_v<Scene, T>
+	void ChangeScene()
+	{
+		auto it = m_scenes.find(typeid(T));
+		Assert(it != m_scenes.end(), "Scene ", Demangle<T>(), " does not exist");
+		Assert(it->second.get() != m_currentScene, "Cannot change to the current scene");
+
+		m_nextSceneType = typeid(T);
+		m_changeScene = true;
+	}
 
 private:
 
+	void CheckForChange();
+
 	Scene* m_currentScene = nullptr;
 
-	std::string m_nextSceneName;
+	bool m_changeScene = false;
+	std::type_index m_nextSceneType = typeid(void);
 
-	std::unordered_map<std::string, std::unique_ptr<Scene>> m_scenes;
+	std::unordered_map<std::type_index, std::unique_ptr<Scene>> m_scenes;
 };

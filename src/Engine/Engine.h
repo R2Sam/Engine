@@ -40,6 +40,12 @@ namespace Event
 	};
 }
 
+/**
+ * @brief Initial window info
+ *
+ * Tells engine what the initial window size should be and which flags to enable
+ */
+
 struct WindowInfo
 {
 	u32 width = 1080;
@@ -69,20 +75,60 @@ class Engine
 {
 public:
 
+	/**
+	 * @ brief Creates the engine and all its systems
+	 *
+	 * @param windowInfo Initial window info struct
+	 */
+
 	Engine(const WindowInfo& windowInfo);
 	~Engine();
 
+	/**
+	 * @brief Sets the initial scene
+	 *
+	 * @tparam T Scene type
+	 * @tparam Args T Constructor argument types
+	 * @param args Scene constructor arguments
+	 */
+
 	template <typename T, typename... Args>
-	void SetFirstScene(const char* name, Args&&... args)
+	void SetFirstScene(Args&&... args)
 	{
-		m_sceneManager.AddScene<T>(name, std::forward<Args>(args)...);
-		m_sceneManager.ChangeScene(name);
+		m_sceneManager.AddScene<T>(std::forward<Args>(args)...);
+		m_sceneManager.ChangeScene<T>();
 	}
+
+	/**
+	 * @brief Runs the engine loop
+	 *
+	 * This is blocking until the widow is closed or a CloseGame event is called.
+	 *
+	 * @param targetFps The target fps for the engine to run at
+	 * @param updateFrequency How many update loops should be run per second
+	 * @param maxUpdatesPerFrame Maximum updated per frame when the engine is trying to catch up
+	 */
 
 	void Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame = 5);
 
+	/**
+	 * @brief Returns how long the average update loop took in ms
+	 */
+
 	double GetUpdateTime() const;
+
+	/**
+	 * @brief Returns how long the average draw loop took in ms
+	 */
+
 	double GetDrawTime() const;
+
+	/**
+	 * @brief Returns the engine instance
+	 *
+	 * This is mainly to be used to access the public systems.
+	 * If an engine hasn't been instanced the internal assert will fail.
+	 */
 
 	static Engine& Get();
 
