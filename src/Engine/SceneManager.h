@@ -136,7 +136,7 @@ public:
 	void ChangeScene()
 	{
 		auto it = m_scenes.find(typeid(T));
-		Assert(it != m_scenes.end(), "Scene ", Demangle<T>(), " does not exist");
+		Assert(it != m_scenes.end(), "Scene ", Demangle<T>().c_str(), " does not exist");
 		Assert(it->second.get() != m_currentScene, "Cannot change to the current scene");
 
 		m_nextSceneType = typeid(T);
