@@ -30,9 +30,11 @@ m_renderer(m_registry)
 
 Engine::~Engine()
 {
-	m_resourceManager.ClearCaches();
-
 	m_registry.clear();
+
+	m_systemManager.ClearSystems();
+	m_sceneManager.ClearScenes();
+	m_resourceManager.ClearCaches();
 
 	CloseWindow();
 

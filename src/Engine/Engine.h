@@ -27,7 +27,7 @@ namespace Event
 		/**
 		 * @brief Registers the event type with Lua
 		 *
-		 * This is called by lua when registering an even with the lua manager.
+		 * This is called by lua when registering an event with the lua manager.
 		 *
 		 * @param lua Lua state to register into
 		 */

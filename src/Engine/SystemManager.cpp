@@ -15,3 +15,9 @@ void SystemManager::Draw()
 		pair.second->Draw();
 	}
 }
+
+void SystemManager::ClearSystems()
+{
+	m_systemsMap.clear();
+	m_systems.clear();
+}

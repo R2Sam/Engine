@@ -107,12 +107,40 @@ public:
 		return ref;
 	}
 
+	template <typename T>
+		requires std::is_base_of_v<System, T>
+	void RemoveSystem()
+	{
+		auto it = m_systemsMap.find(typeid(T));
+		if (it == m_systemsMap.end())
+		{
+			return;
+		}
+
+		System* ptr = it->second;
+		i32 index = -1;
+
+		for (u32 i = 0; i < m_systems.size(); ++i)
+		{
+			if (m_systems[i].second.get() == ptr)
+			{
+				index = 0;
+				break;
+			}
+		}
+
+		if (index != -1)
+		{
+			m_systems.erase(m_systems.begin() + index);
+		}
+	}
+
 	/**
 	 * @brief Gets a system pointer
 	 *
 	 * Return a nullptr if the system does not exist.
 	 *
-	 * @tparam System type
+	 * @tparam T System type
 	 */
 
 	template <typename T>
@@ -127,6 +155,12 @@ public:
 
 		return nullptr;
 	}
+
+	/**
+	 * @brief Clears all systems
+	 */
+
+	void ClearSystems();
 
 private:
 

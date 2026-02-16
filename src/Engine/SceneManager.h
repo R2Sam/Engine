@@ -143,6 +143,12 @@ public:
 		m_changeScene = true;
 	}
 
+	/**
+	 * @brief Removes all scenes
+	 */
+
+	void ClearScenes();
+
 private:
 
 	void CheckForChange();

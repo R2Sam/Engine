@@ -20,6 +20,13 @@ void SceneManager::Draw()
 	CheckForChange();
 }
 
+void SceneManager::ClearScenes()
+{
+	m_currentScene = nullptr;
+	m_changeScene = false;
+	m_scenes.clear();
+}
+
 void SceneManager::CheckForChange()
 {
 	if (m_changeScene)
