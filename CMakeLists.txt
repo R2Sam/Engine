@@ -100,8 +100,7 @@ set_target_properties(luajit PROPERTIES
 # ------------------------------------------------------------------------------
 include(FetchContent)
 
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
-set(FETCHCONTENT_QUIET OFF)
+set(FETCHCONTENT_QUIET ON)
 
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../Networking/.git")
   set(NETWORKING_REPO file://${CMAKE_CURRENT_SOURCE_DIR}/../Networking/.git)
