@@ -3,7 +3,7 @@ JOBS := $(shell nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || ec
 
 ifeq ($(UNAME), Linux)
 debug:
-	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && $(MAKE) -j${JOBS} -s
+	mkdir -p build && cmake -B build -DFETCHCONTENT_BASE_DIR=../.deps -DCMAKE_BUILD_TYPE=Debug  && cd build && $(MAKE) -j${JOBS} -s
 	git diff -U0 HEAD^ | clang-format-diff -p1
 	git diff --name-only | grep .cpp | xargs -r run-clang-tidy -quiet -j${JOBS} -p build
 	
