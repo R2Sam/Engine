@@ -49,7 +49,7 @@ namespace Event
 
 struct WindowInfo
 {
-	u32 width = 1080;
+	u32 width = 1280;
 	u32 height = 720;
 	std::string title;
 
@@ -169,6 +169,9 @@ private:
 	// Timers
 	double m_updateTime = 0;
 	double m_drawTime = 0;
+
+	// Canvas
+	RenderTexture2D m_canvas;
 
 	bool m_running = true;
 };

@@ -30,10 +30,14 @@ m_renderer(m_registry)
 
 	// Set event catcher
 	m_dispatcher.sink<Event::CloseGame>().connect<&Engine::OnCloseGameEvent>(this);
+
+	m_canvas = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 }
 
 Engine::~Engine()
 {
+	UnloadRenderTexture(m_canvas);
+
 	m_registry.clear();
 
 	m_systemManager.ClearSystems();
@@ -78,9 +82,6 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 
 		Vector2 offset = {(GetRenderWidth() - VIRTUAL_WIDTH * scale) * 0.5,
 		(GetRenderHeight() - VIRTUAL_HEIGHT * scale) * 0.5};
-		Camera2D camera = {};
-		camera.zoom = scale;
-		camera.offset = offset;
 
 		Vector2 mousePos = GetMousePosition();
 		mVirtualMousePos = (mousePos - offset) / scale;
@@ -113,15 +114,20 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		BeginDrawing();
 		ClearBackground(BLANK);
 
-		BeginMode2D(camera);
+		BeginTextureMode(m_canvas);
 		{
+			ClearBackground(BLANK);
+
 			m_renderer.Draw(m_registry);
 
 			m_systemManager.Draw();
 
 			m_sceneManager.Draw();
 		}
-		EndMode2D();
+		EndTextureMode();
+
+		DrawTexturePro(m_canvas.texture, {0, 0, m_canvas.texture.width, -m_canvas.texture.height},
+		{offset.x, offset.y, VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale}, {0, 0}, 0, WHITE);
 
 		EndDrawing();
 
