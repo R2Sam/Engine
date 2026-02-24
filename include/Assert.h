@@ -3,25 +3,24 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
+#include <iostream>
 
 #define ASSERT
 
 #ifdef ASSERT
 
-	inline void AssertFail(const char* expr, const char* file, int line, const char* func, const char* fmt = nullptr, ...)
+	template<typename... Args>
+	inline void AssertFail(const char* expr, const char* file, int line, const char* func, Args&&... args)
 	{
 	    std::fprintf(stderr, "[ASSERTION FAILED]\n");
 	    std::fprintf(stderr, "  Expression: %s\n", expr);
 	    std::fprintf(stderr, "  Location:   %s:%d   (%s)\n", file, line, func);
 
-	    if (fmt)
+	    if constexpr (sizeof...(args) > 0)
 	    {
-	        std::fprintf(stderr, "  Message:    ");
-	        va_list args;
-	        va_start(args, fmt);
-	        std::vfprintf(stderr, fmt, args);
-	        va_end(args);
-	        std::fprintf(stderr, "\n");
+	        std::cerr << "  Message:    ";
+	        (std::cerr << ... << std::forward<Args>(args));
+	        std::cerr << '\n';
 	    }
 
 	    std::fflush(stderr);
