@@ -102,23 +102,28 @@ include(FetchContent)
 
 set(FETCHCONTENT_QUIET ON)
 
-if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../Networking/.git")
-  set(NETWORKING_REPO file://${CMAKE_CURRENT_SOURCE_DIR}/../Networking/.git)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../Networking")
+    message(STATUS "Using local Networking repo")
+    FetchContent_Declare(
+        networking
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Networking/
+    )
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../Networking")
   message(STATUS "Using local Networking repo")
-elseif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../Networking/.git")
-  set(NETWORKING_REPO file://${CMAKE_CURRENT_SOURCE_DIR}/../../Networking/.git)
-  message(STATUS "Using local Networking repo")
+    FetchContent_Declare(
+        networking
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../Networking/
+    )
 else()
-  set(NETWORKING_REPO https://github.com/R2Sam/Networking.git)
-  message(STATUS "Using remote Networking repo")
+    message(STATUS "Using online Networking repo")
+    FetchContent_Declare(
+        networking
+        GIT_REPOSITORY https://github.com/R2Sam/Networking.git
+        GIT_TAG lib
+        GIT_SHALLOW TRUE
+        EXCLUDE_FROM_ALL
+    )
 endif()
-
-FetchContent_Declare(networking
-  GIT_REPOSITORY ${NETWORKING_REPO}
-  GIT_TAG        lib
-	GIT_SHALLOW TRUE
-  EXCLUDE_FROM_ALL
-)
 
 FetchContent_MakeAvailable(networking)
 
