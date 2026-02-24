@@ -15,39 +15,34 @@ void DrawTextureScale(const Texture2D& texture, const Vector2 position, const fl
 {
 	DrawTexturePro(texture, Rectangle{0, 0, texture.width, texture.height},
 	Rectangle{position.x, position.y, texture.width * scale, texture.height * scale},
-	Vector2{texture.width * scale / 2.0f, texture.height * scale / 2.0f},
-	0,
-	color);
+	Vector2{texture.width * scale / 2.0f, texture.height * scale / 2.0f}, 0, color);
 }
 
 void DrawTextureRot(const Texture2D& texture, const Vector2 position, const int rotation, const Color color)
 {
 	DrawTexturePro(texture, Rectangle{0, 0, texture.width, texture.height},
 	Rectangle{position.x, position.y, texture.width, texture.height},
-	Vector2{texture.width / 2.0f, texture.height / 2.0f},
-	rotation,
-	color);
+	Vector2{texture.width / 2.0f, texture.height / 2.0f}, rotation, color);
 }
 
-void DrawTextureRotScale(const Texture2D& texture, const Vector2 position, const int rotation, const float scale, const Color color)
+void DrawTextureRotScale(const Texture2D& texture, const Vector2 position, const int rotation, const float scale,
+const Color color)
 {
 	DrawTexturePro(texture, Rectangle{0, 0, texture.width, texture.height},
 	Rectangle{position.x, position.y, texture.width * scale, texture.height * scale},
-	Vector2{texture.width * scale / 2.0f, texture.height * scale / 2.0f},
-	rotation,
-	color);
+	Vector2{texture.width * scale / 2.0f, texture.height * scale / 2.0f}, rotation, color);
 }
 
-void DrawTextureRotScaleSelect(const Texture2D& texture, const Rectangle selection, const Vector2 position, const int rotation, const float scale, const Color color)
+void DrawTextureRotScaleSelect(const Texture2D& texture, const Rectangle selection, const Vector2 position,
+const int rotation, const float scale, const Color color)
 {
 	DrawTexturePro(texture, selection,
 	Rectangle{position.x, position.y, selection.width * scale, selection.height * scale},
-	Vector2{selection.width * scale / 2.0f, selection.height * scale / 2.0f},
-	rotation,
-	color);
+	Vector2{selection.width * scale / 2.0f, selection.height * scale / 2.0f}, rotation, color);
 }
 
-void DrawTextRec(const std::string& text, const int fontSize, const Color textColor, const Rectangle rec, const Color recColor)
+void DrawTextRec(const std::string& text, const int fontSize, const Color textColor, const Rectangle rec,
+const Color recColor)
 {
 	Vector2 textSize = {MeasureText(text.c_str(), fontSize), fontSize};
 	Vector2 textPos;
@@ -136,8 +131,7 @@ Rectangle ScaleRectangle(const Rectangle rectangle, const float scale, const Vec
 
 Rectangle GetCameraRectangle(const Camera2D camera)
 {
-	return Rectangle{
-	.x = camera.target.x - camera.offset.x / camera.zoom,
+	return Rectangle{.x = camera.target.x - camera.offset.x / camera.zoom,
 	.y = camera.target.y - camera.offset.y / camera.zoom,
 	.width = GetScreenWidth() / camera.zoom,
 	.height = GetScreenHeight() / camera.zoom};
@@ -152,10 +146,7 @@ bool IsTextureVisible(const Texture2D texture, const float scale, const Vector2 
 
 	float worstCaseSize = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight);
 
-	Rectangle worstCaseRect = {
-	position.x - worstCaseSize / 2.0,
-	position.y - worstCaseSize / 2.0,
-	worstCaseSize,
+	Rectangle worstCaseRect = {position.x - worstCaseSize / 2.0, position.y - worstCaseSize / 2.0, worstCaseSize,
 	worstCaseSize};
 
 	return CheckCollisionRecs(cameraView, worstCaseRect);
@@ -170,10 +161,7 @@ bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vect
 
 	float worstCaseSize = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight);
 
-	Rectangle worstCaseRect = {
-	position.x - worstCaseSize / 2.0,
-	position.y - worstCaseSize / 2.0,
-	worstCaseSize + 2,
+	Rectangle worstCaseRect = {position.x - worstCaseSize / 2.0, position.y - worstCaseSize / 2.0, worstCaseSize + 2,
 	worstCaseSize + 2};
 
 	return CheckCollisionRecs(cameraView, worstCaseRect);

@@ -52,3 +52,5 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.EnumConstantCase
     value: UPPER_CASE
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE

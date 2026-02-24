@@ -47,8 +47,7 @@ public:
 
 		if (!Lua::FunctionExists(lua, functionName.c_str()))
 		{
-			Lua::RegisterFunction(lua, functionName.c_str(),
-			[this, &dispatcher](Event event)
+			Lua::RegisterFunction(lua, functionName.c_str(), [this, &dispatcher](Event event)
 			{
 				dispatcher.trigger<Event>(std::move(event));
 			});

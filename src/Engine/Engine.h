@@ -9,6 +9,7 @@
 #include "SceneManager.h"
 #include "SystemManager.h"
 #include "entt/entt.h"
+#include "raylib.h"
 
 #include <string>
 
@@ -142,6 +143,9 @@ public:
 	SystemManager& systemManager = m_systemManager;
 	LuaManager& luaManager = m_luaManager;
 	NetworkManager& networkManager = m_networkManager;
+
+	// Mouse
+	Vector2 mVirtualMousePos = {};
 
 private:
 

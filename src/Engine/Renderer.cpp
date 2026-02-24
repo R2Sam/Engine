@@ -26,8 +26,12 @@ void Renderer::Update(entt::registry& registry)
 		if (!IsTextureValid(sprite.texture))
 		{
 			Image image = GenImageColor(sprite.rectangle.width, sprite.rectangle.height, PURPLE);
-			ImageDrawRectangleRec(&image, Rectangle{0, 0, sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5}, BLACK);
-			ImageDrawRectangleRec(&image, Rectangle{sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5, sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5}, BLACK);
+			ImageDrawRectangleRec(&image, Rectangle{0, 0, sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5},
+			BLACK);
+			ImageDrawRectangleRec(&image,
+			Rectangle{sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5, sprite.rectangle.width * 0.5,
+			sprite.rectangle.height * 0.5},
+			BLACK);
 
 			sprite.texture = LoadTextureFromImage(image);
 			UnloadImage(image);
@@ -52,7 +56,8 @@ void Renderer::Draw(entt::registry& registry) const
 	{
 		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.vec2(), camera))
 		{
-			DrawTextureRotScaleSelect(sprite.texture, sprite.rectangle, transform.position.vec2(), transform.rotation, sprite.scale, sprite.color);
+			DrawTextureRotScaleSelect(sprite.texture, sprite.rectangle, transform.position.vec2(), transform.rotation,
+			sprite.scale, sprite.color);
 		}
 	}
 

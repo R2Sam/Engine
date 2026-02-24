@@ -1,7 +1,7 @@
 #include "LuaManager.h"
 
 #include "Lua/MyLua.h"
-#include "Lua/sol/sol.hpp"
+#include "sol/sol.hpp"
 #include <optional>
 
 LuaManager::LuaManager()

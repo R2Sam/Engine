@@ -1,6 +1,7 @@
 #include "Engine.h"
 
 #include "raylib.h"
+#include "raymath.h"
 
 #include "AnimationSystem.h"
 #include "Renderer.h"
@@ -8,6 +9,9 @@
 #include "Log/Timer.h"
 
 static Engine* engine = nullptr;
+
+constexpr float VIRTUAL_WIDTH = 1920;
+constexpr float VIRTUAL_HEIGHT = 1080;
 
 Engine::Engine(const WindowInfo& windowInfo) :
 m_renderer(m_registry)
@@ -67,6 +71,20 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		Timer updateTimer;
 		updateTimer.Start();
 
+		// Scaling
+		float scaleX = GetRenderWidth() / VIRTUAL_WIDTH;
+		float scaleY = GetRenderHeight() / VIRTUAL_HEIGHT;
+		float scale = std::min(scaleX, scaleY);
+
+		Vector2 offset = {(GetRenderWidth() - VIRTUAL_WIDTH * scale) * 0.5,
+		(GetRenderHeight() - VIRTUAL_HEIGHT * scale) * 0.5};
+		Camera2D camera = {};
+		camera.zoom = scale;
+		camera.offset = offset;
+
+		Vector2 mousePos = GetMousePosition();
+		mVirtualMousePos = (mousePos - offset) / scale;
+
 		u8 steps = 0;
 		while (accummulator >= timeStep && steps < maxUpdatesPerFrame)
 		{
@@ -95,11 +113,15 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		BeginDrawing();
 		ClearBackground(BLANK);
 
-		m_renderer.Draw(m_registry);
+		BeginMode2D(camera);
+		{
+			m_renderer.Draw(m_registry);
 
-		m_systemManager.Draw();
+			m_systemManager.Draw();
 
-		m_sceneManager.Draw();
+			m_sceneManager.Draw();
+		}
+		EndMode2D();
 
 		EndDrawing();
 

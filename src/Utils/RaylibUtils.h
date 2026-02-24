@@ -13,12 +13,15 @@ void DrawTextureScale(const Texture2D& texture, const Vector2 position, const fl
 // Draw textures centred on the origin with rotation in degrees
 void DrawTextureRot(const Texture2D& texture, const Vector2 position, const int rotation, const Color color);
 // Same as above but scaling factor as well
-void DrawTextureRotScale(const Texture2D& texture, const Vector2 position, const int rotation, const float scale, const Color color);
+void DrawTextureRotScale(const Texture2D& texture, const Vector2 position, const int rotation, const float scale,
+const Color color);
 // Same as above but you input a rectangle to choose the desired sprite
-void DrawTextureRotScaleSelect(const Texture2D& texture, const Rectangle selection, const Vector2 position, const int rotation, const float scale, const Color color);
+void DrawTextureRotScaleSelect(const Texture2D& texture, const Rectangle selection, const Vector2 position,
+const int rotation, const float scale, const Color color);
 
 // Draw text centred on a rec
-void DrawTextRec(const std::string& text, const int fontSize, const Color textColor, const Rectangle rec, const Color recColor);
+void DrawTextRec(const std::string& text, const int fontSize, const Color textColor, const Rectangle rec,
+const Color recColor);
 
 // Turn an angle in degrees to a vector
 Vector2 Angle2Vector(const int degrees);
@@ -47,7 +50,8 @@ bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vect
 std::vector<std::string> WordList(const std::string& input);
 
 // Draw a texture as a polygon of n points with no intersecting edges all visible to the centre
-void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2* points, Vector2* texcoords, int pointCount, Color tint);
+void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2* points, Vector2* texcoords, int pointCount,
+Color tint);
 
 // Convert a double to a string with a certain amount of precision
 std::string DoubleToRoundedString(const double num, const int precision);

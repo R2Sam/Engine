@@ -43,7 +43,8 @@ void AnimationSystem::Update(const float deltaT)
 
 		Vector2i gridPosition = {animation.currentIndex % rowLength, animation.currentIndex / rowLength};
 
-		sprite.rectangle = {gridPosition.x * sprite.rectangle.width, gridPosition.y * sprite.rectangle.height, sprite.rectangle.width, sprite.rectangle.height};
+		sprite.rectangle = {gridPosition.x * sprite.rectangle.width, gridPosition.y * sprite.rectangle.height,
+		sprite.rectangle.width, sprite.rectangle.height};
 
 		animation.frameAccumulator += deltaT;
 	}
@@ -67,6 +68,8 @@ void AnimationSystem::Check(entt::registry& registry, entt::entity entity)
 	Assert(sprite.rectangle.width && sprite.rectangle.height, "Sprite must have a size");
 	Assert(animation.startingIndex < totalSprites, "Animation starting index must be smaller than total sprite count");
 	Assert(animation.endingIndex < totalSprites, "Animation ending index must be smaller than total sprite count");
-	Assert(animation.currentIndex >= animation.startingIndex && animation.currentIndex <= animation.endingIndex, "Animation starting index must be between starting and ending indices");
-	Assert(animation.frameAccumulator < animation.frameLengthS, "Animation frame accumulator must be bellow frame length");
+	Assert(animation.currentIndex >= animation.startingIndex && animation.currentIndex <= animation.endingIndex,
+	"Animation starting index must be between starting and ending indices");
+	Assert(animation.frameAccumulator < animation.frameLengthS,
+	"Animation frame accumulator must be bellow frame length");
 }
