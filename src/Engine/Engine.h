@@ -192,8 +192,8 @@ private:
 
 	// Canvas
 	RenderTexture2D m_canvas;
-	u32 m_virtualWidth = 0;
-	u32 m_virtualHeight = 0;
+	float m_virtualWidth = 0;
+	float m_virtualHeight = 0;
 
 	bool m_running = true;
 };

@@ -29,7 +29,7 @@ m_renderer(m_registry)
 	m_dispatcher.sink<Event::CloseGame>().connect<&Engine::OnCloseGameEvent>(this);
 
 	m_virtualWidth = windowInfo.virutalWidth;
-	m_virtualHeight = windowInfo.virutalWidth;
+	m_virtualHeight = windowInfo.virtualHeight;
 	m_canvas = LoadRenderTexture(m_virtualWidth, m_virtualHeight);
 }
 
