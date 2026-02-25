@@ -21,11 +21,12 @@ namespace Component
 		Color color = WHITE;
 		float scale = 1;
 		u32 layer = 1;
-		// When editing the texture or layer value
-		// registry.replace<Component::Sprite>(entity, sprite);
-		// with the updated reference for the sprites to be reordered correctly
-		// Do not create a owning entt group (registry.group<Component::Sprite>(....))
-		// as this will reorder the sprites
+		// When editing texture, layer or any value
+		// registry.replace<Component::Sprite>(entity, newSprite);
+		// registry.patch<Component::Sprite>(entity, [](auto& sprite){sprite.layer = 5});
+		// with the updated reference for the sprites to be reordered correctly.
+		// Do not create a multi owning entt group (registry.group<Component::Sprite, ...>(....))
+		// as this will reorder the sprites.
 	};
 
 	struct Animation
