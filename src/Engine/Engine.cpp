@@ -10,9 +10,6 @@
 
 static Engine* engine = nullptr;
 
-constexpr float VIRTUAL_WIDTH = 1920;
-constexpr float VIRTUAL_HEIGHT = 1080;
-
 Engine::Engine(const WindowInfo& windowInfo) :
 m_renderer(m_registry)
 {
@@ -31,7 +28,9 @@ m_renderer(m_registry)
 	// Set event catcher
 	m_dispatcher.sink<Event::CloseGame>().connect<&Engine::OnCloseGameEvent>(this);
 
-	m_canvas = LoadRenderTexture(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+	m_virtualWidth = windowInfo.virutalWidth;
+	m_virtualHeight = windowInfo.virutalWidth;
+	m_canvas = LoadRenderTexture(m_virtualWidth, m_virtualHeight);
 }
 
 Engine::~Engine()
@@ -76,15 +75,15 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		updateTimer.Start();
 
 		// Scaling
-		float scaleX = GetRenderWidth() / VIRTUAL_WIDTH;
-		float scaleY = GetRenderHeight() / VIRTUAL_HEIGHT;
+		float scaleX = GetRenderWidth() / m_virtualWidth;
+		float scaleY = GetRenderHeight() / m_virtualHeight;
 		float scale = std::min(scaleX, scaleY);
 
-		Vector2 offset = {(GetRenderWidth() - VIRTUAL_WIDTH * scale) * 0.5,
-		(GetRenderHeight() - VIRTUAL_HEIGHT * scale) * 0.5};
+		Vector2 offset = {(GetRenderWidth() - m_virtualWidth * scale) * 0.5,
+		(GetRenderHeight() - m_virtualHeight * scale) * 0.5};
 
 		Vector2 mousePos = GetMousePosition();
-		mVirtualMousePos = (mousePos - offset) / scale;
+		m_virtualMousePos = (mousePos - offset) / scale;
 
 		u8 steps = 0;
 		while (accummulator >= timeStep && steps < maxUpdatesPerFrame)
@@ -127,13 +126,18 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		EndTextureMode();
 
 		DrawTexturePro(m_canvas.texture, {0, 0, m_canvas.texture.width, -m_canvas.texture.height},
-		{offset.x, offset.y, VIRTUAL_WIDTH * scale, VIRTUAL_HEIGHT * scale}, {0, 0}, 0, WHITE);
+		{offset.x, offset.y, m_virtualWidth * scale, m_virtualHeight * scale}, {0, 0}, 0, WHITE);
 
 		EndDrawing();
 
 		drawTimeAverage += drawTimer.Stop();
 		m_drawTime = drawTimeAverage.Average();
 	}
+}
+
+Vector2 Engine::GetVirtualMousePos() const
+{
+	return m_virtualMousePos;
 }
 
 double Engine::GetUpdateTime() const

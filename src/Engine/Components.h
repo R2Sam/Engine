@@ -24,6 +24,8 @@ namespace Component
 		// When editing the texture or layer value
 		// registry.replace<Component::Sprite>(entity, sprite);
 		// with the updated reference for the sprites to be reordered correctly
+		// Do not create a owning entt group (registry.group<Component::Sprite>(....))
+		// as this will reorder the sprites
 	};
 
 	struct Animation

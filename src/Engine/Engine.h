@@ -8,6 +8,7 @@
 #include "ResourceManager.h"
 #include "SceneManager.h"
 #include "SystemManager.h"
+#include "bsThreadPool/BS_thread_pool.hpp"
 #include "entt/entt.h"
 #include "raylib.h"
 
@@ -45,6 +46,9 @@ namespace Event
  * @brief Initial window info
  *
  * Tells engine what the initial window size should be and which flags to enable
+ *
+ * Additionally a virtual window size can be specified to which all elements are drawn.
+ * The virtual window is then scaled according to the real window size but aspect ratio is preserved.
  */
 
 struct WindowInfo
@@ -52,6 +56,9 @@ struct WindowInfo
 	u32 width = 1280;
 	u32 height = 720;
 	std::string title;
+
+	u32 virutalWidth = 1920;
+	u32 virtualHeight = 1080;
 
 	bool fullscreen = false;
 	bool borderlessFullscreen = false;
@@ -105,12 +112,22 @@ public:
 	 *
 	 * This is blocking until the widow is closed or a CloseGame event is called.
 	 *
+	 * Updates are called in the systems, lua, scene order.
+	 * Draws are called in the renderer, systems, scene order.
+	 * All drawing is done to a virtual canvas.
+	 *
 	 * @param targetFps The target fps for the engine to run at
 	 * @param updateFrequency How many update loops should be run per second
 	 * @param maxUpdatesPerFrame Maximum updated per frame when the engine is trying to catch up
 	 */
 
 	void Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame = 5);
+
+	/**
+	 * @brief Returns the mouse position adjusted to the virtual canvas
+	 */
+
+	Vector2 GetVirtualMousePos() const;
 
 	/**
 	 * @brief Returns how long the average update loop took in ms
@@ -144,8 +161,8 @@ public:
 	LuaManager& luaManager = m_luaManager;
 	NetworkManager& networkManager = m_networkManager;
 
-	// Mouse
-	Vector2 mVirtualMousePos = {};
+	// Thread pool
+	BS::thread_pool<BS::tp::none> threadPool;
 
 private:
 
@@ -166,12 +183,17 @@ private:
 	LuaManager m_luaManager;
 	NetworkManager m_networkManager;
 
+	// Mouse
+	Vector2 m_virtualMousePos = {};
+
 	// Timers
 	double m_updateTime = 0;
 	double m_drawTime = 0;
 
 	// Canvas
 	RenderTexture2D m_canvas;
+	u32 m_virtualWidth = 0;
+	u32 m_virtualHeight = 0;
 
 	bool m_running = true;
 };

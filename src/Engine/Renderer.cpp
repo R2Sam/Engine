@@ -48,7 +48,7 @@ void Renderer::Update(entt::registry& registry)
 
 void Renderer::Draw(entt::registry& registry) const
 {
-	auto group = registry.group<Component::Sprite>(entt::get<Component::Transform>);
+	auto group = registry.group<>(entt::get<Component::Sprite, Component::Transform>);
 
 	BeginMode2D(camera);
 
