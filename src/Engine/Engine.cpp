@@ -13,6 +13,8 @@ static Engine* engine = nullptr;
 Engine::Engine(const WindowInfo& windowInfo) :
 m_renderer(m_registry)
 {
+	Assert(!engine, "Only one engine instance may exist at the time");
+
 	engine = this;
 
 	SetFlags(windowInfo);
