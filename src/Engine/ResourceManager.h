@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 #include <typeindex>
 #include <unordered_map>
@@ -20,7 +21,8 @@ class ResourceCache : public Cache
 {
 public:
 
-	ResourceCache(const std::function<T(const char*)>& loadFunction, const std::function<void(T)>& unloadFunction) :
+	ResourceCache(const std::function<std::optional<T>(const char*)> loadFunction,
+	const std::function<void(T)> unloadFunction) :
 	m_loadFunction(loadFunction),
 	m_unloadFunction(unloadFunction)
 	{
@@ -34,7 +36,7 @@ public:
 		}
 	}
 
-	T& Get(const char* path)
+	T* Get(const char* path)
 	{
 		auto it = m_map.find(path);
 		if (it != m_map.end())
@@ -42,15 +44,21 @@ public:
 			return *it->second();
 		}
 
-		auto ptr = std::make_unique<T>(std::move(m_loadFunction(path)));
-		auto& ref = *ptr;
+		std::optional<T> opt = m_loadFunction(path);
+
+		if (!opt)
+		{
+			return nullptr;
+		}
+
+		auto ptr = std::make_unique<T>(std::move(opt.value()));
 
 		m_map.emplace(path, std::move(ptr));
 
-		return ref;
+		return ptr;
 	}
 
-	T& Add(const T& object, const char* name)
+	T& Add(T&& object, const char* name)
 	{
 		auto it = m_map.find(name);
 		if (it != m_map.end())
@@ -81,7 +89,7 @@ private:
 
 	std::unordered_map<std::string, std::unique_ptr<T>> m_map;
 
-	std::function<T(const char*)> m_loadFunction;
+	std::function<std::optional<T>(const char*)> m_loadFunction;
 	std::function<void(T)> m_unloadFunction;
 };
 
@@ -93,7 +101,10 @@ public:
 	ResourceCache<T>& AddCache(Args&&... args)
 	{
 		auto it = m_caches.find(typeid(T));
-		Assert(it == m_caches.end(), "Cache of type ", typeid(T).name(), " already exists");
+		if (it != m_caches.end())
+		{
+			return *static_cast<ResourceCache<T>*>(it->second.get());
+		}
 
 		auto ptr = std::make_unique<ResourceCache<T>>(std::forward<Args>(args)...);
 		ResourceCache<T>& ref = *ptr;

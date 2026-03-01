@@ -101,7 +101,7 @@ public:
 
 		std::sort(m_systems.begin(), m_systems.end(), [](const auto& a, const auto& b)
 		{
-			return a.first > b.first;
+			return a.first < b.first;
 		});
 
 		return ref;
@@ -124,7 +124,7 @@ public:
 		{
 			if (m_systems[i].second.get() == ptr)
 			{
-				index = 0;
+				index = i;
 				break;
 			}
 		}

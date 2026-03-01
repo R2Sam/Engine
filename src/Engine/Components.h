@@ -16,7 +16,7 @@ namespace Component
 
 	struct Sprite
 	{
-		Texture2D texture;
+		Texture2D texture = {};
 		Rectangle rectangle = {0, 0, 0, 0};
 		Color color = WHITE;
 		float scale = 1;

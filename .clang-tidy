@@ -32,6 +32,8 @@ CheckOptions:
     value: CamelCase
   - key: readability-identifier-naming.FunctionCase
     value: CamelCase
+  - key: readability-identifier-naming.ParameterCase
+    value: camelBack
   - key: readability-identifier-naming.VariableCase
     value: camelBack
   - key: readability-identifier-naming.MemberCase
