@@ -18,6 +18,20 @@ using Entity = entt::entity;
 using Registry = entt::registry;
 using Dispatcher = entt::dispatcher;
 
+#define REGISTRY Engine::Get().registry
+#define DISPATCHER Engine::Get().dispatcher
+
+// Core
+#define RENDERER Engine::Get().renderer
+#define RESOURCE_MANAGER Engine::Get().resourceManager
+#define SCENE_MANAGER Engine::Get().sceneManager
+#define SYSTEM_MANAGER Engine::Get().systemManager
+#define LUA_MANAGER Engine::Get().luaManager
+#define NETWORK_MANAGER Engine::Get().networkMana
+
+// Thread pool
+#define THREAD_POOL Engine::Get().threadPool
+
 namespace Event
 {
 	/**
