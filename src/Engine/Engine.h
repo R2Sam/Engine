@@ -3,7 +3,7 @@
 #include "Types.h"
 
 #include "LuaManager.h"
-#include "NetworkManager.h"
+#include "Networking/AsyncNetwork.h"
 #include "Renderer.h"
 #include "ResourceManager.h"
 #include "SceneManager.h"
@@ -27,7 +27,7 @@ using Dispatcher = entt::dispatcher;
 #define SCENE_MANAGER Engine::Get().sceneManager
 #define SYSTEM_MANAGER Engine::Get().systemManager
 #define LUA_MANAGER Engine::Get().luaManager
-#define NETWORK_MANAGER Engine::Get().networkMana
+#define NETWORK Engine::Get().network
 
 // Thread pool
 #define THREAD_POOL Engine::Get().threadPool
@@ -173,7 +173,7 @@ public:
 	SceneManager& sceneManager = m_sceneManager;
 	SystemManager& systemManager = m_systemManager;
 	LuaManager& luaManager = m_luaManager;
-	NetworkManager& networkManager = m_networkManager;
+	AsyncNetwork& network = m_network;
 
 	// Thread pool
 	BS::thread_pool<BS::tp::none> threadPool;
@@ -195,7 +195,7 @@ private:
 	SceneManager m_sceneManager;
 	SystemManager m_systemManager;
 	LuaManager m_luaManager;
-	NetworkManager m_networkManager;
+	AsyncNetwork m_network;
 
 	// Mouse
 	Vector2 m_virtualMousePos = {};
