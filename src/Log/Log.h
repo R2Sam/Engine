@@ -5,11 +5,11 @@
 #include <mutex>
 #include <sstream>
 
-inline std::mutex timeMutex;
+inline std::mutex s_timeMutex;
 
 inline void GetThreadSafeLocalTime(const time_t& timeInput, std::tm& timeInfo)
 {
-	std::lock_guard<std::mutex> lock(timeMutex);
+	std::lock_guard<std::mutex> lock(s_timeMutex);
 	std::tm* result = localtime(&timeInput);
 	if (result != nullptr)
 	{

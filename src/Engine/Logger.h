@@ -60,23 +60,23 @@ public:
 	 * @endcode
 	 */
 
-	template <typename... Args>
-	static void Write(const LogLevel levelIn, Args&&... args)
+	template <LogLevel levelIn = LogLevel::DEBUG, typename... Args>
+	static void Write(Args&&... args)
 	{
-		if (levelIn < level)
+		if (levelIn < s_level)
 		{
 			return;
 		}
 
-		std::lock_guard<std::mutex> lock(mutex);
+		std::lock_guard<std::mutex> lock(s_mutex);
 
-		if (file.is_open())
+		if (s_file.is_open())
 		{
-			file << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(level) << "] ";
-			(file << ... << std::forward<Args>(args)) << '\n';
+			s_file << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(s_level) << "] ";
+			(s_file << ... << std::forward<Args>(args)) << '\n';
 		}
 
-		std::cerr << LevelColor(level) << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(level) << "] ";
+		std::cerr << LevelColor(s_level) << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(s_level) << "] ";
 		(std::cerr << ... << std::forward<Args>(args)) << ANSI_RESET << '\n';
 	}
 
@@ -86,7 +86,7 @@ private:
 
 	static const char* LevelColor(const LogLevel level);
 
-	inline static std::ofstream file;
-	inline static LogLevel level = LogLevel::DEBUG;
-	inline static std::mutex mutex;
+	inline static std::ofstream s_file;
+	inline static LogLevel s_level = LogLevel::DEBUG;
+	inline static std::mutex s_mutex;
 };

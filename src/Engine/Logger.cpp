@@ -2,18 +2,18 @@
 
 void Logger::SetLogLevel(const LogLevel levelIn)
 {
-	std::lock_guard<std::mutex> lock(mutex);
+	std::lock_guard<std::mutex> lock(s_mutex);
 
-	level = levelIn;
+	s_level = levelIn;
 }
 
 void Logger::SetLogFile(const char* path)
 {
-	std::lock_guard<std::mutex> lock(mutex);
+	std::lock_guard<std::mutex> lock(s_mutex);
 
-	if (file.is_open())
+	if (s_file.is_open())
 	{
-		file.close();
+		s_file.close();
 	}
 
 	if (std::string(path).empty())
@@ -21,7 +21,7 @@ void Logger::SetLogFile(const char* path)
 		return;
 	}
 
-	file.open(path, std::ios::app);
+	s_file.open(path, std::ios::app);
 }
 
 const char* Logger::LevelName(const LogLevel level)

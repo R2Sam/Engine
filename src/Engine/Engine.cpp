@@ -1,5 +1,6 @@
 #include "Engine.h"
 
+#include "Engine/Logger.h"
 #include "raylib.h"
 #include "raymath.h"
 
@@ -8,14 +9,14 @@
 
 #include "Log/Timer.h"
 
-static Engine* engine = nullptr;
+static Engine* s_engine = nullptr;
 
 Engine::Engine(const WindowInfo& windowInfo) :
 m_renderer(m_registry)
 {
-	Assert(!engine, "Only one engine instance may exist at the time");
+	Assert(!s_engine, "Only one engine instance may exist at the time");
 
-	engine = this;
+	s_engine = this;
 
 	SetFlags(windowInfo);
 
@@ -47,7 +48,7 @@ Engine::~Engine()
 
 	CloseWindow();
 
-	engine = nullptr;
+	s_engine = nullptr;
 }
 
 void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame)
@@ -154,8 +155,8 @@ double Engine::GetDrawTime() const
 
 Engine& Engine::Get()
 {
-	Assert(engine);
-	return *engine;
+	Assert(s_engine);
+	return *s_engine;
 }
 
 void Engine::SetFlags(const WindowInfo& windowInfo)
