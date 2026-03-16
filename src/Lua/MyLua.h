@@ -5,46 +5,6 @@
 
 #include "Log/Log.h"
 
-#include <cxxabi.h>
-#include <typeindex>
-
-template <typename T>
-std::string Demangle()
-{
-	std::string name = typeid(T).name();
-
-	int status = -4;
-
-	std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name.c_str(), NULL, NULL, &status), std::free};
-
-	return (status == 0) ? res.get() : name;
-}
-
-inline std::string Demangle(const std::type_index& type)
-{
-	const char* name = type.name();
-
-	int status = -4;
-
-	std::unique_ptr<char, void (*)(void*)> res{abi::__cxa_demangle(name, nullptr, nullptr, &status), std::free};
-
-	return (status == 0) ? res.get() : name;
-}
-
-template <typename T>
-std::string DemangleWithoutNamespace()
-{
-	std::string demangled = Demangle<T>();
-
-	size_t pos = demangled.find_last_of("::");
-	if (pos != std::string::npos)
-	{
-		return demangled.substr(pos + 1);
-	}
-
-	return demangled;
-}
-
 inline void SanitizeEnvironment(sol::state& lua, sol::environment& env)
 {
 	env["collectgarbage"] = sol::nil;

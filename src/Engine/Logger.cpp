@@ -1,4 +1,5 @@
 #include "Logger.h"
+#include "Log/Log.h"
 
 void Logger::SetLogLevel(const LogLevel levelIn)
 {
@@ -24,10 +25,23 @@ void Logger::SetLogFile(const char* path)
 	s_file.open(path, std::ios::app);
 }
 
+void Logger::SetLogLevelColor(const LogLevel level, const Color color)
+{
+	u8 index = static_cast<u8>(level);
+	if (index > s_levelColors.size())
+	{
+		return;
+	}
+
+	s_levelColors[index] = color;
+}
+
 const char* Logger::LevelName(const LogLevel level)
 {
 	switch (level)
 	{
+	case LogLevel::TRACE:
+		return "TRACE";
 	case LogLevel::DEBUG:
 		return "DEBUG";
 	case LogLevel::INFO:
@@ -36,24 +50,36 @@ const char* Logger::LevelName(const LogLevel level)
 		return "WARN";
 	case LogLevel::ERROR:
 		return "ERROR";
+	case LogLevel::FATAL:
+		return "FATAL";
 	}
 
 	return "UNKNOWN";
 }
 
-const char* Logger::LevelColor(const LogLevel level)
+std::string Logger::LevelColor(const LogLevel level)
 {
-	switch (level)
+	u8 index = static_cast<u8>(level);
+	if (index > s_levelColors.size())
 	{
-	case LogLevel::DEBUG:
-		return LOG_BLUE;
-	case LogLevel::INFO:
 		return LOG_WHITE;
-	case LogLevel::WARN:
-		return LOG_YELLOW;
-	case LogLevel::ERROR:
-		return LOG_RED;
 	}
 
-	return LOG_WHITE;
+	return RgbToAnsi(s_levelColors[index]);
+}
+
+std::string Logger::RgbToAnsi(const Color color)
+{
+	return std::format("\033[38;2;{};{};{}m", color.r, color.g, color.b);
+}
+
+Trace::Trace(const char* func) :
+m_func(func)
+{
+	Logger::Write<LogLevel::TRACE>("Entered: ", m_func);
+}
+
+Trace::~Trace()
+{
+	Logger::Write<LogLevel::TRACE>("Exited: ", m_func);
 }
