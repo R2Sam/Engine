@@ -119,7 +119,7 @@ else()
     FetchContent_Declare(
         networking
         GIT_REPOSITORY https://github.com/R2Sam/Networking.git
-        GIT_TAG lib
+        GIT_TAG main
         GIT_SHALLOW TRUE
         EXCLUDE_FROM_ALL
     )
