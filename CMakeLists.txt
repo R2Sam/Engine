@@ -182,6 +182,11 @@ target_compile_options(engine PRIVATE
   ${COMMON_FLAGS}
   $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
   $<$<CONFIG:Release>:${RELEASE_FLAGS}>
+  $<$<CONFIG:Debug>:
+        $<$<PLATFORM_ID:Linux>:
+        -fsanitize=address
+        -fsanitize=undefined>
+    >
 )
 
 target_link_libraries(engine
@@ -196,6 +201,11 @@ target_link_libraries(engine
 
 target_link_options(engine PRIVATE
   $<$<CONFIG:Release>:${RELEASE_LINKER_FLAGS}>
+  $<$<CONFIG:Debug>:
+        $<$<PLATFORM_ID:Linux>:
+        -fsanitize=address
+        -fsanitize=undefined>
+    >
 )
 
 if (EMSCRIPTEN)
