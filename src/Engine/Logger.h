@@ -112,7 +112,7 @@ private:
 	inline static LogLevel s_level = LogLevel::DEBUG;
 	inline static std::mutex s_mutex;
 
-	inline static std::vector<Color> s_levelColors = {GRAY, {0, 255, 255, 255}, GREEN, YELLOW, RED, MAGENTA};
+	inline static std::vector<Color> s_levelColors = {LIGHTGRAY, {0, 255, 255, 255}, GREEN, YELLOW, RED, MAGENTA};
 };
 
 class Trace
