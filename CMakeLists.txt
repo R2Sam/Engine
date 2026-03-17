@@ -127,6 +127,31 @@ endif()
 
 FetchContent_MakeAvailable(networking)
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../Utils")
+    message(STATUS "Using local Utils repo")
+    FetchContent_Declare(
+        utils
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Utils/
+    )
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../Utils")
+  message(STATUS "Using local Utils repo")
+    FetchContent_Declare(
+        utils
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../Utils/
+    )
+else()
+    message(STATUS "Using online Utils repo")
+    FetchContent_Declare(
+        utils
+        GIT_REPOSITORY https://github.com/R2Sam/Utils.git
+        GIT_TAG main
+        GIT_SHALLOW TRUE
+        EXCLUDE_FROM_ALL
+    )
+endif()
+
+FetchContent_MakeAvailable(utils)
+
 FetchContent_Declare(raylib
   GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
   GIT_TAG 5.5
@@ -165,6 +190,7 @@ target_link_libraries(engine
     rlImGui
     luajit
     networking
+    utils
     ${SYSTEM_LIBS}
 )
 
@@ -224,6 +250,7 @@ if(BUILD_TESTS_ENGINE)
         rlImGui
         luajit
         networking
+        utils
         ${SYSTEM_LIBS}
         Catch2::Catch2WithMain
     )
