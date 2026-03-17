@@ -63,6 +63,16 @@ struct HasOstreamOperator<T, std::void_t<decltype(std::declval<std::ostream&>() 
 {
 };
 
+template <typename, typename = void>
+struct HasPrintMethod : std::false_type
+{
+};
+
+template <typename T>
+struct HasPrintMethod<T, std::void_t<decltype(std::declval<const T&>().Print())>> : std::true_type
+{
+};
+
 template <typename T>
 std::string CheckOperator(const T& object)
 {
@@ -71,6 +81,11 @@ std::string CheckOperator(const T& object)
 		std::ostringstream oss;
 		oss << object;
 		return oss.str();
+	}
+
+	else if constexpr (HasPrintMethod<T>::value)
+	{
+		return object.Print();
 	}
 
 	return "INVALID";

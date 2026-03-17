@@ -760,7 +760,7 @@ struct Vector2i
 	#ifndef NORAYLIB
 	constexpr Vector2 vec2() const
 	{
-		return Vector2{x, y};
+		return Vector2{static_cast<float>(x), static_cast<float>(y)};
 	}
 	#endif
 
@@ -914,7 +914,7 @@ struct Vector3i
 	#ifndef NORAYLIB
 	constexpr Vector3 vec3() const
 	{
-		return Vector3{x, y, z};
+		return Vector3{static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)};
 	}
 	#endif
 

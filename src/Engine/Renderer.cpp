@@ -26,11 +26,14 @@ void Renderer::Update(entt::registry& registry)
 		if (!IsTextureValid(sprite.texture))
 		{
 			Image image = GenImageColor(sprite.rectangle.width, sprite.rectangle.height, PURPLE);
-			ImageDrawRectangleRec(&image, Rectangle{0, 0, sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5},
+			ImageDrawRectangleRec(&image,
+			Rectangle{0, 0, static_cast<float>(sprite.rectangle.width * 0.5),
+			static_cast<float>(sprite.rectangle.height * 0.5)},
 			BLACK);
 			ImageDrawRectangleRec(&image,
-			Rectangle{sprite.rectangle.width * 0.5, sprite.rectangle.height * 0.5, sprite.rectangle.width * 0.5,
-			sprite.rectangle.height * 0.5},
+			Rectangle{static_cast<float>(sprite.rectangle.width * 0.5),
+			static_cast<float>(sprite.rectangle.height * 0.5), static_cast<float>(sprite.rectangle.width * 0.5),
+			static_cast<float>(sprite.rectangle.height * 0.5)},
 			BLACK);
 
 			sprite.texture = LoadTextureFromImage(image);
@@ -77,7 +80,7 @@ void Renderer::SortSprites(entt::registry& registry)
 	});
 }
 
-void Renderer::MarkNeedSort(entt::entity entity)
+void Renderer::MarkNeedSort([[maybe_unused]] entt::entity entity)
 {
 	m_needSort = true;
 }

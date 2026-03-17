@@ -1,6 +1,5 @@
 #include "Engine.h"
 
-#include "Engine/Logger.h"
 #include "raylib.h"
 #include "raymath.h"
 
@@ -82,8 +81,8 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		float scaleY = GetRenderHeight() / m_virtualHeight;
 		float scale = std::min(scaleX, scaleY);
 
-		Vector2 offset = {(GetRenderWidth() - m_virtualWidth * scale) * 0.5,
-		(GetRenderHeight() - m_virtualHeight * scale) * 0.5};
+		Vector2 offset = {static_cast<float>((GetRenderWidth() - m_virtualWidth * scale) * 0.5),
+		static_cast<float>((GetRenderHeight() - m_virtualHeight * scale) * 0.5)};
 
 		Vector2 mousePos = GetMousePosition();
 		m_virtualMousePos = (mousePos - offset) / scale;
@@ -128,7 +127,8 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		}
 		EndTextureMode();
 
-		DrawTexturePro(m_canvas.texture, {0, 0, m_canvas.texture.width, -m_canvas.texture.height},
+		DrawTexturePro(m_canvas.texture,
+		{0, 0, static_cast<float>(m_canvas.texture.width), static_cast<float>(-m_canvas.texture.height)},
 		{offset.x, offset.y, m_virtualWidth * scale, m_virtualHeight * scale}, {0, 0}, 0, WHITE);
 
 		EndDrawing();
@@ -211,7 +211,7 @@ void Engine::SetFlags(const WindowInfo& windowInfo)
 	SetConfigFlags(flags);
 }
 
-void Engine::OnCloseGameEvent(const Event::CloseGame& event)
+void Engine::OnCloseGameEvent([[maybe_unused]] const Event::CloseGame& event)
 {
 	m_running = false;
 }

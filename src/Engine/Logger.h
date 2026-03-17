@@ -76,11 +76,11 @@ public:
 
 		if (s_file.is_open())
 		{
-			s_file << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(s_level) << "] ";
+			s_file << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(levelIn) << "] ";
 			(s_file << ... << CheckOperator(args)) << '\n';
 		}
 
-		std::cerr << LevelColor(s_level) << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(s_level) << "] ";
+		std::cerr << LevelColor(levelIn) << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(levelIn) << "] ";
 		(std::cerr << ... << CheckOperator(args)) << ANSI_RESET << '\n';
 	}
 
@@ -120,8 +120,16 @@ private:
 	std::string m_func;
 };
 
-#define TRACE_FUNCTOIN Trace trace(__PRETTY_FUNCTION__);
-#define TRACE_VALUE(object, objectName)                                                                                \
-	Logger::Write<LogLevel::TRACE>(Demangle(typeid(object)), " ", objectName ": ", object);
-#define TRACE_ADDRESS(object, objectName)                                                                              \
-	Logger::Write<LogLevel::TRACE>(Demangle(typeid(object)), " ", objectName ": ", &object);
+#define TraceFunction Trace trace(__PRETTY_FUNCTION__);
+
+template <typename T>
+void TraceValue(const T& object, const char* objectName)
+{
+	Logger::Write<LogLevel::TRACE>(Demangle(typeid(object)), " ", objectName, " value: ", object);
+}
+
+template <typename T>
+void TraceAddress(const T& object, const char* objectName)
+{
+	Logger::Write<LogLevel::TRACE>(Demangle(typeid(object)), " ", objectName, " address: ", &object);
+}

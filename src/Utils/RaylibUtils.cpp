@@ -13,22 +13,22 @@ bool ColorCompare(const Color a, const Color b)
 
 void DrawTextureScale(const Texture2D& texture, const Vector2 position, const float scale, const Color color)
 {
-	DrawTexturePro(texture, Rectangle{0, 0, texture.width, texture.height},
+	DrawTexturePro(texture, Rectangle{0, 0, static_cast<float>(texture.width), static_cast<float>(texture.height)},
 	Rectangle{position.x, position.y, texture.width * scale, texture.height * scale},
 	Vector2{texture.width * scale / 2.0f, texture.height * scale / 2.0f}, 0, color);
 }
 
 void DrawTextureRot(const Texture2D& texture, const Vector2 position, const int rotation, const Color color)
 {
-	DrawTexturePro(texture, Rectangle{0, 0, texture.width, texture.height},
-	Rectangle{position.x, position.y, texture.width, texture.height},
+	DrawTexturePro(texture, Rectangle{0, 0, static_cast<float>(texture.width), static_cast<float>(texture.height)},
+	Rectangle{position.x, position.y, static_cast<float>(texture.width), static_cast<float>(texture.height)},
 	Vector2{texture.width / 2.0f, texture.height / 2.0f}, rotation, color);
 }
 
 void DrawTextureRotScale(const Texture2D& texture, const Vector2 position, const int rotation, const float scale,
 const Color color)
 {
-	DrawTexturePro(texture, Rectangle{0, 0, texture.width, texture.height},
+	DrawTexturePro(texture, Rectangle{0, 0, static_cast<float>(texture.width), static_cast<float>(texture.height)},
 	Rectangle{position.x, position.y, texture.width * scale, texture.height * scale},
 	Vector2{texture.width * scale / 2.0f, texture.height * scale / 2.0f}, rotation, color);
 }
@@ -44,7 +44,7 @@ const int rotation, const float scale, const Color color)
 void DrawTextRec(const std::string& text, const int fontSize, const Color textColor, const Rectangle rec,
 const Color recColor)
 {
-	Vector2 textSize = {MeasureText(text.c_str(), fontSize), fontSize};
+	Vector2 textSize = {static_cast<float>(MeasureText(text.c_str(), fontSize)), static_cast<float>(fontSize)};
 	Vector2 textPos;
 
 	textPos.x = rec.x + (rec.width / 2) - (textSize.x / 2);
@@ -146,8 +146,8 @@ bool IsTextureVisible(const Texture2D texture, const float scale, const Vector2 
 
 	float worstCaseSize = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight);
 
-	Rectangle worstCaseRect = {position.x - worstCaseSize / 2.0, position.y - worstCaseSize / 2.0, worstCaseSize,
-	worstCaseSize};
+	Rectangle worstCaseRect = {static_cast<float>(position.x - worstCaseSize / 2.0),
+	static_cast<float>(position.y - worstCaseSize / 2.0), worstCaseSize, worstCaseSize};
 
 	return CheckCollisionRecs(cameraView, worstCaseRect);
 }
@@ -161,8 +161,8 @@ bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vect
 
 	float worstCaseSize = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight);
 
-	Rectangle worstCaseRect = {position.x - worstCaseSize / 2.0, position.y - worstCaseSize / 2.0, worstCaseSize + 2,
-	worstCaseSize + 2};
+	Rectangle worstCaseRect = {static_cast<float>(position.x - worstCaseSize / 2.0),
+	static_cast<float>(position.y - worstCaseSize / 2.0), worstCaseSize + 2, worstCaseSize + 2};
 
 	return CheckCollisionRecs(cameraView, worstCaseRect);
 }
