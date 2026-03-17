@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Types.h"
+#include "Types.hpp"
 
-#include "LuaManager.h"
-#include "Networking/AsyncNetwork.h"
-#include "Renderer.h"
-#include "ResourceManager.h"
-#include "SceneManager.h"
-#include "SystemManager.h"
+#include "LuaManager.hpp"
+#include "Networking/AsyncNetwork.hpp"
+#include "Renderer.hpp"
+#include "ResourceManager.hpp"
+#include "SceneManager.hpp"
+#include "SystemManager.hpp"
 #include "bsThreadPool/BS_thread_pool.hpp"
 #include "entt/entt.h"
 #include "raylib.h"

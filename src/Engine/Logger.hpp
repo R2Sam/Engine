@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Log/Log.h"
-#include "Types.h"
+#include "Log/Log.hpp"
+#include "Types.hpp"
 #include "raylib.h"
 
 #include <fstream>
 #include <mutex>
-#include <ostream>
 
 /**
  * @brief Console and file logging levels

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lua/MyLua.h"
+#include "Lua/MyLua.hpp"
 
 #include "entt/entt.h"
 

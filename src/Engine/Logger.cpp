@@ -1,5 +1,4 @@
-#include "Logger.h"
-#include "Log/Log.h"
+#include "Logger.hpp"
 
 void Logger::SetLogLevel(const LogLevel levelIn)
 {

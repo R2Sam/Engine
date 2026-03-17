@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Assert.h"
+#include "Assert.hpp"
 
 #include <functional>
 #include <memory>

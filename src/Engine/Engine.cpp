@@ -1,12 +1,12 @@
-#include "Engine.h"
+#include "Engine.hpp"
 
 #include "raylib.h"
 #include "raymath.h"
 
-#include "AnimationSystem.h"
-#include "Renderer.h"
+#include "AnimationSystem.hpp"
+#include "Renderer.hpp"
 
-#include "Log/Timer.h"
+#include "Log/Timer.hpp"
 
 static Engine* s_engine = nullptr;
 

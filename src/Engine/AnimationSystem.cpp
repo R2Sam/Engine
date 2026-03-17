@@ -1,8 +1,8 @@
-#include "AnimationSystem.h"
+#include "AnimationSystem.hpp"
 
-#include "Components.h"
+#include "Components.hpp"
 
-#include "Engine.h"
+#include "Engine.hpp"
 
 AnimationSystem::AnimationSystem()
 {
@@ -41,7 +41,7 @@ void AnimationSystem::Update(const float deltaT)
 			}
 		}
 
-		Vector2i gridPosition = {animation.currentIndex % rowLength, animation.currentIndex / rowLength};
+		Vec2<u32> gridPosition = {animation.currentIndex % rowLength, animation.currentIndex / rowLength};
 
 		sprite.rectangle = {gridPosition.x * sprite.rectangle.width, gridPosition.y * sprite.rectangle.height,
 		sprite.rectangle.width, sprite.rectangle.height};

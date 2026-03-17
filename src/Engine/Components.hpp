@@ -1,16 +1,16 @@
 #pragma once
 
-#include "MyMath/MyVectors.h"
+#include "MyMath/MyVectors.hpp"
 #include "raylib.h"
 
-#include "Types.h"
+#include "Types.hpp"
 
 namespace Component
 {
 	struct Transform
 	{
-		Vector2f position;
-		Vector2f velocity;
+		Vec2<float> position;
+		Vec2<float> velocity;
 		float rotation = 0;
 	};
 

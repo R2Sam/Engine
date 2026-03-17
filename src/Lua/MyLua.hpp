@@ -3,7 +3,7 @@
 #define SOL_NO_EXCEPTIONS 1
 #include "sol/sol.hpp"
 
-#include "Log/Log.h"
+#include "Log/Log.hpp"
 
 inline void SanitizeEnvironment(sol::state& lua, sol::environment& env)
 {

@@ -1,4 +1,4 @@
-#include "ResourceManager.h"
+#include "ResourceManager.hpp"
 
 void ResourceManager::ClearCaches()
 {

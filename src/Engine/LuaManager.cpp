@@ -1,6 +1,5 @@
-#include "LuaManager.h"
+#include "LuaManager.hpp"
 
-#include "Lua/MyLua.h"
 #include "sol/sol.hpp"
 #include <optional>
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Log.h"
+#include "Engine/Logger.hpp"
 
-#include "Types.h"
+#include "Types.hpp"
 
 #include <deque>
 
@@ -61,7 +61,7 @@ public:
 		double microseconds = std::chrono::duration_cast<std::chrono::microseconds>(m_end - m_start).count();
 		if (!m_name.empty())
 		{
-			Log(m_name, " took: ", microseconds * 0.001, " ms ", text);
+			Logger::Write(m_name, " took: ", microseconds * 0.001, " ms ", text);
 		}
 
 		return microseconds * 0.001;

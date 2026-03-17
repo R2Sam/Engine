@@ -1,6 +1,6 @@
-#include "SceneManager.h"
+#include "SceneManager.hpp"
 
-#include "Assert.h"
+#include "Assert.hpp"
 
 void SceneManager::Update(const float deltaT)
 {

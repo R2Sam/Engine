@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Assert.h"
-#include "Lua/MyLua.h"
+#include "Assert.hpp"
+#include "Lua/MyLua.hpp"
 
 #include <memory>
 #include <typeindex>

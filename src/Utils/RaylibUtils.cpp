@@ -1,4 +1,4 @@
-#include "Utils/RaylibUtils.h"
+#include "Utils/RaylibUtils.hpp"
 
 #include "raylib.h"
 #include "raymath.h"

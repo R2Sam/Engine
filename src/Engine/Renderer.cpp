@@ -1,8 +1,8 @@
-#include "Renderer.h"
+#include "Renderer.hpp"
 
-#include "Utils/RaylibUtils.h"
+#include "Utils/RaylibUtils.hpp"
 
-#include "Components.h"
+#include "Components.hpp"
 #include "raylib.h"
 
 Renderer::Renderer(entt::registry& registry)
@@ -57,9 +57,9 @@ void Renderer::Draw(entt::registry& registry) const
 
 	for (auto [entity, sprite, transform] : group.each())
 	{
-		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.vec2(), camera))
+		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.Raylib(), camera))
 		{
-			DrawTextureRotScaleSelect(sprite.texture, sprite.rectangle, transform.position.vec2(), transform.rotation,
+			DrawTextureRotScaleSelect(sprite.texture, sprite.rectangle, transform.position.Raylib(), transform.rotation,
 			sprite.scale, sprite.color);
 		}
 	}
