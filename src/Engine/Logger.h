@@ -72,6 +72,13 @@ public:
 			return;
 		}
 
+#ifdef NDEBUG
+		if (levelIn < LogLevel::INFO)
+		{
+			return;
+		}
+#endif
+
 		std::lock_guard<std::mutex> lock(s_mutex);
 
 		if (s_file.is_open())
@@ -132,4 +139,16 @@ template <typename T>
 void TraceAddress(const T& object, const char* objectName)
 {
 	Logger::Write<LogLevel::TRACE>(Demangle(typeid(object)), " ", objectName, " address: ", &object);
+}
+
+template <typename T>
+void DebugValue(const T& object, const char* objectName)
+{
+	Logger::Write<LogLevel::DEBUG>(Demangle(typeid(object)), " ", objectName, " value: ", object);
+}
+
+template <typename T>
+void DebugAddress(const T& object, const char* objectName)
+{
+	Logger::Write<LogLevel::DEBUG>(Demangle(typeid(object)), " ", objectName, " address: ", &object);
 }
