@@ -83,11 +83,13 @@ public:
 		if (s_file.is_open())
 		{
 			s_file << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(levelIn) << "] ";
-			(s_file << ... << CheckOperator(args)) << '\n';
+			(CheckOperator(s_file, args), ...);
+			s_file << '\n';
 		}
 
 		std::cerr << LevelColor(levelIn) << "[" << GetCurrentTimeString() << "] " << "[" << LevelName(levelIn) << "] ";
-		(std::cerr << ... << CheckOperator(args)) << ANSI_RESET << '\n';
+		(CheckOperator(std::cerr, args), ...);
+		std::cerr << ANSI_RESET << '\n';
 	}
 
 	/**
