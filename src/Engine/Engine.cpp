@@ -6,7 +6,7 @@
 #include "AnimationSystem.hpp"
 #include "Renderer.hpp"
 
-#include "Log/Timing.hpp"
+#include "Timing.hpp"
 
 static Engine* s_engine = nullptr;
 
