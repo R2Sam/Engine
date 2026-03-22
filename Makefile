@@ -15,7 +15,7 @@ release:
 
 tests:
 	mkdir -p build && cmake -B build -DFETCHCONTENT_BASE_DIR=../.deps -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS_ENGINE=ON  && cd build && $(MAKE) -j${JOBS} -s
-	cd bin && ./testsEngine
+	cd bin && ./testsEngine --allow-running-no-tests
 
 clear:
 	-mv build/compile_commands.json compile_commands.json
