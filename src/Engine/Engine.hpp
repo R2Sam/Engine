@@ -200,7 +200,7 @@ private:
 	// Mouse
 	Vector2 m_virtualMousePos = {};
 
-	// Timers
+	// Timings
 	double m_updateTime = 0;
 	double m_drawTime = 0;
 

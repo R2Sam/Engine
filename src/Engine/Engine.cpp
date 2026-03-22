@@ -6,7 +6,7 @@
 #include "AnimationSystem.hpp"
 #include "Renderer.hpp"
 
-#include "Log/Timer.hpp"
+#include "Log/Timing.hpp"
 
 static Engine* s_engine = nullptr;
 
@@ -73,7 +73,7 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		float deltaT = std::min(GetFrameTime(), 0.1f);
 		accummulator += deltaT;
 
-		Timer updateTimer;
+		Stopwatch updateTimer;
 		updateTimer.Start();
 
 		// Scaling
@@ -109,7 +109,7 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		updateTimeAverage += updateTimer.Stop();
 		m_updateTime = updateTimeAverage.Average();
 
-		Timer drawTimer;
+		Stopwatch drawTimer;
 		drawTimer.Start();
 
 		BeginDrawing();
