@@ -182,6 +182,8 @@ private:
 
 	static void SetFlags(const WindowInfo& windowInfo);
 
+	void RaylibResourceManager();
+
 	// Event handling
 	void OnCloseGameEvent(const Event::CloseGame& event);
 

@@ -215,6 +215,104 @@ void Engine::SetFlags(const WindowInfo& windowInfo)
 	SetConfigFlags(flags);
 }
 
+void Engine::RaylibResourceManager()
+{
+	m_resourceManager.AddCache<Texture2D>([](const char* path) -> std::optional<Texture2D>
+	{
+		Texture2D texture = LoadTexture(path);
+		if (!IsTextureValid(texture))
+		{
+			return std::nullopt;
+		}
+
+		return texture;
+	}, UnloadTexture);
+
+	m_resourceManager.AddCache<Image>([](const char* path) -> std::optional<Image>
+	{
+		Image image = LoadImage(path);
+		if (!IsImageValid(image))
+		{
+			return std::nullopt;
+		}
+
+		return image;
+	}, UnloadImage);
+
+	m_resourceManager.AddCache<Wave>([](const char* path) -> std::optional<Wave>
+	{
+		Wave wave = LoadWave(path);
+		if (!IsWaveValid(wave))
+		{
+			return std::nullopt;
+		}
+
+		return wave;
+	}, UnloadWave);
+
+	m_resourceManager.AddCache<Sound>([](const char* path) -> std::optional<Sound>
+	{
+		Sound sound = LoadSound(path);
+		if (!IsSoundValid(sound))
+		{
+			return std::nullopt;
+		}
+
+		return sound;
+	}, UnloadSound);
+
+	m_resourceManager.AddCache<Music>([](const char* path) -> std::optional<Music>
+	{
+		Music music = LoadMusicStream(path);
+		if (!IsMusicValid(music))
+		{
+			return std::nullopt;
+		}
+
+		return music;
+	}, UnloadMusicStream);
+
+	m_resourceManager.AddCache<char*>([](const char* path) -> std::optional<char*>
+	{
+		if (!FileExists(path))
+		{
+			return std::nullopt;
+		}
+
+		char* file = LoadFileText(path);
+
+		if (file)
+		{
+			return std::nullopt;
+		}
+
+		return file;
+	}, UnloadFileText);
+
+	m_resourceManager.AddCache<u8*>([](const char* path) -> std::optional<u8*>
+	{
+		if (!FileExists(path))
+		{
+			return std::nullopt;
+		}
+
+		i32 size = GetFileLength(path);
+		if (size <= 0)
+		{
+			return std::nullopt;
+		}
+
+		u8* file = LoadFileData(path, &size);
+
+		if (file)
+		{
+			return std::nullopt;
+		}
+
+		return file;
+	}, UnloadFileData);
+}
+
 void Engine::OnCloseGameEvent([[maybe_unused]] const Event::CloseGame& event)
 {
 	m_running = false;
