@@ -24,6 +24,8 @@ m_renderer(m_registry)
 	InitWindow(windowInfo.width, windowInfo.height, windowInfo.title.c_str());
 	SetExitKey(KEY_NULL);
 
+	InitAudioDevice();
+
 	// Systems
 	m_systemManager.AddSystem<AnimationSystem>(0);
 
@@ -44,6 +46,8 @@ Engine::~Engine()
 	m_systemManager.ClearSystems();
 	m_sceneManager.ClearScenes();
 	m_resourceManager.ClearCaches();
+
+	CloseAudioDevice();
 
 	CloseWindow();
 

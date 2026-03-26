@@ -41,7 +41,7 @@ public:
 		auto it = m_map.find(path);
 		if (it != m_map.end())
 		{
-			return *it->second();
+			return it->second.get();
 		}
 
 		std::optional<T> opt = m_loadFunction(path);
@@ -55,7 +55,7 @@ public:
 
 		m_map.emplace(path, std::move(ptr));
 
-		return ptr;
+		return m_map[path].get();
 	}
 
 	T& Add(T&& object, const char* name)
@@ -67,11 +67,10 @@ public:
 		}
 
 		auto ptr = std::make_unique<T>(std::move(object));
-		auto& ref = *ptr;
 
 		m_map.emplace(name, std::move(ptr));
 
-		return ref;
+		return *m_map[name].get();
 	}
 
 	void Remove(const char* path)
