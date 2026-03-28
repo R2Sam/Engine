@@ -20,9 +20,12 @@ class System
 {
 public:
 
-	virtual ~System()
-	{
-	}
+	System() = default;
+
+	System(const System&) = delete;
+	System& operator=(const System&) = delete;
+
+	virtual ~System() = default;
 
 	/**
 	 * @brief Updates the system
@@ -57,18 +60,10 @@ class SystemManager
 {
 public:
 
-	/**
-	 * @brief Updates all systems in order
-	 *
-	 * @param deltaT Duration of previous frame
-	 */
+	SystemManager() = default;
 
-	void Update(const float deltaT);
-
-	/**
-	 * @brief Renders all systems in order
-	 */
-	void Draw();
+	SystemManager(const SystemManager&) = delete;
+	SystemManager& operator=(const SystemManager&) = delete;
 
 	/**
 	 * @brief Adds a system to the manager
@@ -164,6 +159,21 @@ public:
 
 private:
 
+	/**
+	 * @brief Updates all systems in order
+	 *
+	 * @param deltaT Duration of previous frame
+	 */
+
+	void Update(const float deltaT);
+
+	/**
+	 * @brief Renders all systems in order
+	 */
+	void Draw();
+
 	std::vector<std::pair<u32, std::unique_ptr<System>>> m_systems;
 	std::unordered_map<std::type_index, System*> m_systemsMap;
+
+	friend class Engine;
 };

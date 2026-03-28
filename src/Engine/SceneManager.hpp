@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Assert.hpp"
-#include "Lua/MyLua.hpp"
+
+#include "Log/Log.hpp"
 
 #include <memory>
 #include <typeindex>
@@ -18,9 +19,12 @@ class Scene
 {
 public:
 
-	virtual ~Scene()
-	{
-	}
+	Scene() = default;
+
+	Scene(const Scene&) = delete;
+	Scene& operator=(const Scene&) = delete;
+
+	virtual ~Scene() = default;
 
 	/**
 	 * @brief Updates the scene
@@ -63,20 +67,6 @@ public:
 class SceneManager
 {
 public:
-
-	/**
-	 * @brief Updates current scene
-	 *
-	 * @param deltaT Duration of previous frame
-	 */
-
-	void Update(const float deltaT);
-
-	/**
-	 * @brief Renders the current scene
-	 */
-
-	void Draw();
 
 	/**
 	 * @brief Adds a scene to the manager
@@ -151,6 +141,20 @@ public:
 
 private:
 
+	/**
+	 * @brief Updates current scene
+	 *
+	 * @param deltaT Duration of previous frame
+	 */
+
+	void Update(const float deltaT);
+
+	/**
+	 * @brief Renders the current scene
+	 */
+
+	void Draw();
+
 	void CheckForChange();
 
 	Scene* m_currentScene = nullptr;
@@ -159,4 +163,6 @@ private:
 	std::type_index m_nextSceneType = typeid(void);
 
 	std::unordered_map<std::type_index, std::unique_ptr<Scene>> m_scenes;
+
+	friend class Engine;
 };

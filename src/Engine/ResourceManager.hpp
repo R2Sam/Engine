@@ -13,6 +13,11 @@ class Cache
 {
 public:
 
+	Cache() = default;
+
+	Cache(const Cache&) = delete;
+	Cache& operator=(const Cache&) = delete;
+
 	virtual ~Cache() = default;
 };
 
@@ -27,6 +32,9 @@ public:
 	m_unloadFunction(unloadFunction)
 	{
 	}
+
+	ResourceCache(const ResourceCache&) = delete;
+	ResourceCache& operator=(const ResourceCache&) = delete;
 
 	~ResourceCache()
 	{
@@ -136,5 +144,9 @@ public:
 
 private:
 
+	ResourceManager() = default;
+
 	std::unordered_map<std::type_index, std::unique_ptr<Cache>> m_caches;
+
+	friend class Engine;
 };

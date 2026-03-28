@@ -18,10 +18,6 @@ class LuaManager
 {
 public:
 
-	LuaManager();
-
-	void Update(const float deltaT);
-
 	template <typename Event>
 	void RegisterRecieveEvent(entt::dispatcher& dispatcher)
 	{
@@ -70,6 +66,10 @@ public:
 
 private:
 
+	LuaManager();
+
+	void Update(const float deltaT);
+
 	template <typename Event>
 	void OnEvent(const Event& event)
 	{
@@ -84,4 +84,6 @@ private:
 	}
 
 	std::unordered_map<std::string, LuaScript> m_scripts;
+
+	friend class Engine;
 };
