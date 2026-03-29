@@ -159,7 +159,7 @@ double Engine::GetDrawTime() const
 
 Engine& Engine::Get()
 {
-	Assert(s_engine);
+	Assert(s_engine, "Engine must exists");
 	return *s_engine;
 }
 

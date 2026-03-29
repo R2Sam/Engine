@@ -13,10 +13,6 @@ debug:
 release:
 	mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && $(MAKE) -j${JOBS} -s
 
-tests:
-	mkdir -p build && cmake -B build -DFETCHCONTENT_BASE_DIR=../.deps -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS_ENGINE=ON  && cd build && $(MAKE) -j${JOBS} -s
-	cd bin && ./testsEngine --allow-running-no-tests
-
 clear:
 	-mv build/compile_commands.json compile_commands.json
 	-rm -r build
