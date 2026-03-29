@@ -8,7 +8,10 @@
 
 #include "Timing.hpp"
 
-static Engine* s_engine = nullptr;
+namespace
+{
+	Engine* s_engine = nullptr;
+}
 
 Engine::Engine(const WindowInfo& windowInfo) :
 m_renderer(m_registry)
