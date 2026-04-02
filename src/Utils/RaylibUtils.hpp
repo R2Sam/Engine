@@ -45,6 +45,8 @@ Rectangle GetCameraRectangle(const Camera2D camera);
 // Check for texture visibility
 bool IsTextureVisible(const Texture2D texture, const float scale, const Vector2 position, const Camera2D camera);
 bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vector2 position, const Camera2D camera);
+bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vector2 position,
+const Rectangle cameraRectangle);
 
 // String to list of words
 std::vector<std::string> WordList(const std::string& input);

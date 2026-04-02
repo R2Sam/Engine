@@ -5,12 +5,15 @@
 #include "Components.hpp"
 #include "raylib.h"
 
-Renderer::Renderer(entt::registry& registry)
+Renderer::Renderer(entt::registry& registry, const float virutalWidth, const float virutalHeight)
 {
 	camera.target = {0, 0};
 	camera.offset = {0, 0};
 	camera.zoom = 1;
 	camera.rotation = 0;
+
+	m_virtualWidth = virutalWidth;
+	m_virtualHeight = virutalHeight;
 
 	registry.on_construct<Component::Sprite>().connect<&Renderer::MarkNeedSort>(this);
 	registry.on_update<Component::Sprite>().connect<&Renderer::MarkNeedSort>(this);
@@ -53,11 +56,16 @@ void Renderer::Draw(entt::registry& registry) const
 {
 	auto group = registry.group<Component::Sprite>(entt::get<Component::Transform>);
 
+	Rectangle cameraRectangle = {.x = camera.target.x - camera.offset.x / camera.zoom,
+	.y = camera.target.y - camera.offset.y / camera.zoom,
+	.width = m_virtualWidth / camera.zoom,
+	.height = m_virtualHeight / camera.zoom};
+
 	BeginMode2D(camera);
 
 	for (auto [entity, sprite, transform] : group.each())
 	{
-		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.Raylib(), camera))
+		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.Raylib(), cameraRectangle))
 		{
 			DrawTextureRotScaleSelect(sprite.texture, sprite.rectangle, transform.position.Raylib(), transform.rotation,
 			sprite.scale, sprite.color);

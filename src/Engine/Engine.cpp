@@ -14,7 +14,7 @@ namespace
 }
 
 Engine::Engine(const WindowInfo& windowInfo) :
-m_renderer(m_registry)
+m_renderer(m_registry, windowInfo.virutalWidth, windowInfo.virtualHeight)
 {
 	Assert(!s_engine, "Only one engine instance may exist at the time");
 
@@ -86,8 +86,8 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		updateTimer.Start();
 
 		// Scaling
-		float scaleX = GetRenderWidth() / m_virtualWidth;
-		float scaleY = GetRenderHeight() / m_virtualHeight;
+		float scaleX = GetRenderWidth() / static_cast<float>(m_virtualWidth);
+		float scaleY = GetRenderHeight() / static_cast<float>(m_virtualHeight);
 		float scale = std::min(scaleX, scaleY);
 
 		Vector2 offset = {static_cast<float>((GetRenderWidth() - m_virtualWidth * scale) * 0.5),

@@ -133,8 +133,8 @@ Rectangle GetCameraRectangle(const Camera2D camera)
 {
 	return Rectangle{.x = camera.target.x - camera.offset.x / camera.zoom,
 	.y = camera.target.y - camera.offset.y / camera.zoom,
-	.width = GetScreenWidth() / camera.zoom,
-	.height = GetScreenHeight() / camera.zoom};
+	.width = GetRenderWidth() / camera.zoom,
+	.height = GetRenderHeight() / camera.zoom};
 }
 
 bool IsTextureVisible(const Texture2D texture, const float scale, const Vector2 position, const Camera2D camera)
@@ -165,6 +165,20 @@ bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vect
 	static_cast<float>(position.y - worstCaseSize / 2.0), worstCaseSize + 2, worstCaseSize + 2};
 
 	return CheckCollisionRecs(cameraView, worstCaseRect);
+}
+
+bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vector2 position,
+const Rectangle cameraRectangle)
+{
+	float scaledWidth = rectangle.width * scale;
+	float scaledHeight = rectangle.height * scale;
+
+	float worstCaseSize = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight);
+
+	Rectangle worstCaseRect = {static_cast<float>(position.x - worstCaseSize / 2.0),
+	static_cast<float>(position.y - worstCaseSize / 2.0), worstCaseSize + 2, worstCaseSize + 2};
+
+	return CheckCollisionRecs(cameraRectangle, worstCaseRect);
 }
 
 std::vector<std::string> WordList(const std::string& input)

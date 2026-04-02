@@ -11,7 +11,7 @@ public:
 
 private:
 
-	Renderer(entt::registry& registry);
+	Renderer(entt::registry& registry, const float virutalWidth, const float virutalHeight);
 
 	void Update(entt::registry& registry);
 
@@ -22,6 +22,9 @@ private:
 	void MarkNeedSort(entt::entity entity);
 
 	bool m_needSort = false;
+
+	float m_virtualWidth = 0;
+	float m_virtualHeight = 0;
 
 	friend class Engine;
 };
