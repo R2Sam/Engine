@@ -44,12 +44,23 @@ public:
 		}
 	}
 
-	T* Get(const char* path)
+	T* Get(const char* name)
+	{
+		auto it = m_map.find(name);
+		if (it != m_map.end())
+		{
+			return it->second.get();
+		}
+
+		return nullptr;
+	}
+
+	T* Load(const char* path)
 	{
 		auto it = m_map.find(path);
 		if (it != m_map.end())
 		{
-			return it->second.get();
+			m_map.erase(it);
 		}
 
 		std::optional<T> opt = m_loadFunction(path);
