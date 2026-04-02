@@ -29,6 +29,8 @@ m_renderer(m_registry)
 
 	InitAudioDevice();
 
+	RaylibResourceManager();
+
 	// Systems
 	m_systemManager.AddSystem<AnimationSystem>(0);
 
