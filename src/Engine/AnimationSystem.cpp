@@ -66,10 +66,13 @@ void AnimationSystem::Check(entt::registry& registry, entt::entity entity)
 	u32 totalSprites = rowLength * rowCount;
 
 	Assert(sprite.rectangle.width && sprite.rectangle.height, "Sprite must have a size");
-	Assert(animation.startingIndex < totalSprites, "Animation starting index must be smaller than total sprite count");
-	Assert(animation.endingIndex < totalSprites, "Animation ending index must be smaller than total sprite count");
+	Assert(animation.startingIndex < totalSprites,
+	"Animation starting index must be smaller than total sprite count: ", totalSprites);
+	Assert(animation.endingIndex < totalSprites,
+	"Animation ending index must be smaller than total sprite count: ", totalSprites);
 	Assert(animation.currentIndex >= animation.startingIndex && animation.currentIndex <= animation.endingIndex,
-	"Animation starting index must be between starting and ending indices");
+	"Animation starting index must be between starting and ending indices: ", animation.startingIndex, "-",
+	animation.endingIndex);
 	Assert(animation.frameAccumulator < animation.frameLengthS,
-	"Animation frame accumulator must be bellow frame length");
+	"Animation frame accumulator must be bellow frame length: ", animation.frameLengthS);
 }
