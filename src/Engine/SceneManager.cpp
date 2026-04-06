@@ -22,6 +22,8 @@ void SceneManager::Draw()
 
 void SceneManager::ClearScenes()
 {
+	std::unique_lock lock(m_mutex);
+
 	m_currentScene = nullptr;
 	m_changeScene = false;
 	m_scenes.clear();
@@ -29,6 +31,8 @@ void SceneManager::ClearScenes()
 
 void SceneManager::CheckForChange()
 {
+	std::unique_lock lock(m_mutex);
+
 	if (m_changeScene)
 	{
 		if (m_currentScene)

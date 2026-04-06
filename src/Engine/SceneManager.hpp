@@ -5,6 +5,7 @@
 #include "Log/Log.hpp"
 
 #include <memory>
+#include <mutex>
 #include <typeindex>
 #include <unordered_map>
 
@@ -90,6 +91,8 @@ public:
 	{
 		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
 
+		std::unique_lock lock(m_mutex);
+
 		m_scenes.emplace(typeid(T), std::move(ptr));
 	}
 
@@ -103,6 +106,8 @@ public:
 		requires std::is_base_of_v<Scene, T>
 	void RemoveScene()
 	{
+		std::unique_lock lock(m_mutex);
+
 		auto it = m_scenes.find(typeid(T));
 		if (it != m_scenes.end())
 		{
@@ -125,6 +130,8 @@ public:
 		requires std::is_base_of_v<Scene, T>
 	void ChangeScene()
 	{
+		std::unique_lock lock(m_mutex);
+
 		auto it = m_scenes.find(typeid(T));
 		Assert(it != m_scenes.end(), "Scene ", Demangle<T>().c_str(), " does not exist");
 		Assert(it->second.get() != m_currentScene, "Cannot change to the current scene");
@@ -161,6 +168,8 @@ private:
 
 	bool m_changeScene = false;
 	std::type_index m_nextSceneType = typeid(void);
+
+	std::mutex m_mutex;
 
 	std::unordered_map<std::type_index, std::unique_ptr<Scene>> m_scenes;
 
