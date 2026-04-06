@@ -4,6 +4,7 @@
 
 #include "entt/entt.h"
 
+#include <mutex>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -50,15 +51,15 @@ public:
 		}
 	}
 
-	bool LoadScript(const char* path);
-	void RemoveScript(const char* path);
+	bool LoadScript(const std::string& path);
+	void RemoveScript(const std::string& path);
 
-	bool IsScriptLoaded(const char* path);
+	bool IsScriptLoaded(const std::string& path);
 
-	void EnableScript(const char* path);
-	void DisableScript(const char* path);
+	void EnableScript(const std::string& path);
+	void DisableScript(const std::string& path);
 
-	std::optional<sol::environment> GetScriptEnvironment(const char* path);
+	std::optional<sol::environment> GetScriptEnvironment(const std::string& path);
 
 	void ReloadScripts();
 
@@ -73,6 +74,8 @@ private:
 	template <typename Event>
 	void OnEvent(const Event& event)
 	{
+		std::unique_lock lock(m_mutex);
+
 		for (auto& [path, script] : m_scripts)
 		{
 			if (script.enabled)
@@ -82,6 +85,8 @@ private:
 			}
 		}
 	}
+
+	std::mutex m_mutex;
 
 	std::unordered_map<std::string, LuaScript> m_scripts;
 

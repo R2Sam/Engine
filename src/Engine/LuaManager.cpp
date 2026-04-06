@@ -10,6 +10,8 @@ LuaManager::LuaManager()
 
 void LuaManager::Update(const float deltaT)
 {
+	std::unique_lock lock(m_mutex);
+
 	for (auto& [path, script] : m_scripts)
 	{
 		if (script.enabled)
@@ -19,40 +21,52 @@ void LuaManager::Update(const float deltaT)
 	}
 }
 
-bool LuaManager::LoadScript(const char* path)
+bool LuaManager::LoadScript(const std::string& path)
 {
-	auto it = m_scripts.find(path);
-	if (it != m_scripts.end())
 	{
-		return false;
+		std::unique_lock lock(m_mutex);
+
+		auto it = m_scripts.find(path);
+		if (it != m_scripts.end())
+		{
+			return false;
+		}
 	}
 
 	LuaScript script;
 	script.environment = Lua::CreateEnvironment(lua, true);
 
-	if (!Lua::LoadFile(lua, script.environment, path))
+	if (!Lua::LoadFile(lua, script.environment, path.c_str()))
 	{
 		return false;
 	}
+
+	std::unique_lock lock(m_mutex);
 
 	m_scripts.emplace(path, script);
 
 	return true;
 }
 
-void LuaManager::RemoveScript(const char* path)
+void LuaManager::RemoveScript(const std::string& path)
 {
+	std::unique_lock lock(m_mutex);
+
 	m_scripts.erase(path);
 }
 
-bool LuaManager::IsScriptLoaded(const char* path)
+bool LuaManager::IsScriptLoaded(const std::string& path)
 {
+	std::unique_lock lock(m_mutex);
+
 	auto it = m_scripts.find(path);
 	return it != m_scripts.end();
 }
 
-void LuaManager::EnableScript(const char* path)
+void LuaManager::EnableScript(const std::string& path)
 {
+	std::unique_lock lock(m_mutex);
+
 	auto it = m_scripts.find(path);
 	if (it == m_scripts.end())
 	{
@@ -62,8 +76,10 @@ void LuaManager::EnableScript(const char* path)
 	it->second.enabled = true;
 }
 
-void LuaManager::DisableScript(const char* path)
+void LuaManager::DisableScript(const std::string& path)
 {
+	std::unique_lock lock(m_mutex);
+
 	auto it = m_scripts.find(path);
 	if (it == m_scripts.end())
 	{
@@ -73,8 +89,10 @@ void LuaManager::DisableScript(const char* path)
 	it->second.enabled = false;
 }
 
-std::optional<sol::environment> LuaManager::GetScriptEnvironment(const char* path)
+std::optional<sol::environment> LuaManager::GetScriptEnvironment(const std::string& path)
 {
+	std::unique_lock lock(m_mutex);
+
 	auto it = m_scripts.find(path);
 	if (it == m_scripts.end())
 	{
@@ -86,6 +104,8 @@ std::optional<sol::environment> LuaManager::GetScriptEnvironment(const char* pat
 
 void LuaManager::ReloadScripts()
 {
+	std::unique_lock lock(m_mutex);
+
 	for (auto& [path, script] : m_scripts)
 	{
 		Lua::LoadFile(lua, script.environment, path.c_str());
