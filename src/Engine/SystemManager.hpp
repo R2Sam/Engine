@@ -179,7 +179,7 @@ private:
 	 */
 	void Draw();
 
-	std::mutex m_mutex;
+	std::shared_mutex m_mutex;
 
 	std::vector<std::pair<u32, std::shared_ptr<System>>> m_systems;
 	std::unordered_map<std::type_index, std::shared_ptr<System>> m_systemsMap;

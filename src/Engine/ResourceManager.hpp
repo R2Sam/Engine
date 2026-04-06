@@ -8,7 +8,6 @@
 #include <optional>
 #include <shared_mutex>
 #include <string>
-#include <string_view>
 #include <typeindex>
 #include <unordered_map>
 
@@ -29,7 +28,7 @@ class ResourceCache : public Cache
 {
 public:
 
-	ResourceCache(const std::function<std::optional<T>(const char*)> loadFunction,
+	ResourceCache(const std::function<std::optional<T>(const std::string&)> loadFunction,
 	const std::function<void(T)> unloadFunction) :
 	m_loadFunction(loadFunction),
 	m_unloadFunction(unloadFunction)
@@ -39,7 +38,7 @@ public:
 	ResourceCache(const ResourceCache&) = delete;
 	ResourceCache& operator=(const ResourceCache&) = delete;
 
-	std::shared_ptr<T> Get(std::string_view name)
+	std::shared_ptr<T> Get(const std::string& name)
 	{
 		std::shared_lock lock(m_mutex);
 
@@ -52,7 +51,7 @@ public:
 		return {};
 	}
 
-	std::shared_ptr<T> Load(std::string_view path)
+	std::shared_ptr<T> Load(const std::string& path)
 	{
 		std::optional<T> opt = m_loadFunction(path);
 
@@ -78,7 +77,7 @@ public:
 		return ptr;
 	}
 
-	std::shared_ptr<T> Add(T&& object, std::string_view name)
+	std::shared_ptr<T> Add(T&& object, const std::string& name)
 	{
 		auto unload = m_unloadFunction;
 
@@ -97,7 +96,7 @@ public:
 		return ptr;
 	}
 
-	void Remove(std::string_view path)
+	void Remove(const std::string& path)
 	{
 		std::unique_lock lock(m_mutex);
 
@@ -108,10 +107,10 @@ private:
 
 	std::unordered_map<std::string, std::shared_ptr<T>> m_map;
 
-	std::function<std::optional<T>(const char*)> m_loadFunction;
+	std::function<std::optional<T>(const std::string&)> m_loadFunction;
 	std::function<void(T)> m_unloadFunction;
 
-	std::mutex m_mutex;
+	std::shared_mutex m_mutex;
 };
 
 class ResourceManager
@@ -126,7 +125,7 @@ public:
 		auto it = m_caches.find(typeid(T));
 		if (it != m_caches.end())
 		{
-			return it->second;
+			return std::static_pointer_cast<ResourceCache<T>>(it->second);
 		}
 
 		auto ptr = std::make_shared<ResourceCache<T>>(std::forward<Args>(args)...);
@@ -165,7 +164,7 @@ private:
 
 	ResourceManager() = default;
 
-	std::mutex m_mutex;
+	std::shared_mutex m_mutex;
 
 	std::unordered_map<std::type_index, std::shared_ptr<Cache>> m_caches;
 

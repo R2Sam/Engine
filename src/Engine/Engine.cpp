@@ -222,9 +222,9 @@ void Engine::SetFlags(const WindowInfo& windowInfo)
 
 void Engine::RaylibResourceManager()
 {
-	m_resourceManager.AddCache<Texture2D>([](const char* path) -> std::optional<Texture2D>
+	m_resourceManager.AddCache<Texture2D>([](const std::string& path) -> std::optional<Texture2D>
 	{
-		Texture2D texture = LoadTexture(path);
+		Texture2D texture = LoadTexture(path.c_str());
 		if (!IsTextureValid(texture))
 		{
 			return std::nullopt;
@@ -233,9 +233,9 @@ void Engine::RaylibResourceManager()
 		return texture;
 	}, UnloadTexture);
 
-	m_resourceManager.AddCache<Image>([](const char* path) -> std::optional<Image>
+	m_resourceManager.AddCache<Image>([](const std::string& path) -> std::optional<Image>
 	{
-		Image image = LoadImage(path);
+		Image image = LoadImage(path.c_str());
 		if (!IsImageValid(image))
 		{
 			return std::nullopt;
@@ -244,9 +244,9 @@ void Engine::RaylibResourceManager()
 		return image;
 	}, UnloadImage);
 
-	m_resourceManager.AddCache<Wave>([](const char* path) -> std::optional<Wave>
+	m_resourceManager.AddCache<Wave>([](const std::string& path) -> std::optional<Wave>
 	{
-		Wave wave = LoadWave(path);
+		Wave wave = LoadWave(path.c_str());
 		if (!IsWaveValid(wave))
 		{
 			return std::nullopt;
@@ -255,9 +255,9 @@ void Engine::RaylibResourceManager()
 		return wave;
 	}, UnloadWave);
 
-	m_resourceManager.AddCache<Sound>([](const char* path) -> std::optional<Sound>
+	m_resourceManager.AddCache<Sound>([](const std::string& path) -> std::optional<Sound>
 	{
-		Sound sound = LoadSound(path);
+		Sound sound = LoadSound(path.c_str());
 		if (!IsSoundValid(sound))
 		{
 			return std::nullopt;
@@ -266,9 +266,9 @@ void Engine::RaylibResourceManager()
 		return sound;
 	}, UnloadSound);
 
-	m_resourceManager.AddCache<Music>([](const char* path) -> std::optional<Music>
+	m_resourceManager.AddCache<Music>([](const std::string& path) -> std::optional<Music>
 	{
-		Music music = LoadMusicStream(path);
+		Music music = LoadMusicStream(path.c_str());
 		if (!IsMusicValid(music))
 		{
 			return std::nullopt;
@@ -277,14 +277,14 @@ void Engine::RaylibResourceManager()
 		return music;
 	}, UnloadMusicStream);
 
-	m_resourceManager.AddCache<char*>([](const char* path) -> std::optional<char*>
+	m_resourceManager.AddCache<char*>([](const std::string& path) -> std::optional<char*>
 	{
-		if (!FileExists(path))
+		if (!FileExists(path.c_str()))
 		{
 			return std::nullopt;
 		}
 
-		char* file = LoadFileText(path);
+		char* file = LoadFileText(path.c_str());
 
 		if (file)
 		{
@@ -294,20 +294,20 @@ void Engine::RaylibResourceManager()
 		return file;
 	}, UnloadFileText);
 
-	m_resourceManager.AddCache<u8*>([](const char* path) -> std::optional<u8*>
+	m_resourceManager.AddCache<u8*>([](const std::string& path) -> std::optional<u8*>
 	{
-		if (!FileExists(path))
+		if (!FileExists(path.c_str()))
 		{
 			return std::nullopt;
 		}
 
-		i32 size = GetFileLength(path);
+		i32 size = GetFileLength(path.c_str());
 		if (size <= 0)
 		{
 			return std::nullopt;
 		}
 
-		u8* file = LoadFileData(path, &size);
+		u8* file = LoadFileData(path.c_str(), &size);
 
 		if (file)
 		{
