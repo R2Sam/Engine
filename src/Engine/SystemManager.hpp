@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <type_traits>
 #include <typeindex>
 #include <unordered_map>
@@ -76,48 +78,51 @@ public:
 	 * @param priority Execution priority (lower executes first)
 	 * @param args System constructor arguments
 	 *
-	 * @return Reference to the created system
+	 * @return Shared ptr to the created system
 	 *
 	 * Usage:
 	 * @code
-	 * PhysicsSystem& physics = systemManager.AddSystem<PhysicsSystem>(3, gravity);
+	 * auto physics = systemManager.AddSystem<PhysicsSystem>(3, gravity);
 	 * @endcode
 	 */
 
 	template <typename T, typename... Args>
 		requires std::is_base_of_v<System, T>
-	T& AddSystem(const u32 priority = 1, Args&&... args)
+	std::shared_ptr<T> AddSystem(const u32 priority = 1, Args&&... args)
 	{
-		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
-		T& ref = *ptr;
+		std::unique_lock lock(m_mutex);
 
-		m_systems.push_back(std::make_pair(priority, std::move(ptr)));
-		m_systemsMap.emplace(typeid(T), ptr.get());
+		auto ptr = std::make_shared<T>(std::forward<Args>(args)...);
+
+		m_systems.push_back(std::make_pair(priority, ptr));
+		m_systemsMap.emplace(typeid(T), ptr);
 
 		std::sort(m_systems.begin(), m_systems.end(), [](const auto& a, const auto& b)
 		{
 			return a.first < b.first;
 		});
 
-		return ref;
+		return ptr;
 	}
 
 	template <typename T>
 		requires std::is_base_of_v<System, T>
 	void RemoveSystem()
 	{
+		std::unique_lock lock(m_mutex);
+
 		auto it = m_systemsMap.find(typeid(T));
 		if (it == m_systemsMap.end())
 		{
 			return;
 		}
 
-		System* ptr = it->second;
+		std::shared_ptr<System> ptr = it->second;
 		i32 index = -1;
 
 		for (u32 i = 0; i < m_systems.size(); ++i)
 		{
-			if (m_systems[i].second.get() == ptr)
+			if (m_systems[i].second == ptr)
 			{
 				index = i;
 				break;
@@ -133,22 +138,24 @@ public:
 	/**
 	 * @brief Gets a system pointer
 	 *
-	 * Return a nullptr if the system does not exist.
+	 * Return a empty pointer if the system does not exist.
 	 *
 	 * @tparam T System type
 	 */
 
 	template <typename T>
 		requires std::is_base_of_v<System, T>
-	T* GetSystem()
+	std::shared_ptr<T> GetSystem()
 	{
+		std::shared_lock lock(m_mutex);
+
 		auto it = m_systemsMap.find(typeid(T));
 		if (it != m_systemsMap.end())
 		{
 			return it->second;
 		}
 
-		return nullptr;
+		return {};
 	}
 
 	/**
@@ -172,8 +179,10 @@ private:
 	 */
 	void Draw();
 
-	std::vector<std::pair<u32, std::unique_ptr<System>>> m_systems;
-	std::unordered_map<std::type_index, System*> m_systemsMap;
+	std::mutex m_mutex;
+
+	std::vector<std::pair<u32, std::shared_ptr<System>>> m_systems;
+	std::unordered_map<std::type_index, std::shared_ptr<System>> m_systemsMap;
 
 	friend class Engine;
 };
