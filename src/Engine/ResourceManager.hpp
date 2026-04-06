@@ -4,8 +4,11 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <optional>
+#include <shared_mutex>
 #include <string>
+#include <string_view>
 #include <typeindex>
 #include <unordered_map>
 
@@ -36,79 +39,79 @@ public:
 	ResourceCache(const ResourceCache&) = delete;
 	ResourceCache& operator=(const ResourceCache&) = delete;
 
-	~ResourceCache()
+	std::shared_ptr<T> Get(std::string_view name)
 	{
-		for (auto& [path, object] : m_map)
-		{
-			m_unloadFunction(*object);
-		}
-	}
+		std::shared_lock lock(m_mutex);
 
-	T* Get(const char* name)
-	{
 		auto it = m_map.find(name);
 		if (it != m_map.end())
 		{
-			return it->second.get();
+			return it->second;
 		}
 
-		return nullptr;
+		return {};
 	}
 
-	T* Load(const char* path)
+	std::shared_ptr<T> Load(std::string_view path)
 	{
-		auto it = m_map.find(path);
-		if (it != m_map.end())
-		{
-			m_map.erase(it);
-		}
-
 		std::optional<T> opt = m_loadFunction(path);
 
 		if (!opt)
 		{
-			return nullptr;
+			return {};
 		}
 
-		auto ptr = std::make_unique<T>(std::move(opt.value()));
+		auto unload = m_unloadFunction;
 
-		m_map.emplace(path, std::move(ptr));
+		auto ptr = std::shared_ptr<T>(new T(std::move(*opt)), [unload](T* t)
+		{
+			unload(*t);
+			delete t;
+		});
 
-		return m_map[path].get();
+		{
+			std::unique_lock lock(m_mutex);
+
+			m_map[path] = ptr;
+		}
+
+		return ptr;
 	}
 
-	T& Add(T&& object, const char* name)
+	std::shared_ptr<T> Add(T&& object, std::string_view name)
 	{
-		auto it = m_map.find(name);
-		if (it != m_map.end())
+		auto unload = m_unloadFunction;
+
+		auto ptr = std::shared_ptr<T>(new T(std::move(object)), [unload](T* t)
 		{
-			m_unloadFunction(*it->second);
+			unload(*t);
+			delete t;
+		});
+
+		{
+			std::unique_lock lock(m_mutex);
+
+			m_map[name] = ptr;
 		}
 
-		auto ptr = std::make_unique<T>(std::move(object));
-
-		m_map.emplace(name, std::move(ptr));
-
-		return *m_map[name].get();
+		return ptr;
 	}
 
-	void Remove(const char* path)
+	void Remove(std::string_view path)
 	{
-		auto it = m_map.find(path);
-		if (it != m_map.end())
-		{
-			m_unloadFunction(*it->second);
+		std::unique_lock lock(m_mutex);
 
-			m_map.erase(it);
-		}
+		m_map.erase(path);
 	}
 
 private:
 
-	std::unordered_map<std::string, std::unique_ptr<T>> m_map;
+	std::unordered_map<std::string, std::shared_ptr<T>> m_map;
 
 	std::function<std::optional<T>(const char*)> m_loadFunction;
 	std::function<void(T)> m_unloadFunction;
+
+	std::mutex m_mutex;
 };
 
 class ResourceManager
@@ -116,34 +119,39 @@ class ResourceManager
 public:
 
 	template <typename T, typename... Args>
-	ResourceCache<T>& AddCache(Args&&... args)
+	std::shared_ptr<ResourceCache<T>> AddCache(Args&&... args)
 	{
+		std::unique_lock lock(m_mutex);
+
 		auto it = m_caches.find(typeid(T));
 		if (it != m_caches.end())
 		{
-			return *static_cast<ResourceCache<T>*>(it->second.get());
+			return it->second;
 		}
 
-		auto ptr = std::make_unique<ResourceCache<T>>(std::forward<Args>(args)...);
-		ResourceCache<T>& ref = *ptr;
+		auto ptr = std::make_shared<ResourceCache<T>>(std::forward<Args>(args)...);
 
-		m_caches.emplace(typeid(T), std::move(ptr));
+		m_caches.emplace(typeid(T), ptr);
 
-		return ref;
+		return ptr;
 	}
 
 	template <typename T>
-	ResourceCache<T>& GetCache()
+	std::shared_ptr<ResourceCache<T>> GetCache()
 	{
+		std::shared_lock lock(m_mutex);
+
 		auto it = m_caches.find(typeid(T));
 		Assert(it != m_caches.end(), "No cache exists holding type ", typeid(T).name());
 
-		return *static_cast<ResourceCache<T>*>(it->second.get());
+		return std::static_pointer_cast<ResourceCache<T>>(it->second);
 	}
 
 	template <typename T>
 	void RemoveCache()
 	{
+		std::unique_lock lock(m_mutex);
+
 		auto it = m_caches.find(typeid(T));
 		if (it != m_caches.end())
 		{
@@ -157,7 +165,9 @@ private:
 
 	ResourceManager() = default;
 
-	std::unordered_map<std::type_index, std::unique_ptr<Cache>> m_caches;
+	std::mutex m_mutex;
+
+	std::unordered_map<std::type_index, std::shared_ptr<Cache>> m_caches;
 
 	friend class Engine;
 };
