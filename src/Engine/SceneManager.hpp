@@ -13,7 +13,7 @@
  * @brief Base class for all scenes
  *
  * All scenes must derive from this class,
- * and implement Update, Draw, OnEnter and OnExit.
+ * and implement Update.
  */
 
 class Scene
@@ -43,19 +43,19 @@ public:
 	 * Called after systems
 	 */
 
-	virtual void Draw() = 0;
+	virtual void Draw();
 
 	/**
 	 * @brief Called by the engine when a scene is entered
 	 */
 
-	virtual void OnEnter() = 0;
+	virtual void OnEnter();
 
 	/**
 	 * @brief Called by the engine when a scene is left
 	 */
 
-	virtual void OnExit() = 0;
+	virtual void OnExit();
 };
 
 /**

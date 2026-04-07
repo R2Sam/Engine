@@ -2,6 +2,18 @@
 
 #include "Assert.hpp"
 
+void Scene::Draw()
+{
+}
+
+void Scene::OnEnter()
+{
+}
+
+void Scene::OnExit()
+{
+}
+
 void SceneManager::Update(const float deltaT)
 {
 	if (m_currentScene)

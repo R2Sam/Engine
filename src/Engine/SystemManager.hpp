@@ -15,7 +15,7 @@
 /**
  * @brief Base class for all systems
  *
- * All systems must derive from this class and implement Update() and Draw().
+ * All systems must derive from this class and implement Update.
  */
 
 class System
@@ -47,7 +47,7 @@ public:
 	 * Called before scenes
 	 */
 
-	virtual void Draw() = 0;
+	virtual void Draw();
 };
 
 /**

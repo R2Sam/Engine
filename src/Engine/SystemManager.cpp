@@ -1,5 +1,9 @@
 #include "SystemManager.hpp"
 
+void System::Draw()
+{
+}
+
 void SystemManager::Update(const float deltaT)
 {
 	std::unique_lock lock(m_mutex);
