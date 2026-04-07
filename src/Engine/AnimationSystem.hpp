@@ -11,7 +11,6 @@ public:
 	AnimationSystem();
 
 	void Update(const float deltaT) override;
-	void Draw() override;
 
 private:
 

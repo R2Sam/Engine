@@ -47,7 +47,7 @@ public:
 	 * Called before scenes
 	 */
 
-	virtual void Draw();
+	virtual void Draw() const;
 };
 
 /**

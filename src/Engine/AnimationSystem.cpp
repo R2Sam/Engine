@@ -50,10 +50,6 @@ void AnimationSystem::Update(const float deltaT)
 	}
 }
 
-void AnimationSystem::Draw()
-{
-}
-
 void AnimationSystem::Check(entt::registry& registry, entt::entity entity)
 {
 	const Component::Animation& animation = registry.get<Component::Animation>(entity);

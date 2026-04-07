@@ -2,7 +2,7 @@
 
 #include "Assert.hpp"
 
-void Scene::Draw()
+void Scene::Draw() const
 {
 }
 

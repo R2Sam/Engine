@@ -1,6 +1,6 @@
 #include "SystemManager.hpp"
 
-void System::Draw()
+void System::Draw() const
 {
 }
 

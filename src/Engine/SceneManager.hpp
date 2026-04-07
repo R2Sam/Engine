@@ -43,7 +43,7 @@ public:
 	 * Called after systems
 	 */
 
-	virtual void Draw();
+	virtual void Draw() const;
 
 	/**
 	 * @brief Called by the engine when a scene is entered
