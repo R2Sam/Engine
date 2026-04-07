@@ -18,6 +18,8 @@ using Entity = entt::entity;
 using Registry = entt::registry;
 using Dispatcher = entt::dispatcher;
 
+constexpr Entity NULL_ENTITY = static_cast<Entity>(0);
+
 #define REGISTRY Engine::Get().registry
 #define DISPATCHER Engine::Get().dispatcher
 
