@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Assert.hpp"
-
 #include "Log/Log.hpp"
+#include "NonCopyable.hpp"
 
 #include <memory>
 #include <mutex>
@@ -16,14 +16,9 @@
  * and implement Update.
  */
 
-class Scene
+class Scene : public NonCopyable<>
 {
 public:
-
-	Scene() = default;
-
-	Scene(const Scene&) = delete;
-	Scene& operator=(const Scene&) = delete;
 
 	virtual ~Scene() = default;
 

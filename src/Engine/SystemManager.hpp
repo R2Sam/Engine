@@ -1,5 +1,6 @@
 #pragma once
 
+#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <algorithm>
@@ -18,14 +19,9 @@
  * All systems must derive from this class and implement Update.
  */
 
-class System
+class System : public NonCopyable<>
 {
 public:
-
-	System() = default;
-
-	System(const System&) = delete;
-	System& operator=(const System&) = delete;
 
 	virtual ~System() = default;
 

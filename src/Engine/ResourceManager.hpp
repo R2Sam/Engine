@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Assert.hpp"
+#include "NonCopyable.hpp"
 
 #include <functional>
 #include <memory>
@@ -11,14 +12,9 @@
 #include <typeindex>
 #include <unordered_map>
 
-class Cache
+class Cache : public NonCopyable<>
 {
 public:
-
-	Cache() = default;
-
-	Cache(const Cache&) = delete;
-	Cache& operator=(const Cache&) = delete;
 
 	virtual ~Cache() = default;
 };

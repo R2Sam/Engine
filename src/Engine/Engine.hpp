@@ -1,5 +1,6 @@
 #pragma once
 
+#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include "LuaManager.hpp"
@@ -95,7 +96,7 @@ struct WindowInfo
  * Only a single Engine instance may exist at a time.
  */
 
-class Engine
+class Engine : public NonCopyable<>
 {
 public:
 
@@ -106,9 +107,6 @@ public:
 	 */
 
 	Engine(const WindowInfo& windowInfo);
-
-	Engine(const Engine&) = delete;
-	Engine& operator=(const Engine&) = delete;
 
 	~Engine();
 
@@ -218,4 +216,6 @@ private:
 	u32 m_virtualHeight = 0;
 
 	bool m_running = true;
+
+	static inline Engine* s_engine = nullptr;
 };

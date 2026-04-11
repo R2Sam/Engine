@@ -8,11 +8,6 @@
 
 #include "Timing.hpp"
 
-namespace
-{
-	Engine* s_engine = nullptr;
-}
-
 Engine::Engine(const WindowInfo& windowInfo) :
 m_renderer(m_registry, windowInfo.virutalWidth, windowInfo.virtualHeight)
 {
