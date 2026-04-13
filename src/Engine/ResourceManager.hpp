@@ -19,13 +19,13 @@ public:
 	virtual ~Cache() = default;
 };
 
-template <class T>
+template <class Resource>
 class ResourceCache : public Cache
 {
 public:
 
-	ResourceCache(const std::function<std::optional<T>(const std::string&)> loadFunction,
-	const std::function<void(T)> unloadFunction) :
+	ResourceCache(const std::function<std::optional<Resource>(const std::string&)> loadFunction,
+	const std::function<void(Resource)> unloadFunction) :
 	m_loadFunction(loadFunction),
 	m_unloadFunction(unloadFunction)
 	{
@@ -34,7 +34,7 @@ public:
 	ResourceCache(const ResourceCache&) = delete;
 	ResourceCache& operator=(const ResourceCache&) = delete;
 
-	std::shared_ptr<T> Get(const std::string& name)
+	std::shared_ptr<Resource> Get(const std::string& name)
 	{
 		std::shared_lock lock(m_mutex);
 
@@ -47,9 +47,9 @@ public:
 		return {};
 	}
 
-	std::shared_ptr<T> Load(const std::string& path)
+	std::shared_ptr<Resource> Load(const std::string& path)
 	{
-		std::optional<T> opt = m_loadFunction(path);
+		std::optional<Resource> opt = m_loadFunction(path);
 
 		if (!opt)
 		{
@@ -58,10 +58,10 @@ public:
 
 		auto unload = m_unloadFunction;
 
-		auto ptr = std::shared_ptr<T>(new T(std::move(*opt)), [unload](T* t)
+		auto ptr = std::shared_ptr<Resource>(new Resource(std::move(*opt)), [unload](Resource* resource)
 		{
-			unload(*t);
-			delete t;
+			unload(*resource);
+			delete resource;
 		});
 
 		{
@@ -73,14 +73,14 @@ public:
 		return ptr;
 	}
 
-	std::shared_ptr<T> Add(T&& object, const std::string& name)
+	std::shared_ptr<Resource> Add(Resource&& object, const std::string& name)
 	{
 		auto unload = m_unloadFunction;
 
-		auto ptr = std::shared_ptr<T>(new T(std::move(object)), [unload](T* t)
+		auto ptr = std::shared_ptr<Resource>(new Resource(std::move(object)), [unload](Resource* resource)
 		{
-			unload(*t);
-			delete t;
+			unload(*resource);
+			delete resource;
 		});
 
 		{
@@ -101,10 +101,10 @@ public:
 
 private:
 
-	std::unordered_map<std::string, std::shared_ptr<T>> m_map;
+	std::unordered_map<std::string, std::shared_ptr<Resource>> m_map;
 
-	std::function<std::optional<T>(const std::string&)> m_loadFunction;
-	std::function<void(T)> m_unloadFunction;
+	std::function<std::optional<Resource>(const std::string&)> m_loadFunction;
+	std::function<void(Resource)> m_unloadFunction;
 
 	std::shared_mutex m_mutex;
 };
@@ -113,41 +113,41 @@ class ResourceManager
 {
 public:
 
-	template <typename T, typename... Args>
-	std::shared_ptr<ResourceCache<T>> AddCache(Args&&... args)
+	template <typename Resource, typename... Args>
+	std::shared_ptr<ResourceCache<Resource>> AddCache(Args&&... args)
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_caches.find(typeid(T));
+		auto it = m_caches.find(typeid(Resource));
 		if (it != m_caches.end())
 		{
-			return std::static_pointer_cast<ResourceCache<T>>(it->second);
+			return std::static_pointer_cast<ResourceCache<Resource>>(it->second);
 		}
 
-		auto ptr = std::make_shared<ResourceCache<T>>(std::forward<Args>(args)...);
+		auto ptr = std::make_shared<ResourceCache<Resource>>(std::forward<Args>(args)...);
 
-		m_caches.emplace(typeid(T), ptr);
+		m_caches.emplace(typeid(Resource), ptr);
 
 		return ptr;
 	}
 
-	template <typename T>
-	std::shared_ptr<ResourceCache<T>> GetCache()
+	template <typename Resource>
+	std::shared_ptr<ResourceCache<Resource>> GetCache()
 	{
 		std::shared_lock lock(m_mutex);
 
-		auto it = m_caches.find(typeid(T));
-		Assert(it != m_caches.end(), "No cache exists holding type ", typeid(T).name());
+		auto it = m_caches.find(typeid(Resource));
+		Assert(it != m_caches.end(), "No cache exists holding type ", typeid(Resource).name());
 
-		return std::static_pointer_cast<ResourceCache<T>>(it->second);
+		return std::static_pointer_cast<ResourceCache<Resource>>(it->second);
 	}
 
-	template <typename T>
+	template <typename Resource>
 	void RemoveCache()
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_caches.find(typeid(T));
+		auto it = m_caches.find(typeid(Resource));
 		if (it != m_caches.end())
 		{
 			m_caches.erase(it);

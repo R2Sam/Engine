@@ -36,7 +36,7 @@ if (WIN32)
   set(LUAJIT_LIB  ${LIB_DIR}/Lua/libluajit.a)
 
   set(RELEASE_FLAGS        -O3)
-  set(DEBUG_FLAGS          -Og -gdwarf-4)
+  set(DEBUG_FLAGS          -O0 -g3 -gdwarf-4 -fno-inline -fno-omit-frame-pointer)
   set(RELEASE_LINKER_FLAGS -s -mwindows)
 
 elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
@@ -54,7 +54,7 @@ elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
   set(LUAJIT_LIB  ${LIB_DIR}/Lua/libluajit-Linux.a)
 
   set(RELEASE_FLAGS        -O3)
-  set(DEBUG_FLAGS          -Og -gdwarf-4 -fno-omit-frame-pointer)
+  set(DEBUG_FLAGS          -Og -g3 -gdwarf-4 -fno-omit-frame-pointer)
   set(RELEASE_LINKER_FLAGS -s)
 
 elseif (UNIX AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")

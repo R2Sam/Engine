@@ -69,8 +69,8 @@ public:
 	 * The system is constructed in within the manager and owned by it.
 	 * Systems must derive from the System base class..
 	 *
-	 * @tparam T System type
-	 * @tparam Args T Constructor argument types
+	 * @tparam System System type
+	 * @tparam Args System Constructor argument types
 	 * @param priority Execution priority (lower executes first)
 	 * @param args System constructor arguments
 	 *
@@ -82,16 +82,16 @@ public:
 	 * @endcode
 	 */
 
-	template <typename T, typename... Args>
-		requires std::is_base_of_v<System, T>
-	std::shared_ptr<T> AddSystem(const u32 priority = 1, Args&&... args)
+	template <typename System, typename... Args>
+		requires std::is_base_of_v<System, System>
+	std::shared_ptr<System> AddSystem(const u32 priority = 1, Args&&... args)
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto ptr = std::make_shared<T>(std::forward<Args>(args)...);
+		auto ptr = std::make_shared<System>(std::forward<Args>(args)...);
 
 		m_systems.push_back(std::make_pair(priority, ptr));
-		m_systemsMap.emplace(typeid(T), ptr);
+		m_systemsMap.emplace(typeid(System), ptr);
 
 		std::sort(m_systems.begin(), m_systems.end(), [](const auto& a, const auto& b)
 		{
@@ -101,13 +101,13 @@ public:
 		return ptr;
 	}
 
-	template <typename T>
-		requires std::is_base_of_v<System, T>
+	template <typename System>
+		requires std::is_base_of_v<System, System>
 	void RemoveSystem()
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_systemsMap.find(typeid(T));
+		auto it = m_systemsMap.find(typeid(System));
 		if (it == m_systemsMap.end())
 		{
 			return;
@@ -136,16 +136,16 @@ public:
 	 *
 	 * Return a empty pointer if the system does not exist.
 	 *
-	 * @tparam T System type
+	 * @tparam System System type
 	 */
 
-	template <typename T>
-		requires std::is_base_of_v<System, T>
-	std::shared_ptr<T> GetSystem()
+	template <typename System>
+		requires std::is_base_of_v<System, System>
+	std::shared_ptr<System> GetSystem()
 	{
 		std::shared_lock lock(m_mutex);
 
-		auto it = m_systemsMap.find(typeid(T));
+		auto it = m_systemsMap.find(typeid(System));
 		if (it != m_systemsMap.end())
 		{
 			return it->second;

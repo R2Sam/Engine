@@ -70,7 +70,7 @@ public:
 	 * The scene is constructed in within the manager and owned by it.
 	 * Scenes must derive from the Scene base class.
 	 *
-	 * @tparam T Scene type
+	 * @tparam Scene Scene type
 	 * @tparam Args Constructor arguments types
 	 * @param args Scene constructor arguments
 	 *
@@ -80,15 +80,15 @@ public:
 	 * @endcode
 	 */
 
-	template <typename T, typename... Args>
-		requires std::is_base_of_v<Scene, T>
+	template <typename Scene, typename... Args>
+		requires std::is_base_of_v<Scene, Scene>
 	void AddScene(Args&&... args)
 	{
-		auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
+		auto ptr = std::make_unique<Scene>(std::forward<Args>(args)...);
 
 		std::unique_lock lock(m_mutex);
 
-		m_scenes.emplace(typeid(T), std::move(ptr));
+		m_scenes.emplace(typeid(Scene), std::move(ptr));
 	}
 
 	/**
@@ -97,13 +97,13 @@ public:
 	 * @tparam Scene type
 	 */
 
-	template <typename T>
-		requires std::is_base_of_v<Scene, T>
+	template <typename Scene>
+		requires std::is_base_of_v<Scene, Scene>
 	void RemoveScene()
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_scenes.find(typeid(T));
+		auto it = m_scenes.find(typeid(Scene));
 		if (it != m_scenes.end())
 		{
 			Assert(it->second.get() != m_currentScene, "Cannot delete the current scene");
@@ -121,17 +121,17 @@ public:
 	 * @tparam Scene type
 	 */
 
-	template <typename T>
-		requires std::is_base_of_v<Scene, T>
+	template <typename Scene>
+		requires std::is_base_of_v<Scene, Scene>
 	void ChangeScene()
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_scenes.find(typeid(T));
-		Assert(it != m_scenes.end(), "Scene ", Demangle<T>().c_str(), " does not exist");
+		auto it = m_scenes.find(typeid(Scene));
+		Assert(it != m_scenes.end(), "Scene ", Demangle<Scene>().c_str(), " does not exist");
 		Assert(it->second.get() != m_currentScene, "Cannot change to the current scene");
 
-		m_nextSceneType = typeid(T);
+		m_nextSceneType = typeid(Scene);
 		m_changeScene = true;
 	}
 
