@@ -1,8 +1,7 @@
 #pragma once
 
+#include "Engine.hpp"
 #include "SystemManager.hpp"
-
-#include "entt/entt.h"
 
 class AnimationSystem : public System
 {
@@ -12,7 +11,9 @@ public:
 
 	void Update(const float deltaT) override;
 
+	static std::vector<Entity> GetIncompleteAnimations();
+
 private:
 
-	static void Check(entt::registry& registry, entt::entity entity);
+	static void Check(Registry& registry, Entity entity);
 };

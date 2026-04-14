@@ -1,20 +1,27 @@
 #include "AnimationSystem.hpp"
-
 #include "Components.hpp"
-
-#include "Engine.hpp"
+#include "Engine/Engine.hpp"
+#include <vector>
 
 AnimationSystem::AnimationSystem()
 {
-	Engine::Get().registry.on_construct<Component::Animation>().connect<&AnimationSystem::Check>();
+	REGISTRY.on_construct<Component::Animation>().connect<&AnimationSystem::Check>();
 }
 
 void AnimationSystem::Update(const float deltaT)
 {
-	auto group = Engine::Get().registry.group<Component::Animation>(entt::get<Component::Sprite>);
+	auto group = REGISTRY.group<Component::Animation>(entt::get<Component::Sprite>);
 
 	for (auto [entity, animation, sprite] : group.each())
 	{
+		if (animation.restart)
+		{
+			animation.currentIndex = animation.startingIndex;
+			animation.frameAccumulator = 0;
+			animation.active = true;
+			animation.restart = false;
+		}
+
 		if (!animation.active)
 		{
 			continue;
@@ -32,7 +39,16 @@ void AnimationSystem::Update(const float deltaT)
 
 			if (animation.currentIndex > animation.endingIndex)
 			{
-				animation.currentIndex = animation.startingIndex;
+				if (animation.loop)
+				{
+					animation.currentIndex = animation.startingIndex;
+				}
+
+				else
+				{
+					animation.currentIndex = animation.endingIndex;
+					animation.active = false;
+				}
 			}
 
 			if (animation.currentIndex >= totalSprites)
@@ -50,7 +66,24 @@ void AnimationSystem::Update(const float deltaT)
 	}
 }
 
-void AnimationSystem::Check(entt::registry& registry, entt::entity entity)
+std::vector<Entity> AnimationSystem::GetIncompleteAnimations()
+{
+	auto group = REGISTRY.group<Component::Animation>(entt::get<Component::Sprite>);
+
+	std::vector<Entity> results;
+
+	for (auto [entity, animation, sprite] : group.each())
+	{
+		if (animation.active && !animation.loop)
+		{
+			results.emplace_back(entity);
+		}
+	}
+
+	return results;
+}
+
+void AnimationSystem::Check(Registry& registry, Entity entity)
 {
 	const Component::Animation& animation = registry.get<Component::Animation>(entity);
 

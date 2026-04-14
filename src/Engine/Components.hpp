@@ -32,9 +32,11 @@ namespace Component
 	struct Animation
 	{
 		bool active = false;
+		bool loop = false;
+		bool restart = false;
 		u32 startingIndex = 0;
 		u32 endingIndex = 1;
-		u32 currentIndex = 0;
+		u32 currentIndex = startingIndex;
 		float frameLengthS = 1;
 		float frameAccumulator = 0;
 	};
