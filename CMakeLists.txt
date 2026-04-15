@@ -1,220 +1,270 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(Engine
-  VERSION 1.0.0
-  LANGUAGES CXX
+project(
+	Engine
+	VERSION 0.0.1
+	LANGUAGES CXX
 )
 
-# ------------------------------------------------------------------------------
-# C++ standard & global settings
-# ------------------------------------------------------------------------------
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# -------------------------
+# Global configuration
+# -------------------------
+include(FetchContent)
 
+set(FETCHCONTENT_QUIET ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
-set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+# Detect Emscripten
+set(IS_EMSCRIPTEN OFF)
 
-# ------------------------------------------------------------------------------
-# Platform detection
-# ------------------------------------------------------------------------------
-if (WIN32)
-  set(SYSTEM_LIBS
-    opengl32
-    gdi32
-    winmm
-    ws2_32
-    gomp
-    -static
-  )
-
-  set(RLIMGUI_LIB ${LIB_DIR}/rlImGui/librlImGui.a)
-  set(LUAJIT_LIB  ${LIB_DIR}/Lua/libluajit.a)
-
-  set(RELEASE_FLAGS        -O3)
-  set(DEBUG_FLAGS          -O0 -g3 -gdwarf-4 -fno-inline -fno-omit-frame-pointer)
-  set(RELEASE_LINKER_FLAGS -s -mwindows)
-
-elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
-  set(SYSTEM_LIBS
-    GL
-    m
-    pthread
-    dl
-    rt
-    X11
-    gomp
-  )
-
-  set(RLIMGUI_LIB ${LIB_DIR}/rlImGui/librlImGui-Linux.a)
-  set(LUAJIT_LIB  ${LIB_DIR}/Lua/libluajit-Linux.a)
-
-  set(RELEASE_FLAGS        -O3)
-  set(DEBUG_FLAGS          -Og -g3 -gdwarf-4 -fno-omit-frame-pointer)
-  set(RELEASE_LINKER_FLAGS -s)
-
-elseif (UNIX AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm|aarch64")
-  message(FATAL_ERROR "Linux ARM is not supported")
-
-else()
-  message(FATAL_ERROR "Unsupported platform")
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+	set(IS_EMSCRIPTEN ON)
 endif()
 
-# ------------------------------------------------------------------------------
-# Common compiler warnings & flags
-# ------------------------------------------------------------------------------
-set(COMMON_FLAGS
-  -Wall
-  -Wextra
-  -pedantic
-  -fopenmp
-  -fmax-errors=5
-  -Wno-missing-field-initializers
-  -Wno-narrowing
-  -Wno-enum-compare
-  -Wno-reorder
-  -Wno-shadow
-  -Wno-deprecated-declarations
+# -------------------------
+# Options
+# -------------------------
+add_library(Engine_options INTERFACE)
+add_library(Engine::options ALIAS Engine_options)
+
+target_compile_features(
+	Engine_options
+	INTERFACE
+		cxx_std_23
 )
 
-# ------------------------------------------------------------------------------
-# Imported third-party libraries
-# ------------------------------------------------------------------------------
+# -------------------------
+# Safety
+# -------------------------
+add_library(Engine_safety INTERFACE)
+add_library(Engine::safety ALIAS Engine_safety)
 
-add_library(rlImGui STATIC IMPORTED)
-set_target_properties(rlImGui PROPERTIES
-  IMPORTED_LOCATION ${RLIMGUI_LIB}
+target_compile_options(
+	Engine_safety
+	INTERFACE
+		-fstack-protector-strong
+		-D_GLIBCXX_ASSERTIONS
+
+		$<$<CONFIG:Debug>:
+			-O0
+			-g3
+			-gdwarf-4
+			-fno-inline
+			-fno-omit-frame-pointer
+
+			$<$<AND:$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+                -fsanitize=address
+                -fsanitize=undefined
+            >
+		>
+
+		$<$<CONFIG:Release>:
+            -O3
+
+            $<$<AND:$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+                -fsanitize-trap=undefined
+            >
+        >
 )
 
-add_library(luajit STATIC IMPORTED)
-set_target_properties(luajit PROPERTIES
-  IMPORTED_LOCATION ${LUAJIT_LIB}
+target_link_options(
+	Engine_safety
+	INTERFACE
+		$<$<AND:$<CONFIG:Debug>,$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+			-fsanitize=address
+			-fsanitize=undefined
+		>
+
+		$<$<AND:$<CONFIG:Release>,$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+		>
 )
 
-# ------------------------------------------------------------------------------
-# FetchContent dependencies
-# ------------------------------------------------------------------------------
+find_package(OpenGL REQUIRED)
+
+# -------------------------
+# Platform
+# -------------------------
+add_library(Engine_platform INTERFACE)
+add_library(Engine::platform ALIAS Engine_platform)
+
+target_link_libraries(
+	Engine_platform
+	INTERFACE
+		$<$<PLATFORM_ID:Windows>:
+			opengl32
+			gdi32
+			winmm
+			ws2_32
+		>
+)
+
+target_link_options(
+	Engine_platform
+	INTERFACE
+		$<$<PLATFORM_ID:Windows>:
+			-static
+		>
+)
+
+target_link_libraries(
+	Engine_platform
+	INTERFACE
+		$<$<AND:$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+			m
+			pthread
+			dl
+			rt
+			X11
+		>
+)
+
+target_link_libraries(
+    Engine_platform
+    INTERFACE
+        OpenGL::GL
+)
+
+target_compile_options(
+    Engine_platform
+    INTERFACE
+        $<$<BOOL:${IS_EMSCRIPTEN}>:
+            -s USE_GLFW=3
+            -s FULL_ES3=1
+        >
+)
+
+target_link_options(
+    Engine_platform
+    INTERFACE
+        $<$<BOOL:${IS_EMSCRIPTEN}>:
+            -s USE_GLFW=3
+            -s FULL_ES3=1
+            -s ASYNCIFY
+            -s PROXY_TO_PTHREAD
+        >
+)
+
+# -------------------------
+# raylib
+# -------------------------
 include(FetchContent)
 
-set(FETCHCONTENT_QUIET ON)
-
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../Networking")
-    message(STATUS "Using local Networking repo")
-    FetchContent_Declare(
-        networking
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Networking/
-    )
-elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../Networking")
-  message(STATUS "Using local Networking repo")
-    FetchContent_Declare(
-        networking
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../Networking/
-    )
-else()
-    message(STATUS "Using online Networking repo")
-    FetchContent_Declare(
-        networking
-        GIT_REPOSITORY https://github.com/R2Sam/Networking.git
-        GIT_TAG main
-        GIT_SHALLOW TRUE
-        EXCLUDE_FROM_ALL
-    )
-endif()
-
-FetchContent_MakeAvailable(networking)
-
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../Utils")
-    message(STATUS "Using local Utils repo")
-    FetchContent_Declare(
-        utils
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../Utils/
-    )
-elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../../Utils")
-  message(STATUS "Using local Utils repo")
-    FetchContent_Declare(
-        utils
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../Utils/
-    )
-else()
-    message(STATUS "Using online Utils repo")
-    FetchContent_Declare(
-        utils
-        GIT_REPOSITORY https://github.com/R2Sam/Utils.git
-        GIT_TAG main
-        GIT_SHALLOW TRUE
-        EXCLUDE_FROM_ALL
-    )
-endif()
-
-FetchContent_MakeAvailable(utils)
-
-FetchContent_Declare(raylib
-  GIT_REPOSITORY "https://github.com/raysan5/raylib.git"
-  GIT_TAG 5.5
-  GIT_SHALLOW TRUE
-  EXCLUDE_FROM_ALL
+FetchContent_Declare(
+	raylib
+	GIT_REPOSITORY https://github.com/raysan5/raylib.git
+	GIT_TAG 5.5
+	GIT_SHALLOW TRUE
+	EXCLUDE_FROM_ALL
 )
 
 FetchContent_MakeAvailable(raylib)
 
-# ------------------------------------------------------------------------------
-# Engine static library
-# ------------------------------------------------------------------------------
-file(GLOB_RECURSE SRC CONFIGURE_DEPENDS
-  src/*.cpp
+# -------------------------
+# Imported libraries
+# -------------------------
+add_library(rlImGui STATIC IMPORTED)
+
+add_library(luajit STATIC IMPORTED)
+
+set_target_properties(rlImGui PROPERTIES
+IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui-Linux.a
 )
 
+set_target_properties(luajit PROPERTIES
+	IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/Lua/libluajit-Linux.a
+)
+
+if (WIN32)
+
+	set_target_properties(rlImGui PROPERTIES
+	IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui.a
+	)
+
+	set_target_properties(luajit PROPERTIES
+		IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/Lua/libluajit.a
+	)
+
+elseif (${IS_EMSCRIPTEN})
+
+	set_target_properties(rlImGui PROPERTIES
+	IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui-Web.a
+	)
+
+	set_target_properties(luajit PROPERTIES
+		IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/Lua/libluajit-Web.a
+	)
+
+endif()
+
+# -------------------------
+# Dependencies
+# -------------------------
+
+if(EXISTS "/home/sam/Documents/Projects/Networking")
+	message(STATUS "Using local Networking repo")
+
+	FetchContent_Declare(
+		networking
+		SOURCE_DIR /home/sam/Documents/Projects/Networking/
+	)
+
+else()
+	message(STATUS "Using online Networking repo")
+
+	FetchContent_Declare(
+		networking
+		GIT_REPOSITORY https://github.com/R2Sam/Networking.git
+		GIT_TAG main
+		GIT_SHALLOW TRUE
+		EXCLUDE_FROM_ALL
+	)
+endif()
+
+FetchContent_MakeAvailable(networking)
+
+# -------------------------
+# Engine static library
+# -------------------------
+file(GLOB_RECURSE SRC CONFIGURE_DEPENDS src/*.cpp)
 list(FILTER SRC EXCLUDE REGEX ".*/main\\.cpp$")
 
 add_library(engine STATIC ${SRC})
 
-target_include_directories(engine
-  PUBLIC
-    include
-    src
+target_include_directories(
+	engine
+	PUBLIC
+		include
+		src
 )
 
-target_compile_options(engine PRIVATE
-  ${COMMON_FLAGS}
-  $<$<CONFIG:Debug>:${DEBUG_FLAGS}>
-  $<$<CONFIG:Release>:${RELEASE_FLAGS}>
-  $<$<CONFIG:Debug>:
-        $<$<PLATFORM_ID:Linux>:
-        -fsanitize=address
-        -fsanitize=undefined>
-    >
+target_compile_options(
+    engine
+    PRIVATE
+        -Wall
+        -Wextra
+        -pedantic
+        -fmax-errors=5
+
+        -Wno-missing-field-initializers
+        -Wno-narrowing
+        -Wno-enum-compare
+        -Wno-reorder
+        -Wno-shadow
+        -Wno-deprecated-declarations
 )
 
-target_link_libraries(engine
-  PUBLIC
-    raylib
-    rlImGui
-    luajit
-    networking
-    utils
-    ${SYSTEM_LIBS}
+target_link_libraries(
+	engine
+	PUBLIC
+		Engine::options
+		Engine::safety
+		Engine::platform
+
+		raylib
+		rlImGui
+		luajit
+		networking
 )
-
-target_link_options(engine PRIVATE
-  $<$<CONFIG:Release>:${RELEASE_LINKER_FLAGS}>
-  $<$<CONFIG:Debug>:
-        $<$<PLATFORM_ID:Linux>:
-        -fsanitize=address
-        -fsanitize=undefined>
-    >
-)
-
-if (EMSCRIPTEN)
-  target_compile_options(engine PRIVATE
-    -s USE_PTHREADS
-  )
-
-  target_link_options(engine PRIVATE
-    -s ASYNCIFY
-    -s PROXY_TO_PTHREAD
-  )
-endif()
