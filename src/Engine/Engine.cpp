@@ -81,12 +81,23 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		updateTimer.Start();
 
 		// Scaling
-		float scaleX = GetRenderWidth() / static_cast<float>(m_virtualWidth);
-		float scaleY = GetRenderHeight() / static_cast<float>(m_virtualHeight);
-		float scale = std::min(scaleX, scaleY);
+		float scaleX;
+		float scaleY;
+		float scale;
+		Vector2 offset;
 
-		Vector2 offset = {static_cast<float>((GetRenderWidth() - m_virtualWidth * scale) * 0.5),
-		static_cast<float>((GetRenderHeight() - m_virtualHeight * scale) * 0.5)};
+		static bool s_computedRescale = false;
+		if (IsWindowResized() || !s_computedRescale)
+		{
+			scaleX = GetRenderWidth() / static_cast<float>(m_virtualWidth);
+			scaleY = GetRenderHeight() / static_cast<float>(m_virtualHeight);
+			scale = std::min(scaleX, scaleY);
+
+			offset = {static_cast<float>((GetRenderWidth() - m_virtualWidth * scale) * 0.5),
+			static_cast<float>((GetRenderHeight() - m_virtualHeight * scale) * 0.5)};
+
+			s_computedRescale = true;
+		}
 
 		Vector2 mousePos = GetMousePosition();
 		m_virtualMousePos = (mousePos - offset) / scale;
