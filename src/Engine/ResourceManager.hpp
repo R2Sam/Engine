@@ -147,11 +147,7 @@ public:
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_caches.find(typeid(Resource));
-		if (it != m_caches.end())
-		{
-			m_caches.erase(it);
-		}
+		m_caches.erase(typeid(Resource));
 	}
 
 	void ClearCaches();

@@ -26,8 +26,7 @@ bool LuaManager::LoadScript(const std::string& path)
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_scripts.find(path);
-		if (it != m_scripts.end())
+		if (!m_scripts.contains(path))
 		{
 			return false;
 		}
