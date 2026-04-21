@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MyMath/MyVectors.hpp"
+#include "Utils/RaylibUtils.hpp"
 #include "raylib.h"
 
 #include "Types.hpp"
@@ -12,6 +13,8 @@ namespace Component
 		Vec2<float> position;
 		Vec2<float> velocity;
 		float rotation = 0;
+
+		constexpr bool operator<=>(const Transform&) const = default;
 	};
 
 	struct Sprite
@@ -21,12 +24,15 @@ namespace Component
 		Color color = WHITE;
 		float scale = 1;
 		u32 layer = 1;
+
 		// When editing texture, layer or any value
 		// registry.replace<Component::Sprite>(entity, newSprite);
 		// registry.patch<Component::Sprite>(entity, [](auto& sprite){sprite.layer = 5});
 		// with the updated reference for the sprites to be reordered correctly.
 		// Do not create a multi owning entt group (registry.group<Component::Sprite, ...>(....))
 		// as this will reorder the sprites.
+
+		constexpr bool operator<=>(const Sprite&) const = delete;
 	};
 
 	struct Animation
@@ -39,5 +45,7 @@ namespace Component
 		u32 currentIndex = startingIndex;
 		float frameLengthS = 1;
 		float frameAccumulator = 0;
+
+		constexpr bool operator<=>(const Animation&) const = default;
 	};
 }

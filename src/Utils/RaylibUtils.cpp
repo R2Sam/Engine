@@ -6,11 +6,6 @@
 #include <iomanip>
 #include <sstream>
 
-bool ColorCompare(const Color a, const Color b)
-{
-	return a.r == b.r && a.g == b.g && a.b == b.b && a.a == b.a;
-}
-
 void DrawTextureScale(const Texture2D& texture, const Vector2 position, const float scale, const Color color)
 {
 	DrawTexturePro(texture, Rectangle{0, 0, static_cast<float>(texture.width), static_cast<float>(texture.height)},
@@ -279,4 +274,69 @@ void UnloadShadowmapRenderTexture(RenderTexture2D target)
 	{
 		rlUnloadFramebuffer(target.id);
 	}
+}
+
+constexpr std::strong_ordering operator<=>(const Texture2D& rhs, const Texture2D& lhs)
+{
+	if (auto cmp = rhs.id <=> lhs.id; cmp != 0)
+	{
+		return cmp;
+	}
+
+	if (auto cmp = rhs.width <=> lhs.width; cmp != 0)
+	{
+		return cmp;
+	}
+
+	if (auto cmp = rhs.height <=> lhs.height; cmp != 0)
+	{
+		return cmp;
+	}
+
+	if (auto cmp = rhs.mipmaps <=> lhs.mipmaps; cmp != 0)
+	{
+		return cmp;
+	}
+
+	return rhs.format <=> lhs.format;
+}
+
+constexpr std::partial_ordering operator<=>(const Rectangle& rhs, const Rectangle& lhs)
+{
+	if (auto cmp = rhs.x <=> lhs.x; cmp != 0)
+	{
+		return cmp;
+	}
+
+	if (auto cmp = rhs.y <=> lhs.y; cmp != 0)
+	{
+		return cmp;
+	}
+
+	if (auto cmp = rhs.width <=> lhs.width; cmp != 0)
+	{
+		return cmp;
+	}
+
+	return rhs.height <=> lhs.height;
+}
+
+constexpr std::partial_ordering operator<=>(const Color& rhs, const Color& lhs)
+{
+	if (auto cmp = rhs.a <=> lhs.a; cmp != 0)
+	{
+		return cmp;
+	}
+
+	if (auto cmp = rhs.r <=> lhs.r; cmp != 0)
+	{
+		return cmp;
+	}
+
+	if (auto cmp = rhs.g <=> lhs.g; cmp != 0)
+	{
+		return cmp;
+	}
+
+	return rhs.b <=> lhs.b;
 }

@@ -64,3 +64,9 @@ Rectangle CenteredRectangle(const Rectangle rec, const Vector2 pos);
 // Used for shadow maps
 RenderTexture2D LoadShadowmapRenderTexture(int width, int height);
 void UnloadShadowmapRenderTexture(RenderTexture2D target);
+
+constexpr std::strong_ordering operator<=>(const Texture2D& rhs, const Texture2D& lhs);
+
+constexpr std::partial_ordering operator<=>(const Rectangle& rhs, const Rectangle& lhs);
+
+constexpr std::partial_ordering operator<=>(const Color& rhs, const Color& lhs);
