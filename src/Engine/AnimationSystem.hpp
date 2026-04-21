@@ -12,7 +12,7 @@ public:
 	void Update(const float deltaT) override;
 
 	static std::vector<Entity> GetIncompleteAnimations();
-	static bool IsAnimationComeplete(const Entity entity);
+	static bool IsAnimationComplete(const Entity entity);
 
 private:
 

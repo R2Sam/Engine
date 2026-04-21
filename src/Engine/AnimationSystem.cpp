@@ -83,7 +83,7 @@ std::vector<Entity> AnimationSystem::GetIncompleteAnimations()
 	return results;
 }
 
-bool AnimationSystem::IsAnimationComeplete(const Entity entity)
+bool AnimationSystem::IsAnimationComplete(const Entity entity)
 {
 	Component::Animation* animation = REGISTRY.try_get<Component::Animation>(entity);
 	if (!animation)
