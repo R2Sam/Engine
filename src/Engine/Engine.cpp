@@ -93,8 +93,8 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 			scaleY = GetRenderHeight() / static_cast<float>(m_virtualHeight);
 			scale = std::min(scaleX, scaleY);
 
-			offset = {static_cast<float>((GetRenderWidth() - m_virtualWidth * scale) * 0.5),
-			static_cast<float>((GetRenderHeight() - m_virtualHeight * scale) * 0.5)};
+			offset = {static_cast<float>((GetRenderWidth() - (m_virtualWidth * scale)) * 0.5),
+			static_cast<float>((GetRenderHeight() - (m_virtualHeight * scale)) * 0.5)};
 
 			s_computedRescale = true;
 		}
@@ -124,9 +124,6 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		updateTimeAverage += updateTimer.Stop();
 		m_updateTime = updateTimeAverage.Average();
 
-		Stopwatch drawTimer;
-		drawTimer.Start();
-
 		BeginDrawing();
 		ClearBackground(BLANK);
 
@@ -148,7 +145,7 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 
 		EndDrawing();
 
-		drawTimeAverage += drawTimer.Stop();
+		drawTimeAverage += GetDrawingTime() * 1000;
 		m_drawTime = drawTimeAverage.Average();
 	}
 }

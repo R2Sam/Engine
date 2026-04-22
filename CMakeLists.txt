@@ -158,8 +158,8 @@ include(FetchContent)
 
 FetchContent_Declare(
 	raylib
-	GIT_REPOSITORY https://github.com/raysan5/raylib.git
-	GIT_TAG 5.5
+	GIT_REPOSITORY https://github.com/R2Sam/raylib
+	GIT_TAG main
 	GIT_SHALLOW TRUE
 	EXCLUDE_FROM_ALL
 )
