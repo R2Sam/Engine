@@ -4,14 +4,17 @@
 #include "Types.hpp"
 
 #include "LuaManager.hpp"
-#include "Networking/AsyncNetwork.hpp"
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
 #include "SceneManager.hpp"
 #include "SystemManager.hpp"
-#include "bsThreadPool/BS_thread_pool.hpp"
 #include "entt/entt.h"
 #include "raylib.h"
+
+#ifndef __EMSCRIPTEN__
+#include "Networking/AsyncNetwork.hpp"
+#include "bsThreadPool/BS_thread_pool.hpp"
+#endif
 
 #include <string>
 
@@ -30,10 +33,11 @@ constexpr Entity NULL_ENTITY = static_cast<Entity>(0);
 #define SCENE_MANAGER Engine::Get().sceneManager
 #define SYSTEM_MANAGER Engine::Get().systemManager
 #define LUA_MANAGER Engine::Get().luaManager
-#define NETWORK Engine::Get().network
 
-// Thread pool
+#ifndef __EMSCRIPTEN__
+#define NETWORK Engine::Get().network
 #define THREAD_POOL Engine::Get().threadPool
+#endif
 
 namespace Event
 {
@@ -177,10 +181,11 @@ public:
 	SceneManager& sceneManager = m_sceneManager;
 	SystemManager& systemManager = m_systemManager;
 	LuaManager& luaManager = m_luaManager;
-	AsyncNetwork& network = m_network;
 
-	// Thread pool
+#ifndef __EMSCRIPTEN__
+	AsyncNetwork& network = m_network;
 	BS::thread_pool<BS::tp::none> threadPool;
+#endif
 
 private:
 
@@ -201,7 +206,10 @@ private:
 	SceneManager m_sceneManager;
 	SystemManager m_systemManager;
 	LuaManager m_luaManager;
+
+#ifndef __EMSCRIPTEN__
 	AsyncNetwork m_network;
+#endif
 
 	// Mouse
 	Vector2 m_virtualMousePos = {};

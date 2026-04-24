@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.25)
 project(
 	Engine
 	VERSION 0.0.1
-	LANGUAGES CXX
+	LANGUAGES CXX C
 )
 
 # -------------------------
@@ -86,7 +86,9 @@ target_link_options(
 		>
 )
 
-find_package(OpenGL REQUIRED)
+if (NOT IS_EMSCRIPTEN)
+	find_package(OpenGL REQUIRED)
+endif()
 
 # -------------------------
 # Platform
@@ -128,15 +130,15 @@ target_link_libraries(
 target_link_libraries(
     Engine_platform
     INTERFACE
-        OpenGL::GL
+    	$<$<AND:$<PLATFORM_ID:Linux>,$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>>:
+        	OpenGL::GL
+        >
 )
 
 target_compile_options(
     Engine_platform
     INTERFACE
         $<$<BOOL:${IS_EMSCRIPTEN}>:
-            -s USE_GLFW=3
-            -s FULL_ES3=1
         >
 )
 
@@ -144,10 +146,10 @@ target_link_options(
     Engine_platform
     INTERFACE
         $<$<BOOL:${IS_EMSCRIPTEN}>:
-            -s USE_GLFW=3
-            -s FULL_ES3=1
-            -s ASYNCIFY
-            -s PROXY_TO_PTHREAD
+        	-sUSE_GLFW=3
+            -sWASM=1
+            -sASYNCIFY
+            -sASSERTIONS
         >
 )
 
@@ -169,13 +171,13 @@ FetchContent_MakeAvailable(raylib)
 # -------------------------
 # Imported libraries
 # -------------------------
-add_library(rlImGui STATIC IMPORTED)
+# add_library(rlImGui STATIC IMPORTED)
 
 add_library(luajit STATIC IMPORTED)
 
-set_target_properties(rlImGui PROPERTIES
-IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui-Linux.a
-)
+# set_target_properties(rlImGui PROPERTIES
+# IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui-Linux.a
+# )
 
 set_target_properties(luajit PROPERTIES
 	IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/Lua/libluajit-Linux.a
@@ -183,22 +185,22 @@ set_target_properties(luajit PROPERTIES
 
 if (WIN32)
 
-	set_target_properties(rlImGui PROPERTIES
-	IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui.a
-	)
+	# set_target_properties(rlImGui PROPERTIES
+	# IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui.a
+	# )
 
 	set_target_properties(luajit PROPERTIES
 		IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/Lua/libluajit.a
 	)
 
-elseif (${IS_EMSCRIPTEN})
+elseif (IS_EMSCRIPTEN)
 
-	set_target_properties(rlImGui PROPERTIES
-	IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui-Web.a
-	)
+	# set_target_properties(rlImGui PROPERTIES
+	# IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/rlImGui/librlImGui-Web.a
+	# )
 
 	set_target_properties(luajit PROPERTIES
-		IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/Lua/libluajit-Web.a
+		IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/lib/Lua/liblua-Web.a
 	)
 
 endif()
@@ -207,7 +209,7 @@ endif()
 # Dependencies
 # -------------------------
 
-if(EXISTS "/home/sam/Documents/Projects/Networking")
+if(NOT IS_EMSCRIPTEN AND EXISTS "/home/sam/Documents/Projects/Networking")
 	message(STATUS "Using local Networking repo")
 
 	FetchContent_Declare(
@@ -215,19 +217,45 @@ if(EXISTS "/home/sam/Documents/Projects/Networking")
 		SOURCE_DIR /home/sam/Documents/Projects/Networking/
 	)
 
-else()
+	FetchContent_MakeAvailable(networking)
+
+elseif(NOT IS_EMSCRIPTEN)
 	message(STATUS "Using online Networking repo")
 
 	FetchContent_Declare(
 		networking
 		GIT_REPOSITORY https://github.com/R2Sam/Networking.git
-		GIT_TAG main
+		GIT_TAG basic
 		GIT_SHALLOW TRUE
 		EXCLUDE_FROM_ALL
 	)
+
+	FetchContent_MakeAvailable(networking)
 endif()
 
-FetchContent_MakeAvailable(networking)
+if(IS_EMSCRIPTEN AND EXISTS "/home/sam/Documents/Projects/Utils")
+	message(STATUS "Using local Utils repo")
+
+	FetchContent_Declare(
+		utils
+		SOURCE_DIR /home/sam/Documents/Projects/Utils/
+	)
+
+	FetchContent_MakeAvailable(utils)
+
+elseif(IS_EMSCRIPTEN)
+	message(STATUS "Using online Utils repo")
+
+	FetchContent_Declare(
+		utils
+		GIT_REPOSITORY https://github.com/R2Sam/Utils.git
+		GIT_TAG basic
+		GIT_SHALLOW TRUE
+		EXCLUDE_FROM_ALL
+	)
+
+	FetchContent_MakeAvailable(utils)
+endif()
 
 # -------------------------
 # Engine static library
@@ -268,7 +296,14 @@ target_link_libraries(
 		Engine::platform
 
 		raylib
-		rlImGui
+		# rlImGui
 		luajit
-		networking
+
+		$<$<NOT:$<BOOL:${IS_EMSCRIPTEN}>>:
+			networking
+		>
+
+		$<$<BOOL:${IS_EMSCRIPTEN}>:
+			utils
+		>
 )

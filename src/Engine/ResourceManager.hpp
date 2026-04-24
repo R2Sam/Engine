@@ -7,6 +7,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <raylib.h>
 #include <shared_mutex>
 #include <string>
 #include <typeindex>
@@ -52,6 +53,11 @@ public:
 		std::optional<Resource> opt = m_loadFunction(path);
 
 		if (!opt)
+		{
+			return {};
+		}
+
+		if (!FileExists(path.c_str()))
 		{
 			return {};
 		}
