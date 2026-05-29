@@ -1,7 +1,8 @@
 #include "Engine.hpp"
 
+#include "Engine/AudioSystem.hpp"
+#include "Engine/InputSystem.hpp"
 #include "raylib.h"
-#include "raymath.h"
 
 #include "AnimationSystem.hpp"
 #include "Renderer.hpp"
@@ -28,6 +29,11 @@ m_renderer(m_registry, windowInfo.virutalWidth, windowInfo.virtualHeight)
 
 	// Systems
 	m_systemManager.AddSystem<AnimationSystem>(0);
+	m_systemManager.AddSystem<InputSystem>(0);
+	m_systemManager.AddSystem<AudioSystem>(0);
+
+	// Basic input
+	m_systemManager.GetSystem<InputSystem>()->BindInput("Cursor", {InputType::POSITION, InputObject::MOUSE});
 
 	// Set event catcher
 	m_dispatcher.sink<Event::CloseGame>().connect<&Engine::OnCloseGameEvent>(this);
@@ -67,7 +73,7 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 	SetTargetFPS(targetFps);
 
 	const float timeStep = std::max(1.0f / updateFrequency, 1.0f / targetFps);
-	float accummulator = 0.0;
+	float accumulator = 0.0;
 
 	RollingAverage<double> updateTimeAverage;
 	RollingAverage<double> drawTimeAverage;
@@ -75,7 +81,7 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 	while (m_running && !WindowShouldClose())
 	{
 		float deltaT = std::min(GetFrameTime(), 0.1f);
-		accummulator += deltaT;
+		accumulator += deltaT;
 
 		Stopwatch updateTimer;
 		updateTimer.Start();
@@ -83,7 +89,7 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		// Scaling
 		float scaleX;
 		float scaleY;
-		float scale;
+		float scale = 1;
 		Vector2 offset;
 
 		static bool s_computedRescale = false;
@@ -99,11 +105,10 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 			s_computedRescale = true;
 		}
 
-		Vector2 mousePos = GetMousePosition();
-		m_virtualMousePos = (mousePos - offset) / scale;
+		INPUT_SYSTEM->SetScaling(scale, offset);
 
 		u8 steps = 0;
-		while (accummulator >= timeStep && steps < maxUpdatesPerFrame)
+		while (accumulator >= timeStep && steps < maxUpdatesPerFrame)
 		{
 			m_systemManager.Update(timeStep);
 
@@ -111,12 +116,12 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 
 			m_sceneManager.Update(timeStep);
 
-			accummulator -= timeStep;
+			accumulator -= timeStep;
 		}
 
 		if (steps >= maxUpdatesPerFrame)
 		{
-			accummulator = 0;
+			accumulator = 0;
 		}
 
 		m_renderer.Update(m_registry);
@@ -148,11 +153,6 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 		drawTimeAverage += GetDrawingTime() * 1000;
 		m_drawTime = drawTimeAverage.Average();
 	}
-}
-
-Vector2 Engine::GetVirtualMousePos() const
-{
-	return m_virtualMousePos;
 }
 
 double Engine::GetUpdateTime() const
@@ -289,7 +289,7 @@ void Engine::RaylibResourceManager()
 
 		char* file = LoadFileText(path.c_str());
 
-		if (file)
+		if (!file)
 		{
 			return std::nullopt;
 		}
@@ -312,7 +312,7 @@ void Engine::RaylibResourceManager()
 
 		u8* file = LoadFileData(path.c_str(), &size);
 
-		if (file)
+		if (!file)
 		{
 			return std::nullopt;
 		}

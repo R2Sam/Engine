@@ -3,6 +3,7 @@
 #include "NonCopyable.hpp"
 #include "Types.hpp"
 
+#include "Events.hpp"
 #include "LuaManager.hpp"
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
@@ -10,6 +11,9 @@
 #include "SystemManager.hpp"
 #include "entt/entt.h"
 #include "raylib.h"
+
+#include "AudioSystem.hpp"
+#include "InputSystem.hpp"
 
 #ifndef __EMSCRIPTEN__
 #include "Networking/AsyncNetwork.hpp"
@@ -39,29 +43,9 @@ constexpr Entity NULL_ENTITY = static_cast<Entity>(0);
 #define THREAD_POOL Engine::Get().threadPool
 #endif
 
-namespace Event
-{
-	/**
-	 * @brief Event signalling that the game should close
-	 */
-
-	struct CloseGame
-	{
-		/**
-		 * @brief Registers the event type with Lua
-		 *
-		 * This is called by lua when registering an event with the lua manager.
-		 *
-		 * @param lua Lua state to register into
-		 */
-
-		static void LuaRegister(sol::state& lua)
-		{
-			Lua::RegisterType<Event::CloseGame>(lua, DemangleWithoutNamespace<Event::CloseGame>().c_str(),
-			sol::constructors<CloseGame()>());
-		}
-	};
-}
+// Systems
+#define INPUT_SYSTEM SYSTEM_MANAGER.GetSystem<InputSystem>()
+#define AUDIO_SYSTEM SYSTEM_MANAGER.GetSystem<AudioSystem>()
 
 /**
  * @brief Initial window info
@@ -146,12 +130,6 @@ public:
 	void Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame = 5);
 
 	/**
-	 * @brief Returns the mouse position adjusted to the virtual canvas
-	 */
-
-	Vector2 GetVirtualMousePos() const;
-
-	/**
 	 * @brief Returns how long the average update loop took in ms
 	 */
 
@@ -210,9 +188,6 @@ private:
 #ifndef __EMSCRIPTEN__
 	AsyncNetwork m_network;
 #endif
-
-	// Mouse
-	Vector2 m_virtualMousePos = {};
 
 	// Timings
 	double m_updateTime = 0;

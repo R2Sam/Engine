@@ -25,8 +25,8 @@ class ResourceCache : public Cache
 {
 public:
 
-	ResourceCache(const std::function<std::optional<Resource>(const std::string&)> loadFunction,
-	const std::function<void(Resource)> unloadFunction) :
+	ResourceCache(const std::function<std::optional<Resource>(const std::string&)>& loadFunction,
+	const std::function<void(Resource)>& unloadFunction) :
 	m_loadFunction(loadFunction),
 	m_unloadFunction(unloadFunction)
 	{

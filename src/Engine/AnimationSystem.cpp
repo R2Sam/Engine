@@ -66,6 +66,39 @@ void AnimationSystem::Update(const float deltaT)
 	}
 }
 
+void AnimationSystem::PlayAnimation(const Entity entity, const Component::Animation& animation)
+{
+	Component::Animation newAnimation = animation;
+	newAnimation.active = true;
+	newAnimation.restart = true;
+
+	const Component::Animation* oldAnimation = REGISTRY.try_get<Component::Animation>(entity);
+	if (oldAnimation)
+	{
+		REGISTRY.replace<Component::Animation>(entity, newAnimation);
+	}
+
+	else
+	{
+		REGISTRY.emplace<Component::Animation>(entity, newAnimation);
+	}
+}
+
+void AnimationSystem::PlayAnimation(const Entity entity)
+{
+	Component::Animation* animation = REGISTRY.try_get<Component::Animation>(entity);
+	if (animation)
+	{
+		animation->restart = true;
+	}
+}
+
+bool AnimationSystem::IsPlaying(const Entity entity)
+{
+	const Component::Animation* animation = REGISTRY.try_get<Component::Animation>(entity);
+	return animation && animation->active;
+}
+
 std::vector<Entity> AnimationSystem::GetIncompleteAnimations()
 {
 	auto group = REGISTRY.group<Component::Animation>(entt::get<Component::Sprite>);
@@ -81,27 +114,6 @@ std::vector<Entity> AnimationSystem::GetIncompleteAnimations()
 	}
 
 	return results;
-}
-
-bool AnimationSystem::IsAnimationComplete(const Entity entity)
-{
-	Component::Animation* animation = REGISTRY.try_get<Component::Animation>(entity);
-	if (!animation)
-	{
-		return true;
-	}
-
-	if (animation->restart)
-	{
-		return false;
-	}
-
-	if (animation->active)
-	{
-		return animation->loop;
-	}
-
-	return true;
 }
 
 void AnimationSystem::Check(Registry& registry, Entity entity)

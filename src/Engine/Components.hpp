@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MyMath/MyVectors.hpp"
-#include "Utils/RaylibUtils.hpp"
 #include "raylib.h"
 
 #include "Types.hpp"
@@ -25,12 +24,8 @@ namespace Component
 		float scale = 1;
 		u32 layer = 1;
 
-		// When editing texture, layer or any value
-		// registry.replace<Component::Sprite>(entity, newSprite);
-		// registry.patch<Component::Sprite>(entity, [](auto& sprite){sprite.layer = 5});
-		// with the updated reference for the sprites to be reordered correctly.
-		// Do not create a multi owning entt group (registry.group<Component::Sprite, ...>(....))
-		// as this will reorder the sprites.
+		// Don't sort anything that has an owning sprite
+		// as this would mess up the sorting of layers
 
 		constexpr bool operator<=>(const Sprite&) const = delete;
 	};

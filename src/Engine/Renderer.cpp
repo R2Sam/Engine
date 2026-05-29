@@ -1,9 +1,36 @@
 #include "Renderer.hpp"
 
+#include "Engine/Engine.hpp"
 #include "Utils/RaylibUtils.hpp"
 
 #include "Components.hpp"
 #include "raylib.h"
+
+bool Renderer::SetSprite(const Entity entity, const Component::Sprite& sprite)
+{
+	if (!IsTextureValid(sprite.texture))
+	{
+		return false;
+	}
+
+	Component::Sprite* oldSprite = REGISTRY.try_get<Component::Sprite>(entity);
+	if (oldSprite)
+	{
+		REGISTRY.replace<Component::Sprite>(entity, sprite);
+	}
+
+	else
+	{
+		REGISTRY.emplace<Component::Sprite>(entity, sprite);
+	}
+
+	return true;
+}
+
+void Renderer::RemoveSprite(const Entity entity)
+{
+	REGISTRY.remove<Component::Sprite>(entity);
+}
 
 Renderer::Renderer(entt::registry& registry, const float virutalWidth, const float virutalHeight)
 {
@@ -56,8 +83,8 @@ void Renderer::Draw(entt::registry& registry) const
 {
 	auto group = registry.group<Component::Sprite>(entt::get<Component::Transform>);
 
-	Rectangle cameraRectangle = {.x = camera.target.x - camera.offset.x / camera.zoom,
-	.y = camera.target.y - camera.offset.y / camera.zoom,
+	Rectangle cameraRectangle = {.x = camera.target.x - (camera.offset.x / camera.zoom),
+	.y = camera.target.y - (camera.offset.y / camera.zoom),
 	.width = m_virtualWidth / camera.zoom,
 	.height = m_virtualHeight / camera.zoom};
 

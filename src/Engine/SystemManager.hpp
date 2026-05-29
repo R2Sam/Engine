@@ -148,10 +148,10 @@ public:
 		auto it = m_systemsMap.find(typeid(System));
 		if (it != m_systemsMap.end())
 		{
-			return it->second;
+			return std::dynamic_pointer_cast<System>(it->second);
 		}
 
-		return {};
+		return nullptr;
 	}
 
 	/**
