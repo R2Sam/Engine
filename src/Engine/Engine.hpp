@@ -5,11 +5,12 @@
 
 #include "Events.hpp"
 #include "LuaManager.hpp"
+#include "Registry.hpp"
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
 #include "SceneManager.hpp"
 #include "SystemManager.hpp"
-#include "entt/entt.h"
+#include "entt/entt.hpp"
 #include "raylib.h"
 
 #include "AudioSystem.hpp"
@@ -22,8 +23,6 @@
 
 #include <string>
 
-using Entity = entt::entity;
-using Registry = entt::registry;
 using Dispatcher = entt::dispatcher;
 
 constexpr Entity NULL_ENTITY = static_cast<Entity>(0);

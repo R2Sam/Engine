@@ -1,6 +1,7 @@
 #include "Renderer.hpp"
 
 #include "Engine/Engine.hpp"
+#include "Engine/Registry.hpp"
 #include "Utils/RaylibUtils.hpp"
 
 #include "Components.hpp"
@@ -13,15 +14,15 @@ bool Renderer::SetSprite(const Entity entity, const Component::Sprite& sprite)
 		return false;
 	}
 
-	Component::Sprite* oldSprite = REGISTRY.try_get<Component::Sprite>(entity);
+	const Component::Sprite* oldSprite = REGISTRY.Get<Component::Sprite>(entity);
 	if (oldSprite)
 	{
-		REGISTRY.replace<Component::Sprite>(entity, sprite);
+		REGISTRY.Replace<Component::Sprite>(entity, sprite);
 	}
 
 	else
 	{
-		REGISTRY.emplace<Component::Sprite>(entity, sprite);
+		REGISTRY.Emplace<Component::Sprite>(entity, sprite);
 	}
 
 	return true;
@@ -29,10 +30,10 @@ bool Renderer::SetSprite(const Entity entity, const Component::Sprite& sprite)
 
 void Renderer::RemoveSprite(const Entity entity)
 {
-	REGISTRY.remove<Component::Sprite>(entity);
+	REGISTRY.Remove<Component::Sprite>(entity);
 }
 
-Renderer::Renderer(entt::registry& registry, const float virutalWidth, const float virutalHeight)
+Renderer::Renderer(Registry& registry, const float virutalWidth, const float virutalHeight)
 {
 	camera.target = {0, 0};
 	camera.offset = {0, 0};
@@ -42,17 +43,32 @@ Renderer::Renderer(entt::registry& registry, const float virutalWidth, const flo
 	m_virtualWidth = virutalWidth;
 	m_virtualHeight = virutalHeight;
 
-	registry.on_construct<Component::Sprite>().connect<&Renderer::MarkNeedSort>(this);
-	registry.on_update<Component::Sprite>().connect<&Renderer::MarkNeedSort>(this);
-	registry.on_destroy<Component::Sprite>().connect<&Renderer::MarkNeedSort>(this);
+	registry.OnConstruct<Component::Sprite>([this](Component::Sprite&, const Entity)
+	{
+		MarkNeedSort();
+	});
+
+	registry.OnUpdate<Component::Sprite>([this](Component::Sprite&, const Entity)
+	{
+		MarkNeedSort();
+	});
+
+	registry.OnDestroy<Component::Sprite>([this](Component::Sprite&, const Entity)
+	{
+		MarkNeedSort();
+	});
+
+	REGISTRY.ForbidOwningComponent<Component::Sprite>();
 }
 
-void Renderer::Update(entt::registry& registry)
+void Renderer::Update(Registry& registry)
 {
-	auto group = registry.group<Component::Sprite>();
+	auto group = registry.GetGroup(entt::get<Component::Sprite>);
 
-	for (auto [entity, sprite] : group.each())
+	for (auto [entity, sprt] : group.each())
 	{
+		Component::Sprite sprite = sprt;
+
 		if (!IsTextureValid(sprite.texture))
 		{
 			Image image = GenImageColor(sprite.rectangle.width, sprite.rectangle.height, PURPLE);
@@ -68,6 +84,8 @@ void Renderer::Update(entt::registry& registry)
 
 			sprite.texture = LoadTextureFromImage(image);
 			UnloadImage(image);
+
+			REGISTRY.Replace<Component::Sprite>(entity, sprite);
 		}
 	}
 
@@ -79,9 +97,9 @@ void Renderer::Update(entt::registry& registry)
 	}
 }
 
-void Renderer::Draw(entt::registry& registry) const
+void Renderer::Draw(Registry& registry) const
 {
-	auto group = registry.group<Component::Sprite>(entt::get<Component::Transform>);
+	auto group = registry.GetGroup<Component::Sprite>(entt::get<Component::Transform>);
 
 	Rectangle cameraRectangle = {.x = camera.target.x - (camera.offset.x / camera.zoom),
 	.y = camera.target.y - (camera.offset.y / camera.zoom),
@@ -102,9 +120,9 @@ void Renderer::Draw(entt::registry& registry) const
 	EndMode2D();
 }
 
-void Renderer::SortSprites(entt::registry& registry)
+void Renderer::SortSprites(Registry& registry)
 {
-	registry.sort<Component::Sprite>([](const Component::Sprite& a, const Component::Sprite& b)
+	registry.Sort<Component::Sprite>([](const Component::Sprite& a, const Component::Sprite& b)
 	{
 		if (a.layer != b.layer)
 		{
@@ -115,7 +133,7 @@ void Renderer::SortSprites(entt::registry& registry)
 	});
 }
 
-void Renderer::MarkNeedSort([[maybe_unused]] entt::entity entity)
+void Renderer::MarkNeedSort()
 {
 	m_needSort = true;
 }

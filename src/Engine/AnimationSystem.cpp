@@ -5,15 +5,21 @@
 
 AnimationSystem::AnimationSystem()
 {
-	REGISTRY.on_construct<Component::Animation>().connect<&AnimationSystem::Check>();
+	REGISTRY.OnConstruct<Component::Animation>([](Component::Animation&, const Entity entity)
+	{
+		AnimationSystem::Check(REGISTRY, entity);
+	});
 }
 
-void AnimationSystem::Update(const float deltaT)
+void AnimationSystem::Update([[maybe_unused]] const float deltaT)
 {
-	auto group = REGISTRY.group<Component::Animation>(entt::get<Component::Sprite>);
+	auto group = REGISTRY.GetGroup<Component::Animation>(entt::get<Component::Sprite>);
 
-	for (auto [entity, animation, sprite] : group.each())
+	for (auto [entity, anim, sprt] : group.each())
 	{
+		Component::Animation animation = anim;
+		Component::Sprite sprite = sprt;
+
 		if (animation.restart)
 		{
 			animation.currentIndex = animation.startingIndex;
@@ -63,6 +69,9 @@ void AnimationSystem::Update(const float deltaT)
 		sprite.rectangle.width, sprite.rectangle.height};
 
 		animation.frameAccumulator += deltaT;
+
+		REGISTRY.Replace<Component::Animation>(entity, animation);
+		REGISTRY.Replace<Component::Sprite>(entity, sprite);
 	}
 }
 
@@ -72,36 +81,35 @@ void AnimationSystem::PlayAnimation(const Entity entity, const Component::Animat
 	newAnimation.active = true;
 	newAnimation.restart = true;
 
-	const Component::Animation* oldAnimation = REGISTRY.try_get<Component::Animation>(entity);
+	const Component::Animation* oldAnimation = REGISTRY.Get<Component::Animation>(entity);
 	if (oldAnimation)
 	{
-		REGISTRY.replace<Component::Animation>(entity, newAnimation);
+		REGISTRY.Replace<Component::Animation>(entity, newAnimation);
 	}
 
 	else
 	{
-		REGISTRY.emplace<Component::Animation>(entity, newAnimation);
+		REGISTRY.Emplace<Component::Animation>(entity, newAnimation);
 	}
 }
 
 void AnimationSystem::PlayAnimation(const Entity entity)
 {
-	Component::Animation* animation = REGISTRY.try_get<Component::Animation>(entity);
-	if (animation)
+	REGISTRY.Patch<Component::Animation>(entity, [](Component::Animation& animation)
 	{
-		animation->restart = true;
-	}
+		animation.restart = true;
+	});
 }
 
 bool AnimationSystem::IsPlaying(const Entity entity)
 {
-	const Component::Animation* animation = REGISTRY.try_get<Component::Animation>(entity);
+	const Component::Animation* animation = REGISTRY.Get<Component::Animation>(entity);
 	return animation && animation->active;
 }
 
 std::vector<Entity> AnimationSystem::GetIncompleteAnimations()
 {
-	auto group = REGISTRY.group<Component::Animation>(entt::get<Component::Sprite>);
+	auto group = REGISTRY.GetGroup<Component::Animation>(entt::get<Component::Sprite>);
 
 	std::vector<Entity> results;
 
@@ -118,23 +126,23 @@ std::vector<Entity> AnimationSystem::GetIncompleteAnimations()
 
 void AnimationSystem::Check(Registry& registry, Entity entity)
 {
-	const Component::Animation& animation = registry.get<Component::Animation>(entity);
+	const Component::Animation* animation = registry.Get<Component::Animation>(entity);
 
-	Assert(registry.any_of<Component::Sprite>(entity), "Animation must have a sprite");
-	const Component::Sprite& sprite = registry.get<Component::Sprite>(entity);
+	Assert(registry.HasAny<Component::Sprite>(entity), "Animation must have a sprite");
+	const Component::Sprite* sprite = registry.Get<Component::Sprite>(entity);
 
-	u32 rowLength = sprite.texture.width / sprite.rectangle.width;
-	u32 rowCount = sprite.texture.height / sprite.rectangle.height;
+	u32 rowLength = sprite->texture.width / sprite->rectangle.width;
+	u32 rowCount = sprite->texture.height / sprite->rectangle.height;
 	u32 totalSprites = rowLength * rowCount;
 
-	Assert(sprite.rectangle.width && sprite.rectangle.height, "Sprite must have a size");
-	Assert(animation.startingIndex < totalSprites,
+	Assert(sprite->rectangle.width && sprite->rectangle.height, "Sprite must have a size");
+	Assert(animation->startingIndex < totalSprites,
 	"Animation starting index must be smaller than total sprite count: ", totalSprites);
-	Assert(animation.endingIndex < totalSprites,
+	Assert(animation->endingIndex < totalSprites,
 	"Animation ending index must be smaller than total sprite count: ", totalSprites);
-	Assert(animation.currentIndex >= animation.startingIndex && animation.currentIndex <= animation.endingIndex,
-	"Animation starting index must be between starting and ending indices: ", animation.startingIndex, "-",
-	animation.endingIndex);
-	Assert(animation.frameAccumulator < animation.frameLengthS,
-	"Animation frame accumulator must be bellow frame length: ", animation.frameLengthS);
+	Assert(animation->currentIndex >= animation->startingIndex && animation->currentIndex <= animation->endingIndex,
+	"Animation starting index must be between starting and ending indices: ", animation->startingIndex, "-",
+	animation->endingIndex);
+	Assert(animation->frameAccumulator < animation->frameLengthS,
+	"Animation frame accumulator must be bellow frame length: ", animation->frameLengthS);
 }

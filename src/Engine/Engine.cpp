@@ -47,7 +47,7 @@ Engine::~Engine()
 {
 	UnloadRenderTexture(m_canvas);
 
-	m_registry.clear();
+	m_registry.GetRegistry().clear();
 
 	m_systemManager.ClearSystems();
 	m_sceneManager.ClearScenes();

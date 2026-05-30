@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Engine/Components.hpp"
-#include "entt/entt.h"
+#include "Components.hpp"
+#include "Registry.hpp"
+#include "entt/entt.hpp"
 #include "raylib.h"
 
 using Entity = entt::entity;
@@ -17,15 +18,15 @@ public:
 
 private:
 
-	Renderer(entt::registry& registry, const float virutalWidth, const float virutalHeight);
+	Renderer(Registry& registry, const float virutalWidth, const float virutalHeight);
 
-	void Update(entt::registry& registry);
+	void Update(Registry& registry);
 
-	void Draw(entt::registry& registry) const;
+	void Draw(Registry& registry) const;
 
-	static void SortSprites(entt::registry& registry);
+	static void SortSprites(Registry& registry);
 
-	void MarkNeedSort(entt::entity entity);
+	void MarkNeedSort();
 
 	bool m_needSort = false;
 

@@ -168,6 +168,16 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(raylib)
 
+FetchContent_Declare(
+	entt
+	GIT_REPOSITORY https://github.com/skypjack/entt
+	GIT_TAG main
+	GIT_SHALLOW TRUE
+	EXCLUDE_FROM_ALL
+)
+
+FetchContent_MakeAvailable(entt)
+
 # -------------------------
 # Imported libraries
 # -------------------------
@@ -295,6 +305,7 @@ target_link_libraries(
 		Engine::safety
 		Engine::platform
 
+		EnTT
 		raylib
 		# rlImGui
 		luajit

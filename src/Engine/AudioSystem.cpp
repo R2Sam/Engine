@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <optional>
 
-void AudioSystem::Update(const float deltaT)
+void AudioSystem::Update([[maybe_unused]] const float deltaT)
 {
 	std::vector<rAudioBuffer*> toRemove;
 
@@ -452,10 +452,13 @@ void AudioSystem::UpdateFade(const bool fadingIn)
 	if (fadingIn && volume >= 0.99)
 	{
 		m_musicState = MusicState::PLAYING;
+		SetMusicVolumeInternal(1);
 	}
 
 	else if (!fadingIn && volume <= 0.01)
 	{
+		SetMusicVolumeInternal(0);
+
 		if (m_nextMusic)
 		{
 			m_musicState = MusicState::QUEUED;
