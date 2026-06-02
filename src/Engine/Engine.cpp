@@ -1,11 +1,6 @@
 #include "Engine.hpp"
 
-#include "Engine/AudioSystem.hpp"
-#include "Engine/InputSystem.hpp"
-#include "raylib.h"
-
-#include "AnimationSystem.hpp"
-#include "Renderer.hpp"
+#include "Systems/AnimationSystem.hpp"
 
 #include "Timing.hpp"
 

@@ -16,6 +16,8 @@ public:
 	static bool SetSprite(const Entity entity, const Component::Sprite& sprite);
 	static void RemoveSprite(const Entity entity);
 
+	void Init(Registry& registry, const float virutalWidth, const float virutalHeight);
+
 private:
 
 	Renderer(Registry& registry, const float virutalWidth, const float virutalHeight);
@@ -23,8 +25,6 @@ private:
 	void Update(Registry& registry);
 
 	void Draw(Registry& registry) const;
-
-	static void SortSprites(Registry& registry);
 
 	void MarkNeedSort();
 

@@ -4,7 +4,6 @@
 #include "Types.hpp"
 #include "entt/entt.hpp"
 #include <functional>
-#include <set>
 #include <typeindex>
 #include <unordered_map>
 #include <utility>
@@ -111,19 +110,24 @@ public:
 	}
 
 	template <typename... Owned, typename... Get, typename... Exclude>
-	auto GetGroup(entt::get_t<Get...> = entt::get_t{}, entt::exclude_t<Exclude...> = entt::exclude_t{}) // NOLINT
+	auto GetGroup([[maybe_unused]] entt::get_t<Get...> get = entt::get_t{},
+	[[maybe_unused]] entt::exclude_t<Exclude...> exclude = entt::exclude_t{})
 	{
-		bool forbidden = (m_forbinnedOwnedComponents.contains(typeid(Owned)) || ...);
-		u32 ownedCount = sizeof...(Owned);
-		Assert(!forbidden || ownedCount == 1);
-
-		return m_registry.group<const Owned..., const Get..., Exclude...>();
+		return m_registry.group<const Owned...>(entt::get_t<const Get...>{}, entt::exclude_t<Exclude...>{});
 	}
 
 	template <typename Component>
 	void Sort(const std::function<bool(const Component& a, const Component& b)>& comparitor)
 	{
 		m_registry.sort<Component>(comparitor);
+	}
+
+	template <typename... Owned, typename... Get, typename... Exclude>
+	void SortGroup(const std::function<bool(const Entity& a, const Entity& b)>& comparitor,
+	entt::get_t<Get...> get = entt::get_t{}, entt::exclude_t<Exclude...> exclude = entt::exclude_t{})
+	{
+		auto group = m_registry.group<Owned...>(get, exclude);
+		group.sort(comparitor);
 	}
 
 	template <typename Component>
@@ -162,12 +166,6 @@ public:
 		;
 	};
 
-	template <typename Component>
-	void ForbidOwningComponent()
-	{
-		m_forbinnedOwnedComponents.emplace(typeid(Component));
-	}
-
 	entt::registry& GetRegistry();
 
 private:
@@ -193,8 +191,6 @@ private:
 	std::unordered_map<std::type_index, std::function<void(void*, const Entity entity)>> m_constructCallbacks;
 	std::unordered_map<std::type_index, std::function<void(void*, const Entity entity)>> m_updateCallbacks;
 	std::unordered_map<std::type_index, std::function<void(void*, const Entity entity)>> m_destroyCallbacks;
-
-	std::set<std::type_index> m_forbinnedOwnedComponents;
 
 	entt::registry m_registry;
 };

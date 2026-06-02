@@ -1,5 +1,5 @@
 #include "AnimationSystem.hpp"
-#include "Components.hpp"
+#include "Engine/Components.hpp"
 #include "Engine/Engine.hpp"
 #include <vector>
 
@@ -13,9 +13,9 @@ AnimationSystem::AnimationSystem()
 
 void AnimationSystem::Update([[maybe_unused]] const float deltaT)
 {
-	auto group = REGISTRY.GetGroup<Component::Animation>(entt::get<Component::Sprite>);
+	auto view = REGISTRY.GetView<Component::Animation, Component::Sprite>();
 
-	for (auto [entity, anim, sprt] : group.each())
+	for (auto [entity, anim, sprt] : view.each())
 	{
 		Component::Animation animation = anim;
 		Component::Sprite sprite = sprt;
@@ -109,11 +109,11 @@ bool AnimationSystem::IsPlaying(const Entity entity)
 
 std::vector<Entity> AnimationSystem::GetIncompleteAnimations()
 {
-	auto group = REGISTRY.GetGroup<Component::Animation>(entt::get<Component::Sprite>);
+	auto view = REGISTRY.GetView<Component::Animation>();
 
 	std::vector<Entity> results;
 
-	for (auto [entity, animation, sprite] : group.each())
+	for (auto [entity, animation] : view.each())
 	{
 		if (animation.active && !animation.loop)
 		{

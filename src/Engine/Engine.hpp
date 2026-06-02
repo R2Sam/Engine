@@ -13,8 +13,8 @@
 #include "entt/entt.hpp"
 #include "raylib.h"
 
-#include "AudioSystem.hpp"
-#include "InputSystem.hpp"
+#include "Systems/AudioSystem.hpp"
+#include "Systems/InputSystem.hpp"
 
 #ifndef __EMSCRIPTEN__
 #include "Networking/AsyncNetwork.hpp"

@@ -35,37 +35,14 @@ void Renderer::RemoveSprite(const Entity entity)
 
 Renderer::Renderer(Registry& registry, const float virutalWidth, const float virutalHeight)
 {
-	camera.target = {0, 0};
-	camera.offset = {0, 0};
-	camera.zoom = 1;
-	camera.rotation = 0;
-
-	m_virtualWidth = virutalWidth;
-	m_virtualHeight = virutalHeight;
-
-	registry.OnConstruct<Component::Sprite>([this](Component::Sprite&, const Entity)
-	{
-		MarkNeedSort();
-	});
-
-	registry.OnUpdate<Component::Sprite>([this](Component::Sprite&, const Entity)
-	{
-		MarkNeedSort();
-	});
-
-	registry.OnDestroy<Component::Sprite>([this](Component::Sprite&, const Entity)
-	{
-		MarkNeedSort();
-	});
-
-	REGISTRY.ForbidOwningComponent<Component::Sprite>();
+	Init(registry, virutalWidth, virutalHeight);
 }
 
 void Renderer::Update(Registry& registry)
 {
-	auto group = registry.GetGroup(entt::get<Component::Sprite>);
+	auto view = registry.GetView<Component::Sprite>();
 
-	for (auto [entity, sprt] : group.each())
+	for (auto [entity, sprt] : view.each())
 	{
 		Component::Sprite sprite = sprt;
 
@@ -91,7 +68,15 @@ void Renderer::Update(Registry& registry)
 
 	if (m_needSort)
 	{
-		SortSprites(registry);
+		registry.Sort<Component::Sprite>([](const Component::Sprite& a, const Component::Sprite& b)
+		{
+			if (a.layer != b.layer)
+			{
+				return a.layer < b.layer;
+			}
+
+			return a.texture.id < b.texture.id;
+		});
 
 		m_needSort = false;
 	}
@@ -99,7 +84,7 @@ void Renderer::Update(Registry& registry)
 
 void Renderer::Draw(Registry& registry) const
 {
-	auto group = registry.GetGroup<Component::Sprite>(entt::get<Component::Transform>);
+	auto view = registry.GetGroup<Component::Sprite, Component::Transform>();
 
 	Rectangle cameraRectangle = {.x = camera.target.x - (camera.offset.x / camera.zoom),
 	.y = camera.target.y - (camera.offset.y / camera.zoom),
@@ -108,7 +93,7 @@ void Renderer::Draw(Registry& registry) const
 
 	BeginMode2D(camera);
 
-	for (auto [entity, sprite, transform] : group.each())
+	for (auto [entity, sprite, transform] : view.each())
 	{
 		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.Raylib(), cameraRectangle))
 		{
@@ -120,16 +105,29 @@ void Renderer::Draw(Registry& registry) const
 	EndMode2D();
 }
 
-void Renderer::SortSprites(Registry& registry)
+void Renderer::Init(Registry& registry, const float virutalWidth, const float virutalHeight)
 {
-	registry.Sort<Component::Sprite>([](const Component::Sprite& a, const Component::Sprite& b)
-	{
-		if (a.layer != b.layer)
-		{
-			return a.layer < b.layer;
-		}
+	camera.target = {0, 0};
+	camera.offset = {0, 0};
+	camera.zoom = 1;
+	camera.rotation = 0;
 
-		return a.texture.id < b.texture.id;
+	m_virtualWidth = virutalWidth;
+	m_virtualHeight = virutalHeight;
+
+	registry.OnConstruct<Component::Sprite>([this](Component::Sprite&, const Entity)
+	{
+		MarkNeedSort();
+	});
+
+	registry.OnUpdate<Component::Sprite>([this](Component::Sprite&, const Entity)
+	{
+		MarkNeedSort();
+	});
+
+	registry.OnDestroy<Component::Sprite>([this](Component::Sprite&, const Entity)
+	{
+		MarkNeedSort();
 	});
 }
 
