@@ -7,7 +7,10 @@ Entity Registry::CreateEntity()
 
 void Registry::DestroyEntity(const Entity entity)
 {
-	m_registry.destroy(entity);
+	if (m_registry.valid(entity))
+	{
+		m_registry.destroy(entity);
+	}
 }
 
 bool Registry::EntityValid(const Entity entity)

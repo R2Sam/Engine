@@ -40,32 +40,6 @@ Renderer::Renderer(Registry& registry, const float virtualWidth, const float vir
 
 void Renderer::Update(Registry& registry)
 {
-	auto view = registry.GetView<Component::Sprite>();
-
-	for (auto [entity, sprt] : view.each())
-	{
-		Component::Sprite sprite = sprt;
-
-		if (!IsTextureValid(sprite.texture))
-		{
-			Image image = GenImageColor(sprite.rectangle.width, sprite.rectangle.height, PURPLE);
-			ImageDrawRectangleRec(&image,
-			Rectangle{0, 0, static_cast<float>(sprite.rectangle.width * 0.5),
-			static_cast<float>(sprite.rectangle.height * 0.5)},
-			BLACK);
-			ImageDrawRectangleRec(&image,
-			Rectangle{static_cast<float>(sprite.rectangle.width * 0.5),
-			static_cast<float>(sprite.rectangle.height * 0.5), static_cast<float>(sprite.rectangle.width * 0.5),
-			static_cast<float>(sprite.rectangle.height * 0.5)},
-			BLACK);
-
-			sprite.texture = LoadTextureFromImage(image);
-			UnloadImage(image);
-
-			REGISTRY.Replace<Component::Sprite>(entity, sprite);
-		}
-	}
-
 	if (m_needSort)
 	{
 		registry.Sort<Component::Sprite>([](const Component::Sprite& a, const Component::Sprite& b)
@@ -84,7 +58,7 @@ void Renderer::Update(Registry& registry)
 
 void Renderer::Draw(Registry& registry) const
 {
-	auto view = registry.GetGroup<Component::Sprite, Component::Transform>();
+	auto view = registry.GetView<Component::Sprite, Component::Transform>();
 
 	Rectangle cameraRectangle = {.x = camera.target.x - (camera.offset.x / camera.zoom),
 	.y = camera.target.y - (camera.offset.y / camera.zoom),
@@ -95,6 +69,27 @@ void Renderer::Draw(Registry& registry) const
 
 	for (auto [entity, sprite, transform] : view.each())
 	{
+		if (!IsTextureValid(sprite.texture))
+		{
+			Image image = GenImageColor(sprite.rectangle.width, sprite.rectangle.height, PURPLE);
+			ImageDrawRectangleRec(&image,
+			Rectangle{0, 0, static_cast<float>(sprite.rectangle.width * 0.5),
+			static_cast<float>(sprite.rectangle.height * 0.5)},
+			BLACK);
+			ImageDrawRectangleRec(&image,
+			Rectangle{static_cast<float>(sprite.rectangle.width * 0.5),
+			static_cast<float>(sprite.rectangle.height * 0.5), static_cast<float>(sprite.rectangle.width * 0.5),
+			static_cast<float>(sprite.rectangle.height * 0.5)},
+			BLACK);
+
+			Component::Sprite newSprite = sprite;
+
+			newSprite.texture = LoadTextureFromImage(image);
+			UnloadImage(image);
+
+			REGISTRY.Replace<Component::Sprite>(entity, newSprite);
+		}
+
 		if (IsRectangleVisible(sprite.rectangle, sprite.scale, transform.position.Raylib(), cameraRectangle))
 		{
 			DrawTextureRotScaleSelect(sprite.texture, sprite.rectangle, transform.position.Raylib(), transform.rotation,

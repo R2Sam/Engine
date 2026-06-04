@@ -29,8 +29,6 @@ void AudioSystem::Update([[maybe_unused]] const float deltaT)
 		m_sounds.erase(buffer);
 	}
 
-	Logger::Write("State: ", static_cast<u32>(m_musicState));
-
 	switch (m_musicState)
 	{
 	case MusicState::STOPPED:

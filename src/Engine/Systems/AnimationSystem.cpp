@@ -1,15 +1,9 @@
 #include "AnimationSystem.hpp"
+
 #include "Engine/Components.hpp"
 #include "Engine/Engine.hpp"
-#include <vector>
-
-AnimationSystem::AnimationSystem()
-{
-	REGISTRY.OnConstruct<Component::Animation>([](Component::Animation&, const Entity entity)
-	{
-		AnimationSystem::Check(REGISTRY, entity);
-	});
-}
+#include "raylib.h"
+#include <cmath>
 
 void AnimationSystem::Update([[maybe_unused]] const float deltaT)
 {
@@ -17,132 +11,124 @@ void AnimationSystem::Update([[maybe_unused]] const float deltaT)
 
 	for (auto [entity, anim, sprt] : view.each())
 	{
-		Component::Animation animation = anim;
-		Component::Sprite sprite = sprt;
+		auto animation = anim;
+		auto sprite = sprt;
 
-		if (animation.restart)
-		{
-			animation.currentIndex = animation.startingIndex;
-			animation.frameAccumulator = 0;
-			animation.active = true;
-			animation.restart = false;
-		}
-
-		if (!animation.active)
+		if (!animation.playing || animation.frames.empty())
 		{
 			continue;
 		}
 
-		u32 rowLength = sprite.texture.width / sprite.rectangle.width;
-		u32 rowCount = sprite.texture.height / sprite.rectangle.height;
-		u32 totalSprites = rowLength * rowCount;
+		float newTime = animation.time + (deltaT * animation.speed);
+		float totalDuration = animation.frames.size() * animation.frameDuration;
 
-		if (animation.frameAccumulator >= animation.frameLengthS)
+		if (!animation.loop && newTime >= totalDuration)
 		{
-			animation.frameAccumulator -= animation.frameLengthS;
-
-			++animation.currentIndex;
-
-			if (animation.currentIndex > animation.endingIndex)
-			{
-				if (animation.loop)
-				{
-					animation.currentIndex = animation.startingIndex;
-				}
-
-				else
-				{
-					animation.currentIndex = animation.endingIndex;
-					animation.active = false;
-				}
-			}
-
-			if (animation.currentIndex >= totalSprites)
-			{
-				animation.currentIndex = 0;
-			}
+			newTime = totalDuration - 0.001f;
+			animation.playing = false;
 		}
 
-		Vec2<u32> gridPosition = {animation.currentIndex % rowLength, animation.currentIndex / rowLength};
+		else if (animation.loop)
+		{
+			newTime = std::fmod(newTime, totalDuration);
+		}
 
-		sprite.rectangle = {gridPosition.x * sprite.rectangle.width, gridPosition.y * sprite.rectangle.height,
-		sprite.rectangle.width, sprite.rectangle.height};
+		animation.time = newTime;
 
-		animation.frameAccumulator += deltaT;
+		int frameIndex = (int)(animation.time / animation.frameDuration) % animation.frames.size();
+		const Rectangle& frameRect = animation.frames[frameIndex];
+
+		sprite.texture = animation.texture;
+		sprite.rectangle = frameRect;
 
 		REGISTRY.Replace<Component::Animation>(entity, animation);
 		REGISTRY.Replace<Component::Sprite>(entity, sprite);
 	}
 }
 
-void AnimationSystem::PlayAnimation(const Entity entity, const Component::Animation& animation)
+Component::Animation AnimationSystem::GridAnimation(const Texture2D texture, const u32 cellWidth, const u32 cellHeight,
+const u32 startIndex, u32 endIndex, const float duration, const bool loop)
 {
-	Component::Animation newAnimation = animation;
-	newAnimation.active = true;
-	newAnimation.restart = true;
+	Assert(IsTextureValid(texture), "Invalid texture");
+	Assert(cellWidth > 0 && cellHeight > 0, "Invalid cell size");
 
-	const Component::Animation* oldAnimation = REGISTRY.Get<Component::Animation>(entity);
-	if (oldAnimation)
+	u32 cols = texture.width / cellWidth;
+	u32 rows = texture.height / cellHeight;
+	u32 total = cols * rows;
+
+	if (endIndex >= total)
 	{
-		REGISTRY.Replace<Component::Animation>(entity, newAnimation);
+		endIndex = total - 1;
 	}
 
-	else
+	Assert(startIndex <= endIndex, "Invalid frame range");
+
+	Component::Animation animation;
+	animation.texture = texture;
+	animation.frameDuration = duration;
+	animation.loop = loop;
+	animation.frames.reserve(endIndex - startIndex + 1);
+	animation.playing = true;
+	animation.time = 0;
+	animation.speed = 1;
+
+	for (u32 index = startIndex; index <= endIndex; index++)
 	{
-		REGISTRY.Emplace<Component::Animation>(entity, newAnimation);
+		u32 x = (index % cols) * cellWidth;
+		u32 y = (index / cols) * cellHeight;
+		animation.frames.emplace_back(x, y, cellWidth, cellHeight);
+	}
+
+	return animation;
+}
+
+void AnimationSystem::Play(const Entity entity, const Component::Animation& animation)
+{
+	Component::Animation newAnimation = animation;
+
+	newAnimation.time = 0;
+	newAnimation.playing = true;
+
+	REGISTRY.EmplaceOrReplace<Component::Animation>(entity, newAnimation);
+
+	if (!REGISTRY.HasAny<Component::Sprite>(entity) && !newAnimation.frames.empty())
+	{
+		REGISTRY.Emplace<Component::Sprite>(entity, newAnimation.texture, newAnimation.frames[0], WHITE, 1, 1);
 	}
 }
 
-void AnimationSystem::PlayAnimation(const Entity entity)
+void AnimationSystem::Stop(const Entity entity)
 {
-	REGISTRY.Patch<Component::Animation>(entity, [](Component::Animation& animation)
+	if (const auto* anim = REGISTRY.Get<Component::Animation>(entity))
 	{
-		animation.restart = true;
-	});
+		auto animation = *anim;
+		animation.playing = false;
+		REGISTRY.Replace<Component::Animation>(entity, animation);
+	}
+}
+
+void AnimationSystem::Resume(const Entity entity)
+{
+	if (const auto* anim = REGISTRY.Get<Component::Animation>(entity))
+	{
+		auto animation = *anim;
+		animation.playing = true;
+		REGISTRY.Replace<Component::Animation>(entity, animation);
+	}
 }
 
 bool AnimationSystem::IsPlaying(const Entity entity)
 {
-	const Component::Animation* animation = REGISTRY.Get<Component::Animation>(entity);
-	return animation && animation->active;
+	const auto* animation = REGISTRY.Get<Component::Animation>(entity);
+	return animation && animation->playing && !animation->frames.empty();
 }
 
-std::vector<Entity> AnimationSystem::GetIncompleteAnimations()
+void AnimationSystem::SetSpeed(const Entity entity, float speed)
 {
-	auto view = REGISTRY.GetView<Component::Animation>();
-
-	std::vector<Entity> results;
-
-	for (auto [entity, animation] : view.each())
+	if (const auto* anim = REGISTRY.Get<Component::Animation>(entity))
 	{
-		if (animation.active && !animation.loop)
-		{
-			results.emplace_back(entity);
-		}
+		auto animation = *anim;
+		animation.speed = speed;
+		REGISTRY.Replace<Component::Animation>(entity, animation);
 	}
-
-	return results;
-}
-
-void AnimationSystem::Check(Registry& registry, Entity entity)
-{
-	const Component::Animation* animation = registry.Get<Component::Animation>(entity);
-
-	Assert(registry.HasAny<Component::Sprite>(entity), "Animation must have a sprite");
-	const Component::Sprite* sprite = registry.Get<Component::Sprite>(entity);
-
-	u32 rowLength = sprite->texture.width / sprite->rectangle.width;
-	u32 rowCount = sprite->texture.height / sprite->rectangle.height;
-	u32 totalSprites = rowLength * rowCount;
-
-	Assert(sprite->rectangle.width && sprite->rectangle.height, "Sprite must have a size");
-	Assert(animation->startingIndex < totalSprites,
-	"Animation starting index must be smaller than total sprite count: ", totalSprites);
-	Assert(animation->endingIndex < totalSprites,
-	"Animation ending index must be smaller than total sprite count: ", totalSprites);
-	Assert(animation->currentIndex >= animation->startingIndex && animation->currentIndex <= animation->endingIndex,
-	"Animation starting index must be between starting and ending indices: ", animation->startingIndex, "-",
-	animation->endingIndex);
-	Assert(animation->frameAccumulator < animation->frameLengthS,
-	"Animation frame accumulator must be bellow frame length: ", animation->frameLengthS);
 }

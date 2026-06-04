@@ -5,6 +5,8 @@
 
 #include "Types.hpp"
 
+#include <vector>
+
 namespace Component
 {
 	struct Transform
@@ -23,24 +25,17 @@ namespace Component
 		Color color = WHITE;
 		float scale = 1;
 		u32 layer = 1;
-
-		// Don't sort anything that has an owning sprite
-		// as this would mess up the sorting of layers
-
-		constexpr bool operator<=>(const Sprite&) const = delete;
 	};
 
 	struct Animation
 	{
-		bool active = false;
+		Texture2D texture = {};
+		std::vector<Rectangle> frames;
+		float frameDuration = 1;
 		bool loop = false;
-		bool restart = false;
-		u32 startingIndex = 0;
-		u32 endingIndex = 1;
-		u32 currentIndex = startingIndex;
-		float frameLengthS = 1;
-		float frameAccumulator = 0;
 
-		constexpr bool operator<=>(const Animation&) const = default;
+		float time = 0;
+		bool playing = true;
+		float speed = 1;
 	};
 }
