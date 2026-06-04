@@ -4,14 +4,17 @@
 
 #include "entt/entt.hpp"
 
+#include <functional>
 #include <mutex>
 #include <optional>
+#include <queue>
 #include <string>
 #include <unordered_map>
 
 struct LuaScript
 {
 	sol::environment environment;
+	std::string directory;
 	bool enabled = true;
 };
 
@@ -20,7 +23,7 @@ class LuaManager
 public:
 
 	template <typename Event>
-	void RegisterRecieveEvent(entt::dispatcher& dispatcher)
+	void RegisterReceiveEvent(entt::dispatcher& dispatcher)
 	{
 		if (!Lua::TypeExists<Event>(lua))
 		{
@@ -46,7 +49,11 @@ public:
 		{
 			Lua::RegisterFunction(lua, functionName.c_str(), [this, &dispatcher](Event event)
 			{
-				dispatcher.trigger<Event>(std::move(event));
+				std::unique_lock lock(m_mutex);
+				m_pendingEvents.push([&dispatcher, e = std::move(event)]() mutable
+				{
+					dispatcher.trigger<Event>(std::move(e));
+				});
 			});
 		}
 	}
@@ -74,6 +81,8 @@ private:
 	template <typename Event>
 	void OnEvent(const Event& event)
 	{
+		// Copy event and queue the dispatch so we don't call into Lua while holding
+		// the mutex — avoids deadlock if a script triggers another event.
 		std::unique_lock lock(m_mutex);
 
 		for (auto& [path, script] : m_scripts)
@@ -81,7 +90,11 @@ private:
 			if (script.enabled)
 			{
 				std::string functionName = "On" + DemangleWithoutNamespace<Event>() + "Event";
-				Lua::CallFunction<false>(script.environment, functionName.c_str(), event);
+				Event copy = event;
+				m_pendingEvents.push([&script, functionName, copy]()
+				{
+					Lua::CallFunction<false>(script.environment, functionName.c_str(), copy);
+				});
 			}
 		}
 	}
@@ -89,6 +102,8 @@ private:
 	std::mutex m_mutex;
 
 	std::unordered_map<std::string, LuaScript> m_scripts;
+
+	std::queue<std::function<void()>> m_pendingEvents;
 
 	friend class Engine;
 };
