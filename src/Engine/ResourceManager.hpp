@@ -57,11 +57,6 @@ public:
 			return {};
 		}
 
-		if (!FileExists(path.c_str()))
-		{
-			return {};
-		}
-
 		auto unload = m_unloadFunction;
 
 		auto ptr = std::shared_ptr<Resource>(new Resource(std::move(*opt)), [unload](Resource* resource)

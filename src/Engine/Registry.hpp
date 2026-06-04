@@ -150,7 +150,7 @@ public:
 			callback(*static_cast<Component*>(comp), entity);
 		};
 
-		m_registry.on_construct<Component>().template connect<&Registry::HandleUpdate<Component>>(this);
+		m_registry.on_update<Component>().template connect<&Registry::HandleUpdate<Component>>(this);
 		;
 	};
 
@@ -162,7 +162,7 @@ public:
 			callback(*static_cast<Component*>(comp), entity);
 		};
 
-		m_registry.on_construct<Component>().template connect<&Registry::HandleDestroy<Component>>(this);
+		m_registry.on_destroy<Component>().template connect<&Registry::HandleDestroy<Component>>(this);
 		;
 	};
 

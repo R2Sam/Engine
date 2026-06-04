@@ -33,9 +33,9 @@ void Renderer::RemoveSprite(const Entity entity)
 	REGISTRY.Remove<Component::Sprite>(entity);
 }
 
-Renderer::Renderer(Registry& registry, const float virutalWidth, const float virutalHeight)
+Renderer::Renderer(Registry& registry, const float virtualWidth, const float virtualHeight)
 {
-	Init(registry, virutalWidth, virutalHeight);
+	Init(registry, virtualWidth, virtualHeight);
 }
 
 void Renderer::Update(Registry& registry)
@@ -105,15 +105,15 @@ void Renderer::Draw(Registry& registry) const
 	EndMode2D();
 }
 
-void Renderer::Init(Registry& registry, const float virutalWidth, const float virutalHeight)
+void Renderer::Init(Registry& registry, const float virtualWidth, const float virtualHeight)
 {
 	camera.target = {0, 0};
 	camera.offset = {0, 0};
 	camera.zoom = 1;
 	camera.rotation = 0;
 
-	m_virtualWidth = virutalWidth;
-	m_virtualHeight = virutalHeight;
+	m_virtualWidth = virtualWidth;
+	m_virtualHeight = virtualHeight;
 
 	registry.OnConstruct<Component::Sprite>([this](Component::Sprite&, const Entity)
 	{

@@ -16,11 +16,11 @@ public:
 	static bool SetSprite(const Entity entity, const Component::Sprite& sprite);
 	static void RemoveSprite(const Entity entity);
 
-	void Init(Registry& registry, const float virutalWidth, const float virutalHeight);
+	void Init(Registry& registry, const float virtualWidth, const float virtualHeight);
 
 private:
 
-	Renderer(Registry& registry, const float virutalWidth, const float virutalHeight);
+	Renderer(Registry& registry, const float virtualWidth, const float virtualHeight);
 
 	void Update(Registry& registry);
 

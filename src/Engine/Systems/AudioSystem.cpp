@@ -329,7 +329,6 @@ void AudioSystem::SeekMusic(const float timeS)
 {
 	if (m_musicState == MusicState::STOPPED)
 	{
-		Logger::Write("Stopped");
 		return;
 	}
 
@@ -345,8 +344,6 @@ void AudioSystem::SeekMusic(const float timeS)
 		Logger::Write<LogLevel::WARN>("Music seek past end");
 		return;
 	}
-
-	Logger::Write("Seeked");
 
 	SeekMusicStream(m_currentMusic.music, timeS);
 }
@@ -430,7 +427,7 @@ void AudioSystem::SetSFXVolume(float volume)
 
 void AudioSystem::UpdateFade(const bool fadingIn)
 {
-	float fadeCompletion;
+	float fadeCompletion = 0;
 
 	if (fadingIn && GetMusicTimePlayed(m_currentMusic.music) <= m_fadeTargetS)
 	{
@@ -446,8 +443,6 @@ void AudioSystem::UpdateFade(const bool fadingIn)
 
 	float volume = std::clamp(fadeCompletion, 0.001f, 0.999f);
 	SetMusicVolumeInternal(volume);
-
-	Logger::Write(volume);
 
 	if (fadingIn && volume >= 0.99)
 	{

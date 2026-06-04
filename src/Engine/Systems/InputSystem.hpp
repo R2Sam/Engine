@@ -39,7 +39,7 @@ struct Input
 
 struct InputState
 {
-	bool boolian = false;
+	bool boolean = false;
 	float number = 0;
 	Vec2<float> vector;
 

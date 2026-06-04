@@ -65,7 +65,7 @@ std::optional<bool> InputSystem::GetBoolInput(const std::string& name)
 		return std::nullopt;
 	}
 
-	return m_states[name].boolian;
+	return m_states[name].boolean;
 }
 
 std::optional<float> InputSystem::GetNumberInput(const std::string& name)
@@ -99,31 +99,31 @@ void InputSystem::UpdateKeyboard(Input& input, InputState& state)
 
 	case InputType::KEY_PRESS:
 	{
-		state.boolian = state.boolian || IsKeyPressed(input.key);
+		state.boolean = state.boolean || IsKeyPressed(input.key);
 	}
 	break;
 
 	case InputType::KEY_PRESS_REPEAT:
 	{
-		state.boolian = state.boolian || IsKeyPressedRepeat(input.key);
+		state.boolean = state.boolean || IsKeyPressedRepeat(input.key);
 	}
 	break;
 
 	case InputType::KEY_DOWN:
 	{
-		state.boolian = state.boolian || IsKeyDown(input.key);
+		state.boolean = state.boolean || IsKeyDown(input.key);
 	}
 	break;
 
 	case InputType::KEY_RELEASE:
 	{
-		state.boolian = state.boolian || IsKeyReleased(input.key);
+		state.boolean = state.boolean || IsKeyReleased(input.key);
 	}
 	break;
 
 	case InputType::KEY_UP:
 	{
-		state.boolian = state.boolian || IsKeyUp(input.key);
+		state.boolean = state.boolean || IsKeyUp(input.key);
 	}
 	break;
 
@@ -163,7 +163,7 @@ void InputSystem::UpdateMouse(Input& input, InputState& state)
 
 	case InputType::KEY_PRESS:
 	{
-		state.boolian = state.boolian || IsMouseButtonPressed(input.key);
+		state.boolean = state.boolean || IsMouseButtonPressed(input.key);
 	}
 	break;
 
@@ -174,19 +174,19 @@ void InputSystem::UpdateMouse(Input& input, InputState& state)
 
 	case InputType::KEY_DOWN:
 	{
-		state.boolian = state.boolian || IsMouseButtonDown(input.key);
+		state.boolean = state.boolean || IsMouseButtonDown(input.key);
 	}
 	break;
 
 	case InputType::KEY_RELEASE:
 	{
-		state.boolian = state.boolian || IsMouseButtonReleased(input.key);
+		state.boolean = state.boolean || IsMouseButtonReleased(input.key);
 	}
 	break;
 
 	case InputType::KEY_UP:
 	{
-		state.boolian = state.boolian || IsMouseButtonUp(input.key);
+		state.boolean = state.boolean || IsMouseButtonUp(input.key);
 	}
 	break;
 
@@ -210,6 +210,7 @@ void InputSystem::UpdateMouse(Input& input, InputState& state)
 	case InputType::DELTA:
 	{
 		state.vector = GetMouseDelta();
+		state.vector *= m_scale;
 	}
 	break;
 	}
@@ -231,7 +232,7 @@ void InputSystem::UpdateGamepad(Input& input, InputState& state)
 
 	case InputType::KEY_PRESS:
 	{
-		state.boolian = state.boolian || IsGamepadButtonPressed(input.gamepad, input.key);
+		state.boolean = state.boolean || IsGamepadButtonPressed(input.gamepad, input.key);
 	}
 	break;
 
@@ -242,19 +243,19 @@ void InputSystem::UpdateGamepad(Input& input, InputState& state)
 
 	case InputType::KEY_DOWN:
 	{
-		state.boolian = state.boolian || IsGamepadButtonDown(input.gamepad, input.key);
+		state.boolean = state.boolean || IsGamepadButtonDown(input.gamepad, input.key);
 	}
 	break;
 
 	case InputType::KEY_RELEASE:
 	{
-		state.boolian = state.boolian || IsGamepadButtonReleased(input.gamepad, input.key);
+		state.boolean = state.boolean || IsGamepadButtonReleased(input.gamepad, input.key);
 	}
 	break;
 
 	case InputType::KEY_UP:
 	{
-		state.boolian = state.boolian || IsGamepadButtonUp(input.gamepad, input.key);
+		state.boolean = state.boolean || IsGamepadButtonUp(input.gamepad, input.key);
 	}
 	break;
 

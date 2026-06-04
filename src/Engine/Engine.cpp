@@ -5,7 +5,7 @@
 #include "Timing.hpp"
 
 Engine::Engine(const WindowInfo& windowInfo) :
-m_renderer(m_registry, windowInfo.virutalWidth, windowInfo.virtualHeight)
+m_renderer(m_registry, windowInfo.virtualWidth, windowInfo.virtualHeight)
 {
 	Assert(!s_engine, "Only one engine instance may exist at the time");
 
@@ -33,7 +33,7 @@ m_renderer(m_registry, windowInfo.virutalWidth, windowInfo.virtualHeight)
 	// Set event catcher
 	m_dispatcher.sink<Event::CloseGame>().connect<&Engine::OnCloseGameEvent>(this);
 
-	m_virtualWidth = windowInfo.virutalWidth;
+	m_virtualWidth = windowInfo.virtualWidth;
 	m_virtualHeight = windowInfo.virtualHeight;
 	m_canvas = LoadRenderTexture(m_virtualWidth, m_virtualHeight);
 }
@@ -112,6 +112,7 @@ void Engine::Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpd
 			m_sceneManager.Update(timeStep);
 
 			accumulator -= timeStep;
+			steps++;
 		}
 
 		if (steps >= maxUpdatesPerFrame)

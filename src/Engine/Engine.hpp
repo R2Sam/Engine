@@ -61,7 +61,7 @@ struct WindowInfo
 	u32 height = 720;
 	std::string title;
 
-	u32 virutalWidth = 1920;
+	u32 virtualWidth = 1920;
 	u32 virtualHeight = 1080;
 
 	bool fullscreen = false;
