@@ -5,6 +5,7 @@
 
 #include "Types.hpp"
 
+#include <functional>
 #include <vector>
 
 namespace Component
@@ -39,6 +40,25 @@ namespace Component
 		float speed = 1;
 	};
 
+	struct Particle
+	{
+		Vec2<float> position;
+		Vec2<float> velocity;
+		float lifetime = 1;
+		float age = 0;
+
+		Color startColor = WHITE;
+		Color endColor = {255, 255, 255, 0};
+		float startSize = 1;
+		float endSize = 1;
+
+		float rotation = 0;
+		float angularVelocity = 0; // degrees per second
+
+		Texture2D texture = {};
+		Rectangle texRect = {};
+	};
+
 	struct ParticleEmitter
 	{
 		float radius = 1;
@@ -71,28 +91,10 @@ namespace Component
 		float initialRotationMin = 0;
 		float initialRotationMax = 0;
 
+		std::function<Component::Particle(const Component::ParticleEmitter&, const Vec2<float>&)> spawnOverride;
+
 		float gravity = 0;
 
 		float spawnAccumulator = 0;
 	};
-
-	struct Particle
-	{
-		Vec2<float> position;
-		Vec2<float> velocity;
-		float lifetime = 1;
-		float age = 0;
-
-		Color startColor = WHITE;
-		Color endColor = {255, 255, 255, 0};
-		float startSize = 1;
-		float endSize = 1;
-
-		float rotation = 0;
-		float angularVelocity = 0; // degrees per second
-
-		Texture2D texture = {};
-		Rectangle texRect = {};
-	};
-
 }

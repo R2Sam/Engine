@@ -186,34 +186,42 @@ void ParticleSystem::Play(const Entity entity)
 void ParticleSystem::SpawnParticle(const Entity entity, const Component::ParticleEmitter& emitter,
 const Vec2<float>& worldPos)
 {
-
-	Vec2<float> spawnPos = worldPos;
-
-	float angle = RandAngleDeg() * DEG2RAD;
-
-	float r = emitter.edgeOnly ? emitter.radius : emitter.radius * std::sqrt(RandFloat(0, 1));
-
-	spawnPos.x += r * std::cos(angle);
-	spawnPos.y += r * std::sin(angle);
-
-	float angleDeg = emitter.useDirection ? RandFloat(emitter.directionAngle - emitter.directionSpread,
-											emitter.directionAngle + emitter.directionSpread)
-										  : RandAngleDeg();
-
-	float angleRad = angleDeg * DEG2RAD;
-	float speed = RandFloat(emitter.speedMin, emitter.speedMax);
-
-	Vec2<float> velocity{speed * std::cos(angleRad), speed * std::sin(angleRad)};
-
 	Component::Particle particle;
-	particle.position = spawnPos;
-	particle.velocity = velocity;
-	particle.lifetime = RandFloat(emitter.lifetimeMin, emitter.lifetimeMax);
-	particle.age = 0.f;
-	particle.startColor = emitter.startColor;
-	particle.endColor = emitter.endColor;
-	particle.startSize = emitter.startSize;
-	particle.endSize = emitter.endSize;
+
+	if (emitter.spawnOverride)
+	{
+		particle = emitter.spawnOverride(emitter, worldPos);
+	}
+
+	else
+	{
+		Vec2<float> spawnPos = worldPos;
+
+		float angle = RandAngleDeg() * DEG2RAD;
+
+		float r = emitter.edgeOnly ? emitter.radius : emitter.radius * std::sqrt(RandFloat(0, 1));
+
+		spawnPos.x += r * std::cos(angle);
+		spawnPos.y += r * std::sin(angle);
+
+		float angleDeg = emitter.useDirection ? RandFloat(emitter.directionAngle - emitter.directionSpread,
+												emitter.directionAngle + emitter.directionSpread)
+											  : RandAngleDeg();
+
+		float angleRad = angleDeg * DEG2RAD;
+		float speed = RandFloat(emitter.speedMin, emitter.speedMax);
+
+		Vec2<float> velocity{speed * std::cos(angleRad), speed * std::sin(angleRad)};
+
+		particle.position = spawnPos;
+		particle.velocity = velocity;
+		particle.lifetime = RandFloat(emitter.lifetimeMin, emitter.lifetimeMax);
+		particle.age = 0.f;
+		particle.startColor = emitter.startColor;
+		particle.endColor = emitter.endColor;
+		particle.startSize = emitter.startSize;
+		particle.endSize = emitter.endSize;
+	}
 
 	if (!REGISTRY.HasAny<std::vector<Component::Particle>>(entity))
 	{
