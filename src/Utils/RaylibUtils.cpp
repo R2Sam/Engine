@@ -1,5 +1,6 @@
 #include "Utils/RaylibUtils.hpp"
 
+#include "entt/core/algorithm.hpp"
 #include "raylib.h"
 #include "raymath.h"
 
@@ -116,8 +117,8 @@ Rectangle ScaleRectangle(const Rectangle rectangle, const float scale, const Vec
 	float newHeight = rectangle.height * scale;
 
 	Rectangle newRectangle;
-	newRectangle.x = position.x - newWidth / 2.0;
-	newRectangle.y = position.y - newHeight / 2.0;
+	newRectangle.x = position.x - (newWidth / 2.0);
+	newRectangle.y = position.y - (newHeight / 2.0);
 	newRectangle.width = newWidth;
 	newRectangle.height = newHeight;
 
@@ -126,8 +127,8 @@ Rectangle ScaleRectangle(const Rectangle rectangle, const float scale, const Vec
 
 Rectangle GetCameraRectangle(const Camera2D camera)
 {
-	return Rectangle{.x = camera.target.x - camera.offset.x / camera.zoom,
-	.y = camera.target.y - camera.offset.y / camera.zoom,
+	return Rectangle{.x = camera.target.x - (camera.offset.x / camera.zoom),
+	.y = camera.target.y - (camera.offset.y / camera.zoom),
 	.width = GetRenderWidth() / camera.zoom,
 	.height = GetRenderHeight() / camera.zoom};
 }
@@ -139,10 +140,10 @@ bool IsTextureVisible(const Texture2D texture, const float scale, const Vector2 
 	float scaledWidth = texture.width * scale;
 	float scaledHeight = texture.height * scale;
 
-	float worstCaseSize = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight);
+	float worstCaseSize = sqrt((scaledWidth * scaledWidth) + (scaledHeight * scaledHeight));
 
-	Rectangle worstCaseRect = {static_cast<float>(position.x - worstCaseSize / 2.0),
-	static_cast<float>(position.y - worstCaseSize / 2.0), worstCaseSize, worstCaseSize};
+	Rectangle worstCaseRect = {static_cast<float>(position.x - (worstCaseSize / 2.0)),
+	static_cast<float>(position.y - (worstCaseSize / 2.0)), worstCaseSize, worstCaseSize};
 
 	return CheckCollisionRecs(cameraView, worstCaseRect);
 }
@@ -154,10 +155,10 @@ bool IsRectangleVisible(const Rectangle rectangle, const float scale, const Vect
 	float scaledWidth = rectangle.width * scale;
 	float scaledHeight = rectangle.height * scale;
 
-	float worstCaseSize = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight);
+	float worstCaseSize = sqrt((scaledWidth * scaledWidth) + (scaledHeight * scaledHeight));
 
-	Rectangle worstCaseRect = {static_cast<float>(position.x - worstCaseSize / 2.0),
-	static_cast<float>(position.y - worstCaseSize / 2.0), worstCaseSize + 2, worstCaseSize + 2};
+	Rectangle worstCaseRect = {static_cast<float>(position.x - (worstCaseSize / 2.0)),
+	static_cast<float>(position.y - (worstCaseSize / 2.0)), worstCaseSize + 2, worstCaseSize + 2};
 
 	return CheckCollisionRecs(cameraView, worstCaseRect);
 }
@@ -168,12 +169,19 @@ const Rectangle cameraRectangle)
 	float scaledWidth = rectangle.width * scale;
 	float scaledHeight = rectangle.height * scale;
 
-	float worstCaseSize = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight);
+	float worstCaseSize = sqrt((scaledWidth * scaledWidth) + (scaledHeight * scaledHeight));
 
-	Rectangle worstCaseRect = {static_cast<float>(position.x - worstCaseSize / 2.0),
-	static_cast<float>(position.y - worstCaseSize / 2.0), worstCaseSize + 2, worstCaseSize + 2};
+	Rectangle worstCaseRect = {static_cast<float>(position.x - (worstCaseSize / 2.0)),
+	static_cast<float>(position.y - (worstCaseSize / 2.0)), worstCaseSize + 2, worstCaseSize + 2};
 
 	return CheckCollisionRecs(cameraRectangle, worstCaseRect);
+}
+
+bool IsCircleVisible(const float radius, const Vector2 position, const Camera2D camera)
+{
+	Rectangle cameraView = GetCameraRectangle(camera);
+
+	return CheckCollisionCircleRec(position, radius, cameraView);
 }
 
 std::vector<std::string> WordList(const std::string& input)
