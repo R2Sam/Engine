@@ -1,14 +1,34 @@
 #include "ParticleSystem.hpp"
 
+#include "Engine/Components.hpp"
 #include "Engine/Engine.hpp"
 
 #include "Utils/RaylibUtils.hpp"
 #include "raylib.h"
+#include <execution>
 #include <random>
 
 static float RandFloat(const float min, const float max);
 static float RandAngleDeg();
 static Color LerpColor(const Color& a, const Color& b, const float t);
+
+ParticleSystem::ParticleSystem()
+{
+	REGISTRY.OnConstruct<Component::Particle>([this](Component::Particle&, const Entity)
+	{
+		MarkNeedSort();
+	});
+
+	REGISTRY.OnUpdate<Component::Particle>([this](Component::Particle&, const Entity)
+	{
+		MarkNeedSort();
+	});
+
+	REGISTRY.OnDestroy<Component::Particle>([this](Component::Particle&, const Entity)
+	{
+		MarkNeedSort();
+	});
+}
 
 void ParticleSystem::Update(const float deltaT) // NOLINT
 {
@@ -25,6 +45,7 @@ void ParticleSystem::Update(const float deltaT) // NOLINT
 		for (auto it = particlesCopy.begin(); it != particlesCopy.end();)
 		{
 			it->age += deltaT;
+			it->rotation += it->angularVelocity * deltaT;
 			it->velocity.y += emitterCopy.gravity * deltaT;
 			it->position.x += it->velocity.x * deltaT;
 			it->position.y += it->velocity.y * deltaT;
@@ -74,6 +95,16 @@ void ParticleSystem::Update(const float deltaT) // NOLINT
 			REGISTRY.Replace<Component::ParticleEmitter>(entity, emitterCopy);
 		}
 	}
+
+	if (m_needSort)
+	{
+		REGISTRY.Sort<Component::Particle>([](const Component::Particle& a, const Component::Particle& b)
+		{
+			return a.texture.id < b.texture.id;
+		});
+
+		m_needSort = false;
+	}
 }
 
 void ParticleSystem::Draw() const
@@ -90,9 +121,29 @@ void ParticleSystem::Draw() const
 			const Color color = LerpColor(particle.startColor, particle.endColor, t);
 			const float size = particle.startSize + ((particle.endSize - particle.startSize) * t);
 
-			if (IsCircleVisible(size, particle.position.Raylib(), RENDERER.camera) && size > 0.f && color.a > 0)
+			if (size <= 0.f || color.a == 0)
 			{
-				DrawCircleV(particle.position.Raylib(), size, color);
+				continue;
+			}
+
+			if (IsTextureValid(particle.texture) &&
+				IsTextureVisible(particle.texture, 1, particle.position.Raylib(), RENDERER.camera))
+			{
+				const float halfW = (particle.texRect.width * size) * 0.5;
+				const float halfH = (particle.texRect.height * size) * 0.5;
+
+				Rectangle dest = {particle.position.x, particle.position.y, halfW * 2, halfH * 2};
+				Vector2 origin = {halfW, halfH};
+
+				DrawTexturePro(particle.texture, particle.texRect, dest, origin, particle.rotation, color);
+			}
+
+			else
+			{
+				if (IsCircleVisible(size, particle.position.Raylib(), RENDERER.camera))
+				{
+					DrawCircleV(particle.position.Raylib(), size, color);
+				}
 			}
 		}
 	}
@@ -173,6 +224,11 @@ const Vec2<float>& worldPos)
 	{
 		particles.push_back(particle);
 	});
+}
+
+void ParticleSystem::MarkNeedSort()
+{
+	m_needSort = true;
 }
 
 static float RandFloat(const float min, float max)

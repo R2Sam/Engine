@@ -48,20 +48,28 @@ namespace Component
 		u32 burst = 0;
 		bool playing = true;
 
-		float lifetimeMin = 0.5;
-		float lifetimeMax = 1.5;
+		float lifetimeMin = 1;
+		float lifetimeMax = 1;
 
-		float speedMin = 50;
-		float speedMax = 150;
+		float speedMin = 1;
+		float speedMax = 1;
 
 		bool useDirection = false;
 		float directionAngle = 0;
-		float directionSpread = 45;
+		float directionSpread = 0;
 
 		Color startColor = WHITE;
 		Color endColor = {255, 255, 255, 0};
-		float startSize = 4;
+		float startSize = 1;
 		float endSize = 1;
+
+		Texture2D texture = {};
+		std::vector<Rectangle> textureFrames;
+
+		float angularVelocityMin = 0;
+		float angularVelocityMax = 0;
+		float initialRotationMin = 0;
+		float initialRotationMax = 0;
 
 		float gravity = 0;
 
@@ -79,6 +87,12 @@ namespace Component
 		Color endColor = {255, 255, 255, 0};
 		float startSize = 1;
 		float endSize = 1;
+
+		float rotation = 0;
+		float angularVelocity = 0; // degrees per second
+
+		Texture2D texture = {};
+		Rectangle texRect = {};
 	};
 
 }

@@ -8,6 +8,8 @@ class ParticleSystem : public System
 {
 public:
 
+	ParticleSystem();
+
 	void Update(const float deltaT) override;
 
 	void Draw() const override;
@@ -21,4 +23,8 @@ private:
 
 	static void SpawnParticle(const Entity entity, const Component::ParticleEmitter& emitter,
 	const Vec2<float>& worldPos);
+
+	void MarkNeedSort();
+
+	bool m_needSort = false;
 };
