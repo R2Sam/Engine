@@ -27,6 +27,12 @@ namespace Component
 		Vec2<float> velocity;
 		float rotation = 0;
 
+		template <class Archive>
+		void serialize(Archive& archive) // NOLINT
+		{
+			archive(position, velocity, rotation);
+		}
+
 		constexpr bool operator<=>(const Transform&) const = default;
 	};
 
@@ -123,5 +129,15 @@ namespace Component
 		float gravity = 0;
 
 		float spawnAccumulator = 0;
+	};
+
+	/**
+	 * @struct NetworkId
+	 * @brief Associates a local entity with a remote owner and remote entity ID.
+	 */
+	struct NetworkId
+	{
+		UUID owner = NULL_UUID;
+		Entity remoteEntity = NULL_ENTITY;
 	};
 }

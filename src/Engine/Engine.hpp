@@ -15,6 +15,7 @@
 
 #include "Systems/AudioSystem.hpp"
 #include "Systems/InputSystem.hpp"
+#include "Systems/NetworkEntitySystem.hpp"
 
 #ifndef __EMSCRIPTEN__
 #include "Networking/AsyncNetwork.hpp"
@@ -48,6 +49,7 @@ using Dispatcher = entt::dispatcher;
 // Systems
 #define INPUT_SYSTEM SYSTEM_MANAGER.GetSystem<InputSystem>()
 #define AUDIO_SYSTEM SYSTEM_MANAGER.GetSystem<AudioSystem>()
+#define NET_ENTITY_SYSTEM SYSTEM_MANAGER.GetSystem<NetworkEntitySystem>()
 
 /**
  * @brief Initial window info

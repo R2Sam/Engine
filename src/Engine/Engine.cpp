@@ -1,5 +1,6 @@
 #include "Engine.hpp"
 
+#include "Engine/Systems/NetworkEntitySystem.hpp"
 #include "Systems/AnimationSystem.hpp"
 #include "Systems/ParticleSystem.hpp"
 
@@ -24,10 +25,11 @@ m_renderer(m_registry, windowInfo.virtualWidth, windowInfo.virtualHeight)
 	RaylibResourceManager();
 
 	// Systems
-	m_systemManager.AddSystem<AnimationSystem>(0);
 	m_systemManager.AddSystem<InputSystem>(0);
 	m_systemManager.AddSystem<AudioSystem>(0);
 	m_systemManager.AddSystem<ParticleSystem>(0);
+	m_systemManager.AddSystem<NetworkEntitySystem>(0);
+	m_systemManager.AddSystem<AnimationSystem>(0);
 
 	// Basic input
 	m_systemManager.GetSystem<InputSystem>()->BindInput("Cursor", {InputType::POSITION, InputObject::MOUSE});
