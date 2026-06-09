@@ -14,11 +14,15 @@
 #include <vector>
 
 /**
+ * @file SystemManager.hpp
+ * @brief Engine lifelong systems and their managing.
+ */
+
+/**
  * @brief Base class for all systems
  *
  * All systems must derive from this class and implement Update.
  */
-
 class System : public NonCopyable<>
 {
 public:
@@ -28,32 +32,29 @@ public:
 	/**
 	 * @brief Updates the system
 	 *
-	 * Called once per frame before rendering according to system priority.
+	 * Called once per fixed-timestep step before rendering, in priority order.
 	 * Called before scenes.
 	 *
-	 * @param deltaT Duration of previous frame
+	 * @param deltaT Duration of the previous frame in seconds
 	 */
-
 	virtual void Update(const float deltaT) = 0;
 
 	/**
 	 * @brief Renders the system
 	 *
-	 * Called once per frame after updating according to system priority
-	 * Called before scenes
+	 * Called once per frame after all Update steps, in priority order.
+	 * Called before scenes. Default implementation does nothing.
 	 */
-
 	virtual void Draw() const;
 };
 
 /**
- * @brief Manages execution and order of systems
+ * @brief Manages execution order and lifetime of systems
  *
- * Systems are updated and rendered in order.
- * Lower priority values go first.
- * Systems update and render before scenes.
+ * Systems are updated and drawn in ascending priority order.
+ * Lower priority values execute first.
+ * Systems update and draw before scenes each frame.
  */
-
 class SystemManager
 {
 public:
@@ -64,34 +65,32 @@ public:
 	SystemManager& operator=(const SystemManager&) = delete;
 
 	/**
-	 * @brief Adds a system to the manager
+	 * @brief Constructs a system and adds it to the manager
 	 *
-	 * The system is constructed in within the manager and owned by it.
-	 * Systems must derive from the System base class..
+	 * The system is owned by the manager. Systems are sorted by priority
+	 * immediately after insertion.
 	 *
-	 * @tparam System System type
-	 * @tparam Args System Constructor argument types
-	 * @param priority Execution priority (lower executes first)
-	 * @param args System constructor arguments
-	 *
-	 * @return Shared ptr to the created system
+	 * @tparam SystemT System type (must derive from the System base class)
+	 * @tparam Args System constructor argument types
+	 * @param priority Execution priority — lower values run first (default 1)
+	 * @param args Arguments forwarded to the system constructor
+	 * @return Shared pointer to the created system
 	 *
 	 * Usage:
 	 * @code
 	 * auto physics = systemManager.AddSystem<PhysicsSystem>(3, gravity);
 	 * @endcode
 	 */
-
-	template <typename System, typename... Args>
-		requires std::is_base_of_v<System, System>
-	std::shared_ptr<System> AddSystem(const u32 priority = 1, Args&&... args)
+	template <typename SystemT, typename... Args>
+		requires std::is_base_of_v<System, SystemT>
+	std::shared_ptr<SystemT> AddSystem(const u32 priority = 1, Args&&... args)
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto ptr = std::make_shared<System>(std::forward<Args>(args)...);
+		auto ptr = std::make_shared<SystemT>(std::forward<Args>(args)...);
 
 		m_systems.push_back(std::make_pair(priority, ptr));
-		m_systemsMap.emplace(typeid(System), ptr);
+		m_systemsMap.emplace(typeid(SystemT), ptr);
 
 		std::sort(m_systems.begin(), m_systems.end(), [](const auto& a, const auto& b)
 		{
@@ -101,13 +100,21 @@ public:
 		return ptr;
 	}
 
-	template <typename System>
-		requires std::is_base_of_v<System, System>
+	/**
+	 * @brief Removes a system from the manager
+	 *
+	 * The system is destroyed when no more shared_ptrs to it remain.
+	 * Does nothing if the system is not currently managed.
+	 *
+	 * @tparam SystemT System type to remove
+	 */
+	template <typename SystemT>
+		requires std::is_base_of_v<System, SystemT>
 	void RemoveSystem()
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_systemsMap.find(typeid(System));
+		auto it = m_systemsMap.find(typeid(SystemT));
 		if (it == m_systemsMap.end())
 		{
 			return;
@@ -132,46 +139,46 @@ public:
 	}
 
 	/**
-	 * @brief Gets a system pointer
+	 * @brief Returns a shared pointer to a managed system
 	 *
-	 * Return a empty pointer if the system does not exist.
+	 * Returns an empty pointer if no system of this type has been added.
 	 *
-	 * @tparam System System type
+	 * @tparam SystemT System type to retrieve
+	 * @return Shared pointer to the system, or nullptr if not found
 	 */
-
-	template <typename System>
-		requires std::is_base_of_v<System, System>
-	std::shared_ptr<System> GetSystem()
+	template <typename SystemT>
+		requires std::is_base_of_v<System, SystemT>
+	std::shared_ptr<SystemT> GetSystem()
 	{
 		std::shared_lock lock(m_mutex);
 
-		auto it = m_systemsMap.find(typeid(System));
+		auto it = m_systemsMap.find(typeid(SystemT));
 		if (it != m_systemsMap.end())
 		{
-			return std::dynamic_pointer_cast<System>(it->second);
+			return std::dynamic_pointer_cast<SystemT>(it->second);
 		}
 
 		return nullptr;
 	}
 
 	/**
-	 * @brief Clears all systems
+	 * @brief Removes and destroys all managed systems
+	 *
+	 * Called by the Engine destructor.
 	 */
-
 	void ClearSystems();
 
 private:
 
 	/**
-	 * @brief Updates all systems in order
+	 * @brief Calls Update on all systems in priority order
 	 *
-	 * @param deltaT Duration of previous frame
+	 * @param deltaT Duration of the previous frame in seconds
 	 */
-
 	void Update(const float deltaT);
 
 	/**
-	 * @brief Renders all systems in order
+	 * @brief Calls Draw on all systems in priority order
 	 */
 	void Draw();
 

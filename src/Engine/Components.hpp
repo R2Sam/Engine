@@ -5,11 +5,22 @@
 
 #include "Types.hpp"
 
+#include <Engine/Registry.hpp>
+#include <Networking/Encryption.hpp>
 #include <functional>
 #include <vector>
 
+/**
+ * @file Components.hpp
+ * @brief Engine components.
+ */
+
 namespace Component
 {
+	/**
+	 * @struct Transform
+	 * @brief Position, velocity and rotation.
+	 */
 	struct Transform
 	{
 		Vec2<float> position;
@@ -19,6 +30,10 @@ namespace Component
 		constexpr bool operator<=>(const Transform&) const = default;
 	};
 
+	/**
+	 * @struct Sprite
+	 * @brief Texture, source rectangle, tint, scale and render layer.
+	 */
 	struct Sprite
 	{
 		Texture2D texture = {};
@@ -28,6 +43,10 @@ namespace Component
 		u32 layer = 1;
 	};
 
+	/**
+	 * @struct Animation
+	 * @brief Frame‑based animation data and playback state.
+	 */
 	struct Animation
 	{
 		Texture2D texture = {};
@@ -40,6 +59,10 @@ namespace Component
 		float speed = 1;
 	};
 
+	/**
+	 * @struct Particle
+	 * @brief Individual particle state (position, velocity, colour, size, etc.).
+	 */
 	struct Particle
 	{
 		Vec2<float> position;
@@ -53,12 +76,16 @@ namespace Component
 		float endSize = 1;
 
 		float rotation = 0;
-		float angularVelocity = 0; // degrees per second
+		float angularVelocity = 0;
 
 		Texture2D texture = {};
 		Rectangle texRect = {};
 	};
 
+	/**
+	 * @struct ParticleEmitter
+	 * @brief Spawn parameters and runtime state for a particle emitter.
+	 */
 	struct ParticleEmitter
 	{
 		float radius = 1;

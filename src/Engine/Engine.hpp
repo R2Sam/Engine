@@ -23,9 +23,12 @@
 
 #include <string>
 
-using Dispatcher = entt::dispatcher;
+/**
+ * @file Engine.hpp
+ * @brief Core engine.
+ */
 
-constexpr Entity NULL_ENTITY = static_cast<Entity>(0);
+using Dispatcher = entt::dispatcher;
 
 #define REGISTRY Engine::Get().registry
 #define DISPATCHER Engine::Get().dispatcher
@@ -49,12 +52,11 @@ constexpr Entity NULL_ENTITY = static_cast<Entity>(0);
 /**
  * @brief Initial window info
  *
- * Tells engine what the initial window size should be and which flags to enable
+ * Tells engine what the initial window size should be and which flags to enable.
  *
  * Additionally a virtual window size can be specified to which all elements are drawn.
  * The virtual window is then scaled according to the real window size but aspect ratio is preserved.
  */
-
 struct WindowInfo
 {
 	u32 width = 1280;
@@ -80,31 +82,38 @@ struct WindowInfo
  *
  * Owns and coordinates all major subsystems.
  *
- * Only a single Engine instance may exist at a time.
+ * Only a single Engine instance may exist at a time. Use Engine::Get() to access
+ * the instance, or prefer the convenience macros (REGISTRY, DISPATCHER, RENDERER,
+ * etc.) which call through to it.
  */
-
 class Engine : public NonCopyable<>
 {
 public:
 
 	/**
-	 * @ brief Creates the engine and all its systems
+	 * @brief Creates the engine and all its subsystems
 	 *
-	 * @param windowInfo Initial window info struct
+	 * Opens a raylib window, initialises the audio device, registers default
+	 * resource caches (Texture2D, Image, Sound, Music, Wave, raw text and binary
+	 * files), and adds the built-in systems (AnimationSystem, InputSystem,
+	 * AudioSystem, ParticleSystem).
+	 *
+	 * @param windowInfo Initial window configuration
 	 */
-
 	Engine(const WindowInfo& windowInfo);
 
 	~Engine();
 
 	/**
-	 * @brief Sets the initial scene
+	 * @brief Sets the initial scene and immediately transitions to it
 	 *
-	 * @tparam T Scene type
-	 * @tparam Args T Constructor argument types
+	 * The scene is constructed with the given arguments, added to the
+	 * SceneManager, and made active before Run is called.
+	 *
+	 * @tparam T Scene type (must derive from Scene)
+	 * @tparam Args T constructor argument types
 	 * @param args Scene constructor arguments
 	 */
-
 	template <typename T, typename... Args>
 	void SetFirstScene(Args&&... args)
 	{
@@ -115,52 +124,66 @@ public:
 	/**
 	 * @brief Runs the engine loop
 	 *
-	 * This is blocking until the widow is closed or a CloseGame event is called.
+	 * This is blocking until the window is closed or a CloseGame event is dispatched.
 	 *
-	 * Updates are called in the systems, lua, scene order.
-	 * Draws are called in the renderer, systems, scene order.
-	 * All drawing is done to a virtual canvas.
+	 * Each frame the loop:
+	 * -# Accumulates elapsed time and runs fixed-timestep Update passes (systems → Lua → scene)
+	 * -# Calls the Renderer update (sprite sort)
+	 * -# Draws to the virtual canvas (renderer → systems → scene)
+	 * -# Scales the canvas to the real window and presents it
 	 *
-	 * @param targetFps The target fps for the engine to run at
-	 * @param updateFrequency How many update loops should be run per second
-	 * @param maxUpdatesPerFrame Maximum updated per frame when the engine is trying to catch up
+	 * @param targetFps         Target frames per second
+	 * @param updateFrequency   Fixed update steps per second (must be ≤ targetFps)
+	 * @param maxUpdatesPerFrame Maximum catch-up steps per frame before the accumulator is reset
 	 */
-
 	void Run(const u32 targetFps, const u32 updateFrequency, const u8 maxUpdatesPerFrame = 5);
 
 	/**
-	 * @brief Returns how long the average update loop took in ms
+	 * @brief Returns how long the average update loop took in milliseconds
 	 */
-
 	double GetUpdateTime() const;
 
 	/**
-	 * @brief Returns how long the average draw loop took in ms
+	 * @brief Returns how long the average draw loop took in milliseconds
 	 */
-
 	double GetDrawTime() const;
 
 	/**
-	 * @brief Returns the engine instance
+	 * @brief Returns the active engine instance
 	 *
-	 * This is mainly to be used to access the public systems.
-	 * If an engine hasn't been instanced the internal assert will fail.
+	 * Asserts if no Engine has been constructed. Prefer the convenience macros
+	 * (REGISTRY, RENDERER, etc.) over calling this directly.
+	 *
+	 * @return Reference to the singleton Engine
 	 */
-
 	static Engine& Get();
 
+	/// Entity-component registry
 	Registry& registry = m_registry;
+
+	/// Event dispatcher
 	Dispatcher& dispatcher = m_dispatcher;
 
-	// Core systems
+	/// Sprite renderer
 	Renderer& renderer = m_renderer;
+
+	/// Resource cache manager
 	ResourceManager& resourceManager = m_resourceManager;
+
+	/// Scene lifecycle manager
 	SceneManager& sceneManager = m_sceneManager;
+
+	/// System execution manager
 	SystemManager& systemManager = m_systemManager;
+
+	/// Lua scripting manager
 	LuaManager& luaManager = m_luaManager;
 
 #ifndef __EMSCRIPTEN__
+	/// Asynchronous networking (unavailable on Emscripten)
 	AsyncNetwork& network = m_network;
+
+	/// Thread pool for background tasks (unavailable on Emscripten)
 	BS::thread_pool<BS::tp::none> threadPool;
 #endif
 

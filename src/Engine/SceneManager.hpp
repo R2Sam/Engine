@@ -10,12 +10,15 @@
 #include <unordered_map>
 
 /**
- * @brief Base class for all scenes
- *
- * All scenes must derive from this class,
- * and implement Update.
+ * @file SceneManager.hpp
+ * @brief Scene organization.
  */
 
+/**
+ * @brief Base class for all scenes
+ *
+ * All scenes must derive from this class and implement Update.
+ */
 class Scene : public NonCopyable<>
 {
 public:
@@ -25,41 +28,45 @@ public:
 	/**
 	 * @brief Updates the scene
 	 *
-	 * Called after systems
+	 * Called after systems each fixed-timestep step.
 	 *
-	 * @param deltaT Duration of previous frame
+	 * @param deltaT Duration of the previous frame in seconds
 	 */
-
 	virtual void Update(const float deltaT) = 0;
 
 	/**
 	 * @brief Renders the scene
 	 *
-	 * Called after systems
+	 * Called once per frame after systems. Default implementation does nothing.
 	 */
-
 	virtual void Draw() const;
 
 	/**
-	 * @brief Called by the engine when a scene is entered
+	 * @brief Called by the engine when this scene becomes the active scene
+	 *
+	 * Use this for one-time setup that depends on the scene being visible
+	 * (e.g. spawning entities, starting music). Default implementation does nothing.
 	 */
-
 	virtual void OnEnter();
 
 	/**
-	 * @brief Called by the engine when a scene is left
+	 * @brief Called by the engine just before this scene is replaced by another
+	 *
+	 * Use this for cleanup (e.g. destroying entities, stopping music).
+	 * Default implementation does nothing.
 	 */
-
 	virtual void OnExit();
 };
 
 /**
- * @brief Manages scenes and the the execution of the current scene
+ * @brief Manages scenes and the execution of the current active scene
  *
- * Only one scene can be active at the time.
- * Scenes update and render after systems.
+ * Only one scene can be active at a time. Scene transitions are queued and
+ * applied at the end of the current Draw call so that OnExit and OnEnter are
+ * never called mid-update.
+ *
+ * Scenes update and draw after systems each frame.
  */
-
 class SceneManager
 {
 public:
@@ -67,43 +74,43 @@ public:
 	/**
 	 * @brief Adds a scene to the manager
 	 *
-	 * The scene is constructed in within the manager and owned by it.
+	 * The scene is constructed within the manager and owned by it.
 	 * Scenes must derive from the Scene base class.
 	 *
-	 * @tparam Scene Scene type
-	 * @tparam Args Constructor arguments types
-	 * @param args Scene constructor arguments
+	 * @tparam SceneT Scene type
+	 * @tparam Args Constructor argument types
+	 * @param args SceneT constructor arguments
 	 *
 	 * Usage:
 	 * @code
 	 * sceneManager.AddScene<MenuScene>("Menu", menuTitle);
 	 * @endcode
 	 */
-
-	template <typename Scene, typename... Args>
-		requires std::is_base_of_v<Scene, Scene>
+	template <typename SceneT, typename... Args>
+		requires std::is_base_of_v<Scene, SceneT>
 	void AddScene(Args&&... args)
 	{
-		auto ptr = std::make_unique<Scene>(std::forward<Args>(args)...);
+		auto ptr = std::make_unique<SceneT>(std::forward<Args>(args)...);
 
 		std::unique_lock lock(m_mutex);
 
-		m_scenes.emplace(typeid(Scene), std::move(ptr));
+		m_scenes.emplace(typeid(SceneT), std::move(ptr));
 	}
 
 	/**
 	 * @brief Removes a scene from the manager
 	 *
-	 * @tparam Scene type
+	 * Asserts if the scene to remove is the currently active scene.
+	 *
+	 * @tparam SceneT Scene type to remove
 	 */
-
-	template <typename Scene>
-		requires std::is_base_of_v<Scene, Scene>
+	template <typename SceneT>
+		requires std::is_base_of_v<Scene, SceneT>
 	void RemoveScene()
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_scenes.find(typeid(Scene));
+		auto it = m_scenes.find(typeid(SceneT));
 		if (it != m_scenes.end())
 		{
 			Assert(it->second.get() != m_currentScene, "Cannot delete the current scene");
@@ -113,50 +120,54 @@ public:
 	}
 
 	/**
-	 * @brief Queues a scene change at the end of the frame
+	 * @brief Queues a scene transition to be applied at the end of the current frame
 	 *
-	 * OnExit of the current scene will be called.
-	 * OnEnter of the next scene will be called.
+	 * OnExit of the current scene is called followed by OnEnter of the next scene.
+	 * The transition happens inside CheckForChange at the end of Draw.
+	 * Asserts if the target scene does not exist or is already the active scene.
 	 *
-	 * @tparam Scene type
+	 * @tparam SceneT Type of the scene to transition to
 	 */
-
-	template <typename Scene>
-		requires std::is_base_of_v<Scene, Scene>
+	template <typename SceneT>
+		requires std::is_base_of_v<Scene, SceneT>
 	void ChangeScene()
 	{
 		std::unique_lock lock(m_mutex);
 
-		auto it = m_scenes.find(typeid(Scene));
-		Assert(it != m_scenes.end(), "Scene ", Demangle<Scene>().c_str(), " does not exist");
+		auto it = m_scenes.find(typeid(SceneT));
+		Assert(it != m_scenes.end(), "Scene ", Demangle<SceneT>().c_str(), " does not exist");
 		Assert(it->second.get() != m_currentScene, "Cannot change to the current scene");
 
-		m_nextSceneType = typeid(Scene);
+		m_nextSceneType = typeid(SceneT);
 		m_changeScene = true;
 	}
 
 	/**
-	 * @brief Removes all scenes
+	 * @brief Removes all scenes and clears the active scene pointer
+	 *
+	 * Called by the Engine destructor.
 	 */
-
 	void ClearScenes();
 
 private:
 
 	/**
-	 * @brief Updates current scene
+	 * @brief Updates the current scene
 	 *
-	 * @param deltaT Duration of previous frame
+	 * @param deltaT Duration of the previous frame in seconds
 	 */
-
 	void Update(const float deltaT);
 
 	/**
-	 * @brief Renders the current scene
+	 * @brief Draws the current scene and applies any pending scene transition
 	 */
-
 	void Draw();
 
+	/**
+	 * @brief Applies a queued scene transition if one is pending
+	 *
+	 * Calls OnExit on the outgoing scene and OnEnter on the incoming one.
+	 */
 	void CheckForChange();
 
 	Scene* m_currentScene = nullptr;
