@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Assert.hpp"
 #include "Engine/Components.hpp"
 #include "Engine/Registry.hpp"
 #include "Engine/SystemManager.hpp"
@@ -13,6 +14,19 @@
 
 using NetPeerId = UUID;
 
+/**
+ * @file NetworkEntitySystem.hpp
+ * @brief Network entity mapping and component synchronisation.
+ */
+
+/**
+ * @struct NetworkEntityUpdatePacket
+ * @brief Packet sent over the network to synchronise entity transforms.
+ *
+ * Carries the serialised transform data along with the owning peer and
+ * the remote entity identifier. Used by the NetworkEntitySystem to broadcast
+ * or receive transform updates.
+ */
 struct NetworkEntityUpdatePacket
 {
 	std::vector<std::byte> transform;
@@ -29,11 +43,12 @@ struct NetworkEntityUpdatePacket
 
 /**
  * @class NetworkEntitySystem
- * @brief Maintains a mapping from (owner, remote entity) to local entity.
+ * @brief Maintains a bidirectional mapping between (owner, remote entity) and local entities.
  *
- * Uses Component::NetworkId to associate a local entity with a remote
- * peer and its entity ID. The mapping is updated automatically via
- * OnConstruct / OnDestroy callbacks.
+ * Listens for `Component::NetworkId` construction/destruction and builds a lookup table
+ * that translates a remote peer + remote entity ID into the corresponding local entity.
+ * Also tracks which components of an entity should be networked and collects pending
+ * updates for broadcast.
  */
 class NetworkEntitySystem : public System
 {
@@ -41,12 +56,19 @@ public:
 
 	/**
 	 * @brief Constructs the system and registers component callbacks.
+	 *
+	 * Subscribes to `OnConstruct` and `OnDestroy` events for `Component::NetworkId`
+	 * to keep the internal mapping synchronised.
 	 */
 	NetworkEntitySystem();
 
 	/**
-	 * @brief Update step (currently reserved for future network sync).
-	 * @param deltaT Time since last update (unused).
+	 * @brief Processes pending network updates and sends them.
+	 * @param deltaT Time since last update (not used currently).
+	 *
+	 * Iterates over collected component updates, builds appropriate network packets
+	 * (e.g., `NetworkEntityUpdatePacket` for transforms), and broadcasts them to
+	 * all connected peers.
 	 */
 	void Update(const float deltaT) override;
 
@@ -76,13 +98,30 @@ public:
 	 */
 	void SetConnectedPeers(const std::vector<Peer>& peers);
 
-	template <CerealSerializable Component>
+	/**
+	 * @brief Marks a component type on an entity for network synchronisation.
+	 * @tparam Component The component type (must be serializable via Cereal).
+	 * @param entity The local entity whose component should be networked.
+	 * @param reliable Whether updates for this component should use reliable delivery.
+	 *
+	 * When the component is updated (via `OnUpdate`), the system will collect its
+	 * serialised data and send it automatically. The system internally registers
+	 * an update listener for the component type.
+	 */
+	template <CerealSerializable ComponentT>
 	void NetworkEntityComponent(const Entity entity, const bool reliable)
 	{
+		Assert(m_registry.EntityValid(entity));
+
+		const auto* networkId = m_registry.Get<Component::NetworkId>(entity);
+		Assert(networkId, "Can't network a component without a network id");
+		// TODO
+		// Check that it is ours to actually update
+
 		auto it = m_networkedComponents.find(entity);
 		if (it != m_networkedComponents.end())
 		{
-			auto it2 = it->second.find(typeid(Component));
+			auto it2 = it->second.find(typeid(ComponentT));
 			if (it2 != it->second.end())
 			{
 				it2->second = reliable;
@@ -93,9 +132,9 @@ public:
 			return;
 		}
 
-		m_networkedComponents[entity].emplace(entity, reliable);
+		m_networkedComponents[entity].emplace(typeid(ComponentT), reliable);
 
-		m_registry.OnUpdate<Component>([this](Component& component, const Entity entity)
+		m_registry.OnUpdate<ComponentT>([this](ComponentT& component, const Entity entity)
 		{
 			OnUpdate(component, entity);
 		});

@@ -31,6 +31,8 @@ void NetworkEntitySystem::Update([[maybe_unused]] const float deltaT)
 			continue;
 		}
 	}
+
+	m_updates.clear();
 }
 
 Entity NetworkEntitySystem::GetLocalEntity(const UUID& owner, const Entity remoteEntity) const

@@ -141,3 +141,9 @@ namespace Component
 		Entity remoteEntity = NULL_ENTITY;
 	};
 }
+
+template <class Archive>
+void serialize(Archive& archive, Vec2<float>& vector) // NOLINT
+{
+	archive(vector.x, vector.y);
+}
